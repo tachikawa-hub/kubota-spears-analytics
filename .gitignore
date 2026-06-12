@@ -1,0 +1,18 @@
+# --- Derived / generated data (regenerate from sources) ---
+# Built by build_rugby_db.py from the CSV files
+rugby.db
+
+# --- Superseded outputs ---
+# Old single-stack report; replaced by season_kpi_v2.html
+season_kpi.html
+
+# --- Dependencies ---
+node_modules/
+
+# --- OS / editor cruft ---
+.DS_Store
+*.swp
+*~
+
+# --- Local tool settings (machine-specific) ---
+.claude/

@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Match Report – Crusaders vs Highlanders</title>
+<style>
+/* ── TOKENS ─────────────────────────────────────────── */
+:root {
+  --crus-dark: #0d1b2e;
+  --crus-mid:  #1a2e4a;
+  --crus-red:  #c8102e;
+  --crus-gold: #c8973c;
+  --high-dark: #2c0d1a;
+  --high-mid:  #5a0c28;
+  --high-gold: #f0c040;
+  --neutral:   #f5f4f0;
+  --ink:       #1a1a1a;
+  --muted:     #6b6b6b;
+  --rule:      #d8d4cc;
+  --good:      #1a7a3c;
+  --warn:      #b85c00;
+  --radius:    4px;
+  font-size: 14px;
+}
+
+/* ── RESET ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #e8e4dc; color: var(--ink); }
+
+/* ── PAGE SHELL ─────────────────────────────────────── */
+.page {
+  width: 297mm; min-height: 210mm;
+  margin: 8mm auto;
+  background: var(--neutral);
+  display: flex; flex-direction: column;
+  page-break-after: always;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,.18);
+}
+
+/* ── SHARED HEADER ──────────────────────────────────── */
+.page-header {
+  background: var(--crus-dark);
+  color: white;
+  padding: 10px 18px 8px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.page-header h1 { font-size: 15px; font-weight: 700; letter-spacing: .04em; }
+.page-header .subtitle { font-size: 11px; color: var(--crus-gold); letter-spacing: .06em; text-transform: uppercase; }
+.page-header .match-info { text-align: right; font-size: 11px; color: rgba(255,255,255,.7); line-height: 1.5; }
+.score-pill {
+  background: var(--crus-red);
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+
+/* ── STAT TABLE (page 3) ────────────────────────────── */
+.stat-table-wrap { flex: 1; padding: 14px 18px; }
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 160px 1fr;
+  gap: 0;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.sg-head {
+  display: contents;
+}
+.sg-head > div {
+  padding: 8px 12px;
+  font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  text-align: center;
+}
+.sg-head > .team-h { background: var(--crus-dark); color: white; }
+.sg-head > .label-col { background: #2a2a2a; color: rgba(255,255,255,.6); }
+.sg-head > .team-a { background: var(--high-mid); color: white; }
+
+.sg-row {
+  display: contents;
+}
+.sg-row > div {
+  padding: 5px 12px;
+  font-size: 12px;
+  display: flex; align-items: center;
+  border-top: 1px solid var(--rule);
+}
+.sg-row > .val-h { justify-content: flex-end; font-weight: 700; font-size: 13px; }
+.sg-row > .val-a { justify-content: flex-start; font-weight: 700; font-size: 13px; }
+.sg-row > .lbl   { justify-content: center; font-size: 10px; color: var(--muted); background: #f0ede8; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.sg-row:nth-child(even) > .val-h,
+.sg-row:nth-child(even) > .val-a { background: rgba(0,0,0,.02); }
+
+/* bar inside value cell */
+.bar-wrap { width: 100%; display: flex; align-items: center; gap: 6px; }
+.bar-h { display: flex; justify-content: flex-end; align-items: center; gap: 6px; }
+.bar-a { display: flex; justify-content: flex-start; align-items: center; gap: 6px; }
+.bar { height: 5px; border-radius: 3px; flex-shrink: 0; }
+.bar.crus { background: var(--crus-red); }
+.bar.high { background: var(--high-gold); }
+
+/* ── QUARTER TABLE (page 4) ─────────────────────────── */
+.quarter-wrap { flex: 1; padding: 12px 18px; display: flex; flex-direction: column; gap: 12px; }
+.q-section-title {
+  font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); border-bottom: 2px solid var(--rule); padding-bottom: 4px; margin-bottom: 8px;
+}
+.q-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.q-table th {
+  padding: 5px 8px; text-align: center;
+  font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  border-bottom: 2px solid var(--rule);
+}
+.q-table th.q-stat { text-align: center; background: #f0ede8; color: var(--muted); }
+.q-table th.q-home { background: var(--crus-dark); color: white; }
+.q-table th.q-away { background: var(--high-mid); color: white; }
+.q-table td {
+  padding: 4px 8px; text-align: center; border-bottom: 1px solid var(--rule);
+  font-weight: 600;
+}
+.q-table td.stat-lbl { font-size: 10px; color: var(--muted); font-weight: 500; letter-spacing: .03em; background: #f8f6f2; }
+.q-table tr:hover td { background: rgba(0,0,0,.02); }
+
+/* ── TIMELINE (page 5) ──────────────────────────────── */
+.timeline-wrap { flex: 1; padding: 12px 18px; display: flex; flex-direction: column; gap: 16px; }
+.tl-section { }
+.tl-title { font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.tl-chart {
+  position: relative; height: 40px;
+  border-radius: var(--radius); overflow: visible;
+}
+.tl-axis {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: #ccc;
+}
+.tl-labels {
+  display: flex; justify-content: space-between;
+  font-size: 9px; color: var(--muted);
+  margin-top: 4px;
+  padding: 0 1px;
+}
+.tl-dot {
+  position: absolute;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  cursor: default;
+}
+.tl-dot.home { background: var(--crus-red); bottom: 6px; }
+.tl-dot.away { background: var(--high-gold); border: 1.5px solid #888; bottom: 20px; }
+.tl-dot.both-top { bottom: 20px; }
+.tl-min-label {
+  position: absolute;
+  font-size: 8px; font-weight: 700;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.tl-min-label.home { bottom: -12px; color: var(--crus-red); }
+.tl-min-label.away { top: -12px; color: #888; }
+.tl-legend { display: flex; gap: 16px; margin-bottom: 6px; }
+.tl-legend span { font-size: 10px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.tl-legend .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.ht-line {
+  position: absolute; bottom: -6px; top: -6px;
+  width: 1px; background: #aaa;
+  border-left: 1px dashed #999;
+}
+.ht-lbl { position: absolute; font-size: 8px; color: #999; top: -16px; transform: translateX(-50%); }
+
+/* ── 22m (page 7) ───────────────────────────────────── */
+.entry22-wrap { flex: 1; padding: 12px 18px; display: flex; gap: 16px; }
+.entry22-team { flex: 1; }
+.entry22-mid { width: 140px; display: flex; flex-direction: column; align-items: center; }
+.e22-header {
+  padding: 7px 12px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  color: white; text-align: center;
+}
+.e22-header.home { background: var(--crus-dark); }
+.e22-header.away { background: var(--high-mid); }
+.e22-card {
+  border: 1px solid var(--rule); border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  overflow: hidden;
+}
+.e22-stat {
+  display: flex; justify-content: space-between;
+  padding: 5px 10px; border-bottom: 1px solid var(--rule);
+  font-size: 11px;
+}
+.e22-stat .lbl { color: var(--muted); font-size: 10px; }
+.e22-stat .val { font-weight: 700; }
+.e22-big { text-align: center; padding: 8px; background: #f8f6f2; }
+.e22-big .num { font-size: 28px; font-weight: 900; }
+.e22-big .sub { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.e22-pitch {
+  width: 120px; height: 80px;
+  background: #2d7a2d;
+  border-radius: var(--radius);
+  position: relative; margin: 10px auto;
+  border: 2px solid #1a5c1a;
+}
+.e22-pitch::after {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 30%;
+  background: rgba(255,255,255,.08);
+  border-right: 1.5px solid rgba(255,255,255,.3);
+}
+
+/* ── SET PIECE (page 8) ─────────────────────────────── */
+.setpiece-wrap { flex: 1; padding: 12px 18px; display: flex; flex-direction: column; gap: 14px; }
+.sp-section-title {
+  font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  color: white; background: var(--ink); padding: 5px 12px; border-radius: var(--radius);
+  text-align: center;
+}
+.sp-row { display: grid; grid-template-columns: 1fr 200px 1fr; gap: 12px; align-items: start; }
+.sp-team-card {
+  border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden;
+}
+.sp-team-head { padding: 6px 10px; font-size: 11px; font-weight: 700; color: white; display: flex; justify-content: space-between; }
+.sp-team-head.home { background: var(--crus-dark); }
+.sp-team-head.away { background: var(--high-mid); }
+.sp-stat { display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 1px solid var(--rule); font-size: 11px; }
+.sp-stat .lbl { color: var(--muted); font-size: 10px; }
+.sp-stat .val { font-weight: 700; }
+.sp-gauge {
+  display: flex; flex-direction: column; align-items: center; padding: 12px 8px 8px;
+  background: #f8f6f2;
+}
+.gauge-arc { font-size: 24px; font-weight: 900; }
+.gauge-sub { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.sp-mid-card { border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; }
+.sp-mid-head { padding: 6px 10px; font-size: 11px; font-weight: 700; color: white; background: #333; text-align: center; }
+.sp-mid-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+.sp-mid-table th { padding: 4px 8px; background: #f0ede8; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; border-bottom: 1px solid var(--rule); }
+.sp-mid-table td { padding: 4px 8px; border-bottom: 1px solid var(--rule); text-align: center; }
+
+/* ── PENALTIES (page 9) ─────────────────────────────── */
+.pen-wrap { flex: 1; padding: 12px 18px; display: flex; gap: 16px; }
+.pen-team { flex: 1; }
+.pen-team-head {
+  padding: 7px 12px;
+  font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  color: white; display: flex; justify-content: space-between; align-items: center;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.pen-team-head.home { background: var(--crus-dark); }
+.pen-team-head.away { background: var(--high-mid); }
+.pen-body { border: 1px solid var(--rule); border-top: none; border-radius: 0 0 var(--radius) var(--radius); }
+.pen-section { padding: 8px 10px; border-bottom: 1px solid var(--rule); }
+.pen-section-title { font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.pen-bar-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.pen-bar-label { font-size: 10px; color: var(--ink); min-width: 120px; }
+.pen-bar-track { flex: 1; height: 8px; background: #e8e4dc; border-radius: 4px; overflow: hidden; }
+.pen-bar-fill { height: 100%; border-radius: 4px; }
+.pen-bar-fill.home { background: var(--crus-red); }
+.pen-bar-fill.away { background: var(--high-gold); }
+.pen-bar-num { font-size: 10px; font-weight: 700; min-width: 14px; text-align: right; }
+.pen-half-row { display: flex; gap: 8px; }
+.pen-half-box { flex: 1; text-align: center; padding: 6px 4px; background: #f8f6f2; border-radius: var(--radius); }
+.pen-half-box .num { font-size: 18px; font-weight: 900; }
+.pen-half-box .lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+
+
+/* ── INDIVIDUAL REPORT ──────────────────────────────── */
+.indiv-wrap { flex: 1; padding: 10px 14px; overflow: hidden; }
+.indiv-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 10px;
+}
+.indiv-table thead th {
+  padding: 4px 5px;
+  background: var(--crus-dark); color: white;
+  font-size: 9px; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; text-align: center;
+  border-right: 1px solid rgba(255,255,255,.1);
+  white-space: nowrap;
+}
+.indiv-table thead th.group-away { background: var(--high-mid); }
+.indiv-table thead th.group-label { background: #333; }
+.indiv-table thead tr.group-row th {
+  font-size: 8px; letter-spacing: .08em;
+  padding: 3px 5px;
+}
+.indiv-table tbody td {
+  padding: 3px 5px; text-align: center;
+  border-bottom: 1px solid var(--rule);
+  border-right: 1px solid var(--rule);
+  white-space: nowrap;
+}
+.indiv-table tbody td.name-cell {
+  text-align: left; font-weight: 600;
+  font-size: 10px; min-width: 110px;
+}
+.indiv-table tbody td.pos-cell {
+  text-align: left; color: var(--muted);
+  font-size: 9px; min-width: 80px;
+}
+.indiv-table tbody td.shirt-cell {
+  font-weight: 700; font-size: 10px; min-width: 24px;
+  background: #f0ede8;
+}
+.indiv-table tbody tr:hover td { background: rgba(0,0,0,.025); }
+.indiv-table tbody tr.total-row td {
+  background: var(--crus-dark); color: white;
+  font-weight: 700; border-top: 2px solid #555;
+}
+.indiv-table tbody tr.total-row.away td { background: var(--high-mid); }
+.cell-good { color: var(--good); font-weight: 700; }
+.cell-warn { color: var(--warn); font-weight: 700; }
+.cell-hi   { background: rgba(200,16,46,.08) !important; font-weight: 700; }
+.cell-dim  { color: #bbb; }
+
+/* ── PRINT ──────────────────────────────────────────── */
+@media print {
+  body { background: white; }
+  .page { margin: 0; box-shadow: none; width: 100%; }
+}
+</style>
+</head>
+<body>
+<script>
+const DATA = REPLACE_DATA_HERE;
+
+const HOME = DATA.info.home;
+const AWAY = DATA.info.away;
+
+function pct(a, total) {
+  return total ? Math.round(a / total * 100) : 0;
+}
+
+function header(title) {
+  return `
+    <div class="page-header">
+      <div>
+        <div class="subtitle">${DATA.info.competition} · Round ${DATA.info.round}</div>
+        <h1>${title}</h1>
+        <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px">${DATA.info.venue} · ${DATA.info.date}</div>
+      </div>
+      <div class="score-pill">${HOME} ${DATA.info.home_score} – ${DATA.info.away_score} ${AWAY}</div>
+      <div class="match-info">HT: ${DATA.info.home_ht} – ${DATA.info.away_ht}<br>${HOME} vs ${AWAY}</div>
+    </div>`;
+}
+
+// ── PAGE 3: MATCH SUMMARY ────────────────────────────
+function page3() {
+  const h = DATA.home_stats, a = DATA.away_stats;
+  const rows = [
+    ['Tries Scored',       h.tries,      a.tries,      1],
+    ['Passes',             h.passes,     a.passes,     300],
+    ['Ball Carries',       h.carries,    a.carries,    200],
+    ['Carry Metres',       h.metres,     a.metres,     700],
+    ['Avg m/Carry',        h.avg_carry,  a.avg_carry,  6],
+    ['Linebreaks',         h.linebreaks, a.linebreaks, 10],
+    ['Offloads',           h.offloads,   a.offloads,   25],
+    ['Kicks in Play',      h.kicks,      a.kicks,      50],
+    ['Kick Metres',        h.kick_m,     a.kick_m,     1300],
+    ['Avg m/Kick',         h.avg_kick,   a.avg_kick,   50],
+    ['Rucks',              h.rucks,      a.rucks,      200],
+    ['Ruck Win %',         h.ruck_pct+'%', a.ruck_pct+'%', null],
+    ['Tackles Attempted',  h.tack_att,   a.tack_att,   350],
+    ['Tackles Missed',     h.tack_miss,  a.tack_miss,  40],
+    ['Tackle %',           h.tack_pct+'%', a.tack_pct+'%', null],
+    ['Lineouts',           h.lineouts,   a.lineouts,   25],
+    ['Lineout Won %',      h.lo_pct+'%', a.lo_pct+'%', null],
+    ['Scrums',             h.scrums,     a.scrums,     12],
+    ['Penalties Conceded', h.penalties,  a.penalties,  15],
+    ['Turnovers Won',      h.to_won,     a.to_won,     25],
+    ['Turnovers Conceded', h.to_con,     a.to_con,     25],
+    ['22m Entries',        h.e22,        a.e22,        20],
+    ['22m Success %',      h.s22_pct+'%',a.s22_pct+'%',null],
+  ];
+
+  const rowHtml = rows.map(([lbl, hv, av, max]) => {
+    let hBar = '', aBar = '';
+    if (max !== null) {
+      const hp = Math.min(Math.round(+hv / max * 80), 80);
+      const ap = Math.min(Math.round(+av / max * 80), 80);
+      hBar = `<span class="bar crus" style="width:${hp}px"></span>`;
+      aBar = `<span class="bar high" style="width:${ap}px"></span>`;
+    }
+    return `
+      <div class="sg-row">
+        <div class="val-h"><span class="bar-h">${hBar}<strong>${hv}</strong></span></div>
+        <div class="lbl">${lbl}</div>
+        <div class="val-a"><span class="bar-a"><strong>${av}</strong>${aBar}</span></div>
+      </div>`;
+  }).join('');
+
+  return `<div class="page">
+    ${header('Match Summary')}
+    <div class="stat-table-wrap">
+      <div class="stat-grid">
+        <div class="sg-head">
+          <div class="team-h">${HOME}</div>
+          <div class="label-col">Stat</div>
+          <div class="team-a">${AWAY}</div>
+        </div>
+        ${rowHtml}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── PAGE 4: QUARTERS ─────────────────────────────────
+function page4() {
+  const qs = ['Q1','Q2','Q3','Q4'];
+  const stats = [
+    ['Points Scored',     'pts'],
+    ['Tries',             'tries'],
+    ['Ball Carries',      'carries'],
+    ['Carry Metres',      'metres'],
+    ['Avg m/Carry',       'avg_carry'],
+    ['Passes',            'passes'],
+    ['Kicks in Play',     'kicks'],
+    ['Avg m/Kick',        'avg_kick'],
+    ['Tackles Attempted', 'tack_att'],
+    ['Tackles Missed',    'tack_miss'],
+    ['Tackle %',          'tack_pct'],
+    ['Linebreaks',        'linebreaks'],
+    ['Penalties',         'penalties'],
+    ['Errors / Turnovers','errors'],
+  ];
+
+  const thHtml = qs.map(q => `
+    <th class="q-home" colspan="1">${q}</th>
+    <th class="q-away" colspan="1">${q}</th>
+  `).join('<th class="q-stat" style="width:8px"></th>');
+
+  const headerRow = `<tr>
+    <th class="q-stat" style="width:130px">Stat</th>
+    ${qs.map(q => `
+      <th class="q-home">${HOME.substring(0,4).toUpperCase()}</th>
+      <th class="q-away">${AWAY.substring(0,4).toUpperCase()}</th>
+    `).join('')}
+  </tr>`;
+
+  const bodyRows = stats.map(([lbl, key]) => {
+    const cells = qs.map(q => {
+      const hv = DATA.quarters.home[q][key];
+      const av = DATA.quarters.away[q][key];
+      const hd = key === 'tack_pct' ? hv+'%' : hv;
+      const ad = key === 'tack_pct' ? av+'%' : av;
+      return `<td>${hd}</td><td>${ad}</td>`;
+    }).join('');
+    return `<tr><td class="stat-lbl">${lbl}</td>${cells}</tr>`;
+  }).join('');
+
+  return `<div class="page">
+    ${header('Summary – Quarters')}
+    <div class="quarter-wrap">
+      <table class="q-table">
+        <thead>${headerRow}</thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ── PAGE 5: MATCH MOMENTUM ───────────────────────────
+function page5() {
+  const MAX_MIN = 85;
+
+  function dotRow(events, key, topTeam) {
+    // group by minute to detect overlap
+    const byMin = {};
+    events.forEach(e => {
+      const k = e.min;
+      if (!byMin[k]) byMin[k] = [];
+      byMin[k].push(e);
+    });
+    return Object.entries(byMin).map(([m, evs]) => {
+      const mi = parseInt(m);
+      const left = Math.min(mi / MAX_MIN * 100, 99);
+      return evs.map((e, i) => {
+        const cls = e.team === HOME ? 'home' : 'away';
+        const bottom = cls === 'home' ? 6 : 20;
+        return `
+          <div class="tl-dot ${cls}" style="left:${left}%;bottom:${bottom}px" title="${e.team} ${e.type||''} ${m}'"></div>
+          <div class="tl-min-label ${cls}" style="left:${left}%">${m}</div>`;
+      }).join('');
+    }).join('');
+  }
+
+  function chart(events, label) {
+    const htPos = 40 / MAX_MIN * 100;
+    return `
+      <div class="tl-section">
+        <div class="tl-title">${label}</div>
+        <div class="tl-legend">
+          <span><span class="dot" style="background:var(--crus-red)"></span>${HOME}</span>
+          <span><span class="dot" style="background:var(--high-gold);border:1px solid #888"></span>${AWAY}</span>
+        </div>
+        <div class="tl-chart" style="height:50px">
+          <div class="tl-axis"></div>
+          <div class="ht-line" style="left:${htPos}%"><span class="ht-lbl">HT</span></div>
+          ${dotRow(events)}
+        </div>
+        <div class="tl-labels">
+          ${[0,10,20,30,40,50,60,70,80].map(m => `<span>${m}'</span>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  return `<div class="page">
+    ${header('Match Momentum')}
+    <div class="timeline-wrap">
+      ${chart(DATA.score_events, 'Points Scored Timeline')}
+      ${chart(DATA.pen_events,   'Penalties Conceded Timeline')}
+      ${chart(DATA.error_events, 'Errors Timeline')}
+    </div>
+  </div>`;
+}
+
+// ── PAGE 7: 22m ENTRIES ──────────────────────────────
+function page7() {
+  function teamCard(team, side) {
+    const s = side === 'home' ? DATA.home_stats : DATA.away_stats;
+    const entries = DATA.e22[team];
+    const n = s.e22, success = s.s22;
+    const pct = n ? Math.round(success/n*100) : 0;
+
+    const byQ = {Q1:0,Q2:0,Q3:0,Q4:0};
+    entries.forEach(e => { if(byQ[e.quarter]!==undefined) byQ[e.quarter]++; });
+
+    const bars = Object.entries(byQ).map(([q,cnt]) => {
+      const h = Math.max(cnt * 16, 4);
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1">
+        <div style="width:24px;height:${h}px;background:${side==='home'?'var(--crus-red)':'var(--high-gold)'};border-radius:3px 3px 0 0"></div>
+        <div style="font-size:9px;color:var(--muted)">${q}</div>
+        <div style="font-size:10px;font-weight:700">${cnt}</div>
+      </div>`;
+    }).join('');
+
+    return `
+      <div class="entry22-team">
+        <div class="e22-header ${side}">${team}</div>
+        <div class="e22-card">
+          <div class="e22-big">
+            <div class="num" style="color:${side==='home'?'var(--crus-red)':'var(--high-gold)'}">${n}</div>
+            <div class="sub">Total 22m Entries</div>
+          </div>
+          <div class="e22-stat"><span class="lbl">Entries Leading to Points</span><span class="val">${success}</span></div>
+          <div class="e22-stat"><span class="lbl">Success Rate</span><span class="val">${pct}%</span></div>
+          <div style="padding:8px 10px 4px;border-bottom:1px solid var(--rule)">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Entries by Quarter</div>
+            <div style="display:flex;gap:4px;align-items:flex-end;height:60px">${bars}</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // middle bar chart
+  const periods = ['0–10','10–20','20–30','30–40','40–50','50–60','60–70','70–80'];
+  const hBins = new Array(8).fill(0);
+  const aBins = new Array(8).fill(0);
+  DATA.e22[HOME].forEach(e => { const b = Math.min(Math.floor(e.min/10),7); hBins[b]++; });
+  DATA.e22[AWAY].forEach(e => { const b = Math.min(Math.floor(e.min/10),7); aBins[b]++; });
+  const maxBin = Math.max(...hBins, ...aBins, 1);
+
+  const midBars = periods.map((p,i) => {
+    const hw = Math.round(hBins[i]/maxBin*50), aw = Math.round(aBins[i]/maxBin*50);
+    return `<div style="display:flex;align-items:center;gap:4px;margin-bottom:4px">
+      <div style="width:50px;display:flex;justify-content:flex-end">
+        <div style="width:${hw}px;height:12px;background:var(--crus-red);border-radius:2px 0 0 2px"></div>
+        <span style="font-size:9px;margin-left:3px;font-weight:700">${hBins[i]||''}</span>
+      </div>
+      <div style="width:40px;text-align:center;font-size:9px;color:var(--muted)">${p}'</div>
+      <div style="width:50px;display:flex;justify-content:flex-start">
+        <span style="font-size:9px;margin-right:3px;font-weight:700">${aBins[i]||''}</span>
+        <div style="width:${aw}px;height:12px;background:var(--high-gold);border-radius:0 2px 2px 0"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="page">
+    ${header('22m Entries')}
+    <div class="entry22-wrap">
+      ${teamCard(HOME,'home')}
+      <div class="entry22-mid">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px;text-align:center">Entries by Period</div>
+        ${midBars}
+      </div>
+      ${teamCard(AWAY,'away')}
+    </div>
+  </div>`;
+}
+
+// ── PAGE 8: SET PIECE ────────────────────────────────
+function page8() {
+  const h = DATA.home_stats, a = DATA.away_stats;
+
+  function throwerRows(team, side) {
+    return DATA.setpiece[team].lo_throwers.map(r => `
+      <tr>
+        <td style="text-align:left">${r.player}</td>
+        <td>${r.total}</td>
+        <td style="color:var(--good)">${r.won}</td>
+        <td style="color:var(--crus-red)">${r.lost}</td>
+        <td><strong>${r.pct}%</strong></td>
+      </tr>`).join('');
+  }
+
+  function jumperRows(team, side) {
+    return DATA.setpiece[team].lo_jumpers.map(r => `
+      <tr>
+        <td style="text-align:left">${r.player}</td>
+        <td>${r.total}</td>
+        <td style="color:var(--good)">${r.won}</td>
+        <td style="color:var(--crus-red)">${r.total - r.won}</td>
+        <td><strong>${r.pct}%</strong></td>
+      </tr>`).join('');
+  }
+
+  function loCard(team, side) {
+    const s = side==='home' ? h : a;
+    return `
+      <div class="sp-team-card">
+        <div class="sp-team-head ${side}"><span>${team}</span><span>Lineout</span></div>
+        <div class="sp-gauge">
+          <div class="gauge-arc">${s.lo_pct}%</div>
+          <div class="gauge-sub">Win %</div>
+        </div>
+        <div class="sp-stat"><span class="lbl">Total</span><span class="val">${s.lineouts}</span></div>
+        <div class="sp-stat"><span class="lbl">Won</span><span class="val">${s.lo_won}</span></div>
+        <div class="sp-stat"><span class="lbl">Lost</span><span class="val">${s.lineouts - s.lo_won}</span></div>
+        <div class="sp-stat"><span class="lbl">Steals Won</span><span class="val">${s.lo_steal}</span></div>
+        <div style="padding:6px 10px 4px;border-top:1px solid var(--rule)">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px">Throwers</div>
+          <table class="sp-mid-table" style="width:100%">
+            <thead><tr><th style="text-align:left">Player</th><th>Tot</th><th>Won</th><th>Lost</th><th>%</th></tr></thead>
+            <tbody>${throwerRows(team, side)}</tbody>
+          </table>
+        </div>
+        <div style="padding:6px 10px 8px;border-top:1px solid var(--rule)">
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px">Jumpers</div>
+          <table class="sp-mid-table" style="width:100%">
+            <thead><tr><th style="text-align:left">Player</th><th>Tot</th><th>Won</th><th>Lost</th><th>%</th></tr></thead>
+            <tbody>${jumperRows(team, side)}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  function scCard(team, side) {
+    const sc = DATA.setpiece[team].scrum;
+    return `
+      <div class="sp-team-card">
+        <div class="sp-team-head ${side}"><span>${team}</span><span>Scrum</span></div>
+        <div class="sp-gauge">
+          <div class="gauge-arc">${sc.pct}%</div>
+          <div class="gauge-sub">Win %</div>
+        </div>
+        <div class="sp-stat"><span class="lbl">Total</span><span class="val">${sc.total}</span></div>
+        <div class="sp-stat"><span class="lbl">Won Outright</span><span class="val" style="color:var(--good)">${sc.won}</span></div>
+        <div class="sp-stat"><span class="lbl">Penalty Won</span><span class="val" style="color:var(--good)">${sc.pen_won}</span></div>
+        <div class="sp-stat"><span class="lbl">Resets</span><span class="val" style="color:var(--warn)">${sc.reset}</span></div>
+      </div>`;
+  }
+
+  const loMidTable = `
+    <div class="sp-mid-card">
+      <div class="sp-mid-head">Lineout Overview</div>
+      <table class="sp-mid-table">
+        <thead><tr><th>Team</th><th>Total</th><th>Won</th><th>Lost</th><th>Win%</th><th>Steals</th></tr></thead>
+        <tbody>
+          <tr><td>${HOME}</td><td>${h.lineouts}</td><td>${h.lo_won}</td><td>${h.lineouts-h.lo_won}</td><td>${h.lo_pct}%</td><td>${h.lo_steal}</td></tr>
+          <tr><td>${AWAY}</td><td>${a.lineouts}</td><td>${a.lo_won}</td><td>${a.lineouts-a.lo_won}</td><td>${a.lo_pct}%</td><td>${a.lo_steal}</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+
+  const scMidTable = `
+    <div class="sp-mid-card">
+      <div class="sp-mid-head">Scrum Overview</div>
+      <table class="sp-mid-table">
+        <thead><tr><th>Team</th><th>Total</th><th>Won</th><th>Pen Won</th><th>Resets</th><th>Win%</th></tr></thead>
+        <tbody>
+          <tr><td>${HOME}</td>
+            <td>${DATA.setpiece[HOME].scrum.total}</td>
+            <td>${DATA.setpiece[HOME].scrum.won}</td>
+            <td>${DATA.setpiece[HOME].scrum.pen_won}</td>
+            <td style="color:var(--warn)">${DATA.setpiece[HOME].scrum.reset}</td>
+            <td>${DATA.setpiece[HOME].scrum.pct}%</td>
+          </tr>
+          <tr><td>${AWAY}</td>
+            <td>${DATA.setpiece[AWAY].scrum.total}</td>
+            <td>${DATA.setpiece[AWAY].scrum.won}</td>
+            <td>${DATA.setpiece[AWAY].scrum.pen_won}</td>
+            <td style="color:var(--warn)">${DATA.setpiece[AWAY].scrum.reset}</td>
+            <td>${DATA.setpiece[AWAY].scrum.pct}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>`;
+
+  return `<div class="page">
+    ${header('Set Piece')}
+    <div class="setpiece-wrap">
+      <div class="sp-section-title">LINEOUT</div>
+      <div class="sp-row" style="align-items:start">
+        ${loCard(HOME,'home')}
+        ${loMidTable}
+        ${loCard(AWAY,'away')}
+      </div>
+      <div class="sp-section-title">SCRUM</div>
+      <div class="sp-row">
+        ${scCard(HOME,'home')}
+        ${scMidTable}
+        ${scCard(AWAY,'away')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── PAGE 9: PENALTIES ────────────────────────────────
+function page9() {
+  function penCard(team, side) {
+    const pd = DATA.pen_detail[team];
+    const total = DATA[side+'_stats'].penalties;
+    const types = Object.entries(pd.by_type).sort((a,b)=>b[1]-a[1]);
+    const maxT = types[0]?.[1] || 1;
+
+    const typeRows = types.map(([t,n]) => `
+      <div class="pen-bar-row">
+        <span class="pen-bar-label">${t}</span>
+        <div class="pen-bar-track"><div class="pen-bar-fill ${side}" style="width:${Math.round(n/maxT*100)}%"></div></div>
+        <span class="pen-bar-num">${n}</span>
+      </div>`).join('');
+
+    const halves = Object.entries(pd.by_half).sort((a,b)=>a[0].localeCompare(b[0]));
+    const halfBoxes = halves.map(([q,n]) => `
+      <div class="pen-half-box">
+        <div class="num">${n}</div>
+        <div class="lbl">${q}</div>
+      </div>`).join('');
+
+    const positions = Object.entries(pd.by_pos||{}).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const maxP = positions[0]?.[1] || 1;
+    const posRows = positions.map(([p,n]) => `
+      <div class="pen-bar-row">
+        <span class="pen-bar-label">${p}</span>
+        <div class="pen-bar-track"><div class="pen-bar-fill ${side}" style="width:${Math.round(n/maxP*100)}%"></div></div>
+        <span class="pen-bar-num">${n}</span>
+      </div>`).join('');
+
+    return `
+      <div class="pen-team">
+        <div class="pen-team-head ${side}">
+          <span>${team}</span>
+          <span>Total: ${total}</span>
+        </div>
+        <div class="pen-body">
+          <div class="pen-section">
+            <div class="pen-section-title">Penalty Type</div>
+            ${typeRows}
+          </div>
+          <div class="pen-section">
+            <div class="pen-section-title">By Quarter</div>
+            <div class="pen-half-row">${halfBoxes}</div>
+          </div>
+          <div class="pen-section">
+            <div class="pen-section-title">By Position Group</div>
+            ${posRows}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  return `<div class="page">
+    ${header('Penalties Conceded')}
+    <div class="pen-wrap">
+      ${penCard(HOME,'home')}
+      ${penCard(AWAY,'away')}
+    </div>
+  </div>`;
+}
+
+
+// ── PAGE 10/11: INDIVIDUAL ATTACK ────────────────────
+function playerAttackPage(team, side) {
+  const rows = DATA.player_attack[team];
+
+  // totals
+  const tot = rows.reduce((acc, r) => {
+    acc.carries  += r.carries;  acc.metres  += r.metres;
+    acc.linebreaks += r.linebreaks; acc.def_beaten += r.def_beaten;
+    acc.offloads += r.offloads; acc.tries   += r.tries;
+    acc.passes   += r.passes;   acc.kicks   += r.kicks;
+    acc.kick_m   += r.kick_m;   acc.errors  += r.errors;
+    return acc;
+  }, {carries:0,metres:0,linebreaks:0,def_beaten:0,offloads:0,tries:0,passes:0,kicks:0,kick_m:0,errors:0});
+
+  const maxCarries = Math.max(...rows.map(r => r.carries), 1);
+  const maxMetres  = Math.max(...rows.map(r => r.metres), 1);
+
+  const bodyRows = rows.map(r => {
+    const barW = Math.round(r.metres / maxMetres * 40);
+    const mBar = `<span style="display:inline-block;width:${barW}px;height:4px;background:${side==='home'?'var(--crus-red)':'var(--high-gold)'};border-radius:2px;vertical-align:middle;margin-right:3px"></span>`;
+    return `<tr>
+      <td class="shirt-cell">${r.shirt}</td>
+      <td class="name-cell">${r.player}</td>
+      <td class="pos-cell">${r.pos}</td>
+      <td>${r.carries || ''}</td>
+      <td>${mBar}${r.metres || ''}</td>
+      <td>${r.avg_carry || ''}</td>
+      <td class="${r.linebreaks ? 'cell-good' : 'cell-dim'}">${r.linebreaks || '-'}</td>
+      <td>${r.def_beaten || '-'}</td>
+      <td>${r.offloads || '-'}</td>
+      <td class="${r.tries ? 'cell-hi' : ''}">${r.tries || '-'}</td>
+      <td>${r.gl_pct ? r.gl_pct+'%' : '-'}</td>
+      <td>${r.passes || ''}</td>
+      <td>${r.pass_acc ? r.pass_acc+'%' : '-'}</td>
+      <td>${r.kicks || '-'}</td>
+      <td>${r.kick_m || '-'}</td>
+      <td>${r.avg_kick || '-'}</td>
+      <td class="${r.errors ? 'cell-warn' : 'cell-dim'}">${r.errors || '-'}</td>
+    </tr>`;
+  }).join('');
+
+  const totRow = `<tr class="total-row ${side==='away'?'away':''}">
+    <td></td><td class="name-cell">TOTAL</td><td class="pos-cell"></td>
+    <td>${tot.carries}</td><td>${tot.metres}</td><td>${(tot.metres/tot.carries).toFixed(1)}</td>
+    <td>${tot.linebreaks}</td><td>${tot.def_beaten}</td><td>${tot.offloads}</td><td>${tot.tries}</td>
+    <td>-</td>
+    <td>${tot.passes}</td><td>-</td>
+    <td>${tot.kicks}</td><td>${tot.kick_m}</td><td>${(tot.kick_m/tot.kicks).toFixed(1)}</td>
+    <td>${tot.errors}</td>
+  </tr>`;
+
+  const thStyle = side === 'away' ? 'group-away' : '';
+
+  return `<div class="page">
+    ${header('Individual Attack Report – ' + team)}
+    <div class="indiv-wrap">
+      <table class="indiv-table">
+        <thead>
+          <tr class="group-row">
+            <th colspan="3" class="group-label">PLAYER</th>
+            <th colspan="7" class="${thStyle}">CARRY</th>
+            <th colspan="3" class="${thStyle}">PASS</th>
+            <th colspan="3" class="${thStyle}">KICK</th>
+            <th colspan="1" class="${thStyle}">ERR</th>
+          </tr>
+          <tr>
+            <th>#</th><th>Name</th><th>Position</th>
+            <th>Carries</th><th>Metres</th><th>Avg</th>
+            <th>LB</th><th>DB</th><th>OL</th><th>Try</th><th>GL%</th>
+            <th>Pass</th><th>Acc%</th>
+            <th>Kicks</th><th>Mtrs</th><th>Avg</th>
+            <th>Err</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${bodyRows}
+          ${totRow}
+        </tbody>
+      </table>
+      <div style="display:flex;gap:16px;margin-top:6px;font-size:9px;color:var(--muted)">
+        <span>LB = Linebreaks</span>
+        <span>DB = Defenders Beaten</span>
+        <span>OL = Offloads</span>
+        <span>GL% = Gainline Positive %</span>
+        <span>Acc% = Pass Accuracy</span>
+        <span>Err = Turnovers Conceded</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── PAGE 12/13: INDIVIDUAL DEFENCE ───────────────────
+function playerDefencePage(team, side) {
+  const rows = DATA.player_defence[team];
+
+  const tot = rows.reduce((acc, r) => {
+    acc.tack_made += r.tack_made; acc.tack_miss += r.tack_miss;
+    acc.tack_att  += r.tack_att;  acc.dominant  += r.dominant;
+    acc.sacks     += r.sacks;     acc.jackal    += r.jackal;
+    acc.penalties += r.penalties; acc.errors    += r.errors;
+    return acc;
+  }, {tack_made:0,tack_miss:0,tack_att:0,dominant:0,sacks:0,jackal:0,penalties:0,errors:0});
+
+  const maxTack = Math.max(...rows.map(r => r.tack_made), 1);
+
+  const bodyRows = rows.map(r => {
+    const barW = Math.round(r.tack_made / maxTack * 40);
+    const tBar = `<span style="display:inline-block;width:${barW}px;height:4px;background:${side==='home'?'var(--crus-red)':'var(--high-gold)'};border-radius:2px;vertical-align:middle;margin-right:3px"></span>`;
+    const pctVal = r.tack_pct !== null ? r.tack_pct+'%' : '-';
+    const pctClass = r.tack_pct !== null ? (r.tack_pct >= 90 ? 'cell-good' : r.tack_pct < 75 ? 'cell-warn' : '') : '';
+    return `<tr>
+      <td class="shirt-cell">${r.shirt}</td>
+      <td class="name-cell">${r.player}</td>
+      <td class="pos-cell">${r.pos}</td>
+      <td>${r.minutes}'</td>
+      <td>${tBar}${r.tack_made || ''}</td>
+      <td class="${r.tack_miss ? 'cell-warn' : 'cell-dim'}">${r.tack_miss || '-'}</td>
+      <td>${r.tack_att || ''}</td>
+      <td class="${pctClass}">${pctVal}</td>
+      <td class="${r.dominant ? 'cell-good' : 'cell-dim'}">${r.dominant || '-'}</td>
+      <td class="${r.sacks ? 'cell-good' : 'cell-dim'}">${r.sacks || '-'}</td>
+      <td class="${r.jackal ? 'cell-hi' : 'cell-dim'}">${r.jackal || '-'}</td>
+      <td class="${r.penalties ? 'cell-warn' : 'cell-dim'}">${r.penalties || '-'}</td>
+      <td class="${r.errors ? 'cell-warn' : 'cell-dim'}">${r.errors || '-'}</td>
+    </tr>`;
+  }).join('');
+
+  const totPct = tot.tack_att ? (tot.tack_made/tot.tack_att*100).toFixed(1)+'%' : '-';
+  const totRow = `<tr class="total-row ${side==='away'?'away':''}">
+    <td></td><td class="name-cell">TOTAL</td><td class="pos-cell"></td><td></td>
+    <td>${tot.tack_made}</td>
+    <td>${tot.tack_miss}</td>
+    <td>${tot.tack_att}</td>
+    <td>${totPct}</td>
+    <td>${tot.dominant}</td>
+    <td>${tot.sacks}</td>
+    <td>${tot.jackal}</td>
+    <td>${tot.penalties}</td>
+    <td>${tot.errors}</td>
+  </tr>`;
+
+  return `<div class="page">
+    ${header('Individual Defence Report – ' + team)}
+    <div class="indiv-wrap">
+      <table class="indiv-table">
+        <thead>
+          <tr class="group-row">
+            <th colspan="4" class="group-label">PLAYER</th>
+            <th colspan="4" class="${side==='away'?'group-away':''}">TACKLE</th>
+            <th colspan="3" class="${side==='away'?'group-away':''}">QUALITY</th>
+            <th colspan="2" class="${side==='away'?'group-away':''}">DISCIPLINE</th>
+          </tr>
+          <tr>
+            <th>#</th><th>Name</th><th>Position</th><th>Mins</th>
+            <th>Made</th><th>Missed</th><th>Att</th><th>%</th>
+            <th>Dom</th><th>Sacks</th><th>Jackal</th>
+            <th>Pens</th><th>Errors</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${bodyRows}
+          ${totRow}
+        </tbody>
+      </table>
+      <div style="display:flex;gap:16px;margin-top:6px;font-size:9px;color:var(--muted)">
+        <span>Dom = Dominant Tackles (Complete)</span>
+        <span>Jackal = Turnover Won from Tackle</span>
+        <span>Pens = Penalties Conceded</span>
+        <span>Errors = Turnovers Conceded</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── RENDER ───────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.body.innerHTML =
+    page3() + page4() + page5() +
+    page7() + page8() + page9() +
+    playerAttackPage(HOME,'home') +
+    playerAttackPage(AWAY,'away') +
+    playerDefencePage(HOME,'home') +
+    playerDefencePage(AWAY,'away');
+});
+</script>
+</body>
+</html>
