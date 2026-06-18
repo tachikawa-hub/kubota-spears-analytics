@@ -195,7 +195,9 @@
          {h:'Possession %',fn:r=>r.poss_den?f1(r.at_kub/r.poss_den*100):'-'},
          {h:'Territory %',fn:r=>r.terr_den?f1(r.terr_num/r.terr_den*100):'-'},
          {h:'Tries Scored',fn:r=>r.tries},
+         {h:'Tries Conceded',fn:r=>r.tries_conceded},
          {h:'Turnover Rate %',fn:r=>f1(r.to_con/r.attacks*100)},
+         {h:'Penalties Conceded',fn:r=>r.pen},
        ]));
        return `<div class="cards">${cards}</div>
          <div class="sec-title">Win / Loss / Season — averages</div>${avg}
