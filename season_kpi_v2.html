@@ -1,479 +1,507 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Season KPI Report v2 – Kubota Spears</title>
-<style>
-:root{
-  --kub-dark:#14213d; --kub-mid:#1d3055; --kub-red:#d6202b; --kub-gold:#e8a13c;
-  --neutral:#f5f4f0; --ink:#1a1a1a; --muted:#6b6b6b; --rule:#d8d4cc;
-  --good:#1a7a3c; --warn:#b85c00; --win:#1a7a3c; --loss:#c0202b; --radius:4px; font-size:14px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Helvetica Neue',Arial,sans-serif;background:#e8e4dc;color:var(--ink);}
-.shell{width:1000px;margin:14px auto;background:var(--neutral);box-shadow:0 2px 14px rgba(0,0,0,.18);border-radius:6px;overflow:hidden;}
-.page-header{background:var(--kub-dark);color:white;padding:14px 22px;display:flex;justify-content:space-between;align-items:center;}
-.page-header .subtitle{font-size:11px;color:var(--kub-gold);letter-spacing:.08em;text-transform:uppercase;}
-.page-header h1{font-size:18px;font-weight:800;letter-spacing:.03em;margin-top:2px;}
-.page-header .rec{font-size:12px;color:rgba(255,255,255,.7);margin-top:3px;}
-.record-pill{background:var(--kub-red);padding:6px 18px;border-radius:22px;font-size:18px;font-weight:900;}
-/* tabs */
-.tabs{display:flex;background:var(--kub-mid);padding:0 12px;}
-.tab-btn{background:none;border:none;color:rgba(255,255,255,.6);font-size:12px;font-weight:700;
-  letter-spacing:.05em;text-transform:uppercase;padding:11px 20px;cursor:pointer;border-bottom:3px solid transparent;}
-.tab-btn:hover{color:white;}
-.tab-btn.active{color:white;border-bottom-color:var(--kub-gold);}
-.tab-panel{display:none;padding:18px 22px 24px;}
-.tab-panel.active{display:block;}
-/* avg table */
-.avg-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px;}
-.avg-table th{padding:8px 10px;background:var(--kub-dark);color:white;font-size:10px;font-weight:700;
-  letter-spacing:.05em;text-transform:uppercase;text-align:center;}
-.avg-table th.k{text-align:left;}
-.avg-table th.win{background:#13532b;} .avg-table th.loss{background:#7d1820;}
-.avg-table td{padding:7px 10px;text-align:center;border-bottom:1px solid var(--rule);font-weight:700;font-size:13px;}
-.avg-table td.k{text-align:left;font-weight:600;font-size:12px;color:var(--ink);}
-.avg-table td.k small{display:block;color:var(--muted);font-size:9px;font-weight:500;}
-.avg-table td.win{background:rgba(26,122,60,.08);color:var(--win);}
-.avg-table td.loss{background:rgba(192,32,43,.08);color:var(--loss);}
-.avg-table td.delta.pos{color:var(--good);} .avg-table td.delta.neg{color:var(--loss);}
-.avg-table tr:hover td{filter:brightness(.985);}
-.sec-title{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
-  border-bottom:2px solid var(--rule);padding-bottom:5px;margin:18px 0 10px;}
-/* per-match (it) table */
-.it-wrap{overflow-x:auto;}
-.it-table{width:100%;border-collapse:collapse;font-size:11px;}
-.it-table th,.it-table td{min-width:40px;}
-.it-table th.l,.it-table td.l{min-width:auto;}
-.it-table thead th{padding:6px 6px;background:var(--kub-mid);color:white;font-size:9px;font-weight:700;
-  letter-spacing:.02em;text-transform:uppercase;white-space:normal;line-height:1.2;vertical-align:bottom;text-align:center;}
-.it-table thead th.l{text-align:left;}
-.it-table thead th.opp{background:#c4600f;}
-.it-table tbody td.oppcol{background:rgba(196,96,15,.06);}
-.it-table tbody td{padding:4px 7px;text-align:center;border-bottom:1px solid var(--rule);font-weight:600;white-space:nowrap;}
-.it-table tbody td.l{text-align:left;}
-.it-table tbody td.date{color:var(--muted);font-size:10px;}
-.it-table tbody tr.win td.res{color:var(--win);font-weight:800;}
-.it-table tbody tr.loss td.res{color:var(--loss);font-weight:800;}
-.it-table tbody tr.win td.score{background:rgba(26,122,60,.06);}
-.it-table tbody tr.loss td.score{background:rgba(192,32,43,.06);}
-.it-table tbody tr:hover td{background:rgba(0,0,0,.025);}
-.it-table tfoot td{padding:6px 7px;text-align:center;background:var(--kub-dark);color:white;font-weight:800;font-size:11px;}
-.it-table tfoot td.l{text-align:left;}
-.note{font-size:9px;color:var(--muted);margin-top:8px;line-height:1.5;}
-.cards{display:flex;gap:12px;margin-bottom:6px;flex-wrap:wrap;}
-.card{flex:1;min-width:110px;border:1px solid var(--rule);border-radius:var(--radius);background:white;padding:11px;text-align:center;}
-.card .big{font-size:26px;font-weight:900;color:var(--kub-dark);line-height:1;}
-.card .sub{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:6px;}
-/* penalty page */
-.pen-cols{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;}
-.pen-col{flex:1;min-width:300px;}
-.pen-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
-.pen-bar-label{font-size:11px;min-width:150px;color:var(--ink);}
-.pen-bar-track{flex:1;height:14px;background:#e8e4dc;border-radius:7px;overflow:hidden;}
-.pen-bar-fill{height:100%;border-radius:7px;background:var(--kub-red);}
-.pen-bar-num{font-size:11px;font-weight:800;min-width:22px;text-align:right;}
-.stack{display:flex;height:34px;border-radius:5px;overflow:hidden;margin:6px 0 4px;font-size:12px;font-weight:800;color:white;}
-.stack .seg{display:flex;align-items:center;justify-content:center;}
-.stack .att{background:var(--kub-gold);color:#3a2a08;}
-.stack .def{background:var(--kub-mid);}
-.qbox-row{display:flex;gap:10px;margin-top:6px;}
-.qbox{flex:1;text-align:center;background:#f8f6f2;border:1px solid var(--rule);border-radius:var(--radius);padding:10px 4px;}
-.qbox .num{font-size:24px;font-weight:900;color:var(--kub-dark);}
-.qbox .lbl{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:4px;}
-.vbar-chart{display:flex;align-items:flex-end;gap:14px;height:130px;padding:6px 4px 0;border-bottom:2px solid var(--rule);}
-.vbar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
-.vbar-num{font-size:13px;font-weight:800;color:var(--kub-dark);margin-bottom:3px;}
-.vbar{width:70%;max-width:46px;background:var(--kub-red);border-radius:3px 3px 0 0;}
-.vbar-lbl{font-size:10px;font-weight:700;color:var(--muted);margin-top:5px;text-transform:uppercase;}
-/* individual ranking table */
-.rank-wrap{overflow-x:auto;}
-.rank-table{width:100%;border-collapse:collapse;font-size:11px;}
-.avg-table td.delta.pos{color:var(--good);} .avg-table td.delta.neg{color:var(--loss);}
-.rank-table thead th{padding:6px 5px;background:var(--kub-dark);color:white;font-size:9px;font-weight:700;
-  letter-spacing:.02em;text-transform:uppercase;white-space:normal;line-height:1.15;vertical-align:bottom;text-align:center;border-right:1px solid rgba(255,255,255,.08);min-width:40px;}
-.rank-table thead th.l{min-width:auto;}
-.rank-table thead th.l{text-align:left;}
-.rank-table tbody td{padding:4px 6px;text-align:center;border-bottom:1px solid var(--rule);font-weight:600;white-space:nowrap;}
-.rank-table tbody td.shirt{background:#f0ede8;font-weight:800;}
-.rank-table tbody td.name{text-align:left;font-weight:700;min-width:140px;}
-.rank-table tbody td.pos{text-align:left;color:var(--muted);font-size:10px;min-width:96px;}
-.rank-table tbody tr:hover td{background:rgba(0,0,0,.025);}
-.rank-table tbody tr:nth-child(-n+3) td.name{color:var(--kub-red);}
-.rank-table tfoot td{padding:6px;background:var(--kub-dark);color:white;font-weight:800;text-align:center;}
-.rank-table tfoot td.l{text-align:left;}
-.cell-good{color:var(--good);font-weight:800;} .cell-warn{color:var(--warn);font-weight:800;} .cell-dim{color:#bbb;}
-.mini-table{width:100%;border-collapse:collapse;font-size:11px;max-width:420px;}
-.mini-table th{padding:5px 8px;background:var(--kub-mid);color:white;font-size:9.5px;text-transform:uppercase;text-align:left;}
-.mini-table td{padding:4px 8px;border-bottom:1px solid var(--rule);}
-.mini-table td.n{text-align:right;font-weight:800;}
-</style></head>
-<body>
-<div class="shell">
-  <div class="page-header">
-    <div>
-      <div class="subtitle">Japan Rugby League One D1 · Season 2026</div>
-      <h1 id="h-title">Kubota Spears — Season KPI Report</h1>
-      <div class="rec" id="h-rec"></div>
+    <html lang="en"><head><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Season KPI Report v2 – Kubota Spears</title>
+    <style>
+    :root{
+      --kub-dark:#14213d; --kub-mid:#1d3055; --kub-red:#d6202b; --kub-gold:#e8a13c;
+      --neutral:#f5f4f0; --ink:#1a1a1a; --muted:#6b6b6b; --rule:#d8d4cc;
+      --good:#1a7a3c; --warn:#b85c00; --win:#1a7a3c; --loss:#c0202b; --radius:4px; font-size:14px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Helvetica Neue',Arial,sans-serif;background:#e8e4dc;color:var(--ink);}
+    .shell{width:1000px;margin:14px auto;background:var(--neutral);box-shadow:0 2px 14px rgba(0,0,0,.18);border-radius:6px;overflow:hidden;}
+    .page-header{background:var(--kub-dark);color:white;padding:14px 22px;display:flex;justify-content:space-between;align-items:center;}
+    .page-header .subtitle{font-size:11px;color:var(--kub-gold);letter-spacing:.08em;text-transform:uppercase;}
+    .page-header h1{font-size:18px;font-weight:800;letter-spacing:.03em;margin-top:2px;}
+    .page-header .rec{font-size:12px;color:rgba(255,255,255,.7);margin-top:3px;}
+    .record-pill{background:var(--kub-red);padding:6px 18px;border-radius:22px;font-size:18px;font-weight:900;}
+    /* tabs */
+    .tabs{display:flex;background:var(--kub-mid);padding:0 12px;}
+    .tab-btn{background:none;border:none;color:rgba(255,255,255,.6);font-size:12px;font-weight:700;
+      letter-spacing:.05em;text-transform:uppercase;padding:11px 20px;cursor:pointer;border-bottom:3px solid transparent;}
+    .tab-btn:hover{color:white;}
+    .tab-btn.active{color:white;border-bottom-color:var(--kub-gold);}
+    .tab-panel{display:none;padding:18px 22px 24px;}
+    .tab-panel.active{display:block;}
+    /* avg table */
+    .avg-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px;}
+    .avg-table th{padding:8px 10px;background:var(--kub-dark);color:white;font-size:10px;font-weight:700;
+      letter-spacing:.05em;text-transform:uppercase;text-align:center;}
+    .avg-table th.k{text-align:left;}
+    .avg-table th.win{background:#13532b;} .avg-table th.loss{background:#7d1820;}
+    .avg-table td{padding:7px 10px;text-align:center;border-bottom:1px solid var(--rule);font-weight:700;font-size:13px;}
+    .avg-table td.k{text-align:left;font-weight:600;font-size:12px;color:var(--ink);}
+    .avg-table td.k small{display:block;color:var(--muted);font-size:9px;font-weight:500;}
+    .avg-table td.win{background:rgba(26,122,60,.08);color:var(--win);}
+    .avg-table td.loss{background:rgba(192,32,43,.08);color:var(--loss);}
+    .avg-table td.delta.pos{color:var(--good);} .avg-table td.delta.neg{color:var(--loss);}
+    .avg-table tr:hover td{filter:brightness(.985);}
+    .sec-title{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+      border-bottom:2px solid var(--rule);padding-bottom:5px;margin:18px 0 10px;}
+    /* per-match (it) table */
+    .it-wrap{overflow-x:auto;}
+    .it-table{width:100%;border-collapse:collapse;font-size:11px;}
+    .it-table th,.it-table td{min-width:40px;}
+    .it-table th.l,.it-table td.l{min-width:auto;}
+    .it-table thead th{padding:6px 6px;background:var(--kub-mid);color:white;font-size:9px;font-weight:700;
+      letter-spacing:.02em;text-transform:uppercase;white-space:normal;line-height:1.2;vertical-align:bottom;text-align:center;}
+    .it-table thead th.l{text-align:left;}
+    .it-table thead th.opp{background:#c4600f;}
+    .it-table tbody td.oppcol{background:rgba(196,96,15,.06);}
+    .it-table tbody td{padding:4px 7px;text-align:center;border-bottom:1px solid var(--rule);font-weight:600;white-space:nowrap;}
+    .it-table tbody td.l{text-align:left;}
+    .it-table tbody td.date{color:var(--muted);font-size:10px;}
+    .it-table tbody tr.win td.res{color:var(--win);font-weight:800;}
+    .it-table tbody tr.loss td.res{color:var(--loss);font-weight:800;}
+    .it-table tbody tr.win td.score{background:rgba(26,122,60,.06);}
+    .it-table tbody tr.loss td.score{background:rgba(192,32,43,.06);}
+    .it-table tbody tr:hover td{background:rgba(0,0,0,.025);}
+    .it-table tfoot td{padding:6px 7px;text-align:center;background:var(--kub-dark);color:white;font-weight:800;font-size:11px;}
+    .it-table tfoot td.l{text-align:left;}
+    .note{font-size:9px;color:var(--muted);margin-top:8px;line-height:1.5;}
+    .cards{display:flex;gap:12px;margin-bottom:6px;flex-wrap:wrap;}
+    .card{flex:1;min-width:110px;border:1px solid var(--rule);border-radius:var(--radius);background:white;padding:11px;text-align:center;}
+    .card .big{font-size:26px;font-weight:900;color:var(--kub-dark);line-height:1;}
+    .card .sub{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:6px;}
+    /* penalty page */
+    .pen-cols{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;}
+    .pen-col{flex:1;min-width:300px;}
+    .pen-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+    .pen-bar-label{font-size:11px;min-width:150px;color:var(--ink);}
+    .pen-bar-track{flex:1;height:14px;background:#e8e4dc;border-radius:7px;overflow:hidden;}
+    .pen-bar-fill{height:100%;border-radius:7px;background:var(--kub-red);}
+    .pen-bar-num{font-size:11px;font-weight:800;min-width:22px;text-align:right;}
+    .stack{display:flex;height:34px;border-radius:5px;overflow:hidden;margin:6px 0 4px;font-size:12px;font-weight:800;color:white;}
+    .stack .seg{display:flex;align-items:center;justify-content:center;}
+    .stack .att{background:var(--kub-gold);color:#3a2a08;}
+    .stack .def{background:var(--kub-mid);}
+    .qbox-row{display:flex;gap:10px;margin-top:6px;}
+    .qbox{flex:1;text-align:center;background:#f8f6f2;border:1px solid var(--rule);border-radius:var(--radius);padding:10px 4px;}
+    .qbox .num{font-size:24px;font-weight:900;color:var(--kub-dark);}
+    .qbox .lbl{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:4px;}
+    .vbar-chart{display:flex;align-items:flex-end;gap:14px;height:130px;padding:6px 4px 0;border-bottom:2px solid var(--rule);}
+    .vbar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+    .vbar-num{font-size:13px;font-weight:800;color:var(--kub-dark);margin-bottom:3px;}
+    .vbar{width:70%;max-width:46px;background:var(--kub-red);border-radius:3px 3px 0 0;}
+    .vbar-lbl{font-size:10px;font-weight:700;color:var(--muted);margin-top:5px;text-transform:uppercase;}
+    /* individual ranking table */
+    .rank-wrap{overflow-x:auto;}
+    .rank-table{width:100%;border-collapse:collapse;font-size:11px;}
+    .avg-table td.delta.pos{color:var(--good);} .avg-table td.delta.neg{color:var(--loss);}
+    .rank-table thead th{padding:6px 5px;background:var(--kub-dark);color:white;font-size:9px;font-weight:700;
+      letter-spacing:.02em;text-transform:uppercase;white-space:normal;line-height:1.15;vertical-align:bottom;text-align:center;border-right:1px solid rgba(255,255,255,.08);min-width:40px;}
+    .rank-table thead th.l{min-width:auto;}
+    .rank-table thead th.l{text-align:left;}
+    .rank-table tbody td{padding:4px 6px;text-align:center;border-bottom:1px solid var(--rule);font-weight:600;white-space:nowrap;}
+    .rank-table tbody td.shirt{background:#f0ede8;font-weight:800;}
+    .rank-table tbody td.name{text-align:left;font-weight:700;min-width:140px;}
+    .rank-table tbody td.pos{text-align:left;color:var(--muted);font-size:10px;min-width:96px;}
+    .rank-table tbody tr:hover td{background:rgba(0,0,0,.025);}
+    .rank-table tbody tr:nth-child(-n+3) td.name{color:var(--kub-red);}
+    .rank-table tfoot td{padding:6px;background:var(--kub-dark);color:white;font-weight:800;text-align:center;}
+    .rank-table tfoot td.l{text-align:left;}
+    .cell-good{color:var(--good);font-weight:800;} .cell-warn{color:var(--warn);font-weight:800;} .cell-dim{color:#bbb;}
+    .mini-table{width:100%;border-collapse:collapse;font-size:11px;max-width:420px;}
+    .mini-table th{padding:5px 8px;background:var(--kub-mid);color:white;font-size:9.5px;text-transform:uppercase;text-align:left;}
+    .mini-table td{padding:4px 8px;border-bottom:1px solid var(--rule);}
+    .mini-table td.n{text-align:right;font-weight:800;}
+    </style></head>
+    <body>
+    <div class="shell">
+      <div class="page-header">
+        <div>
+          <div class="subtitle">Japan Rugby League One D1 · Season 2026</div>
+          <h1 id="h-title">Kubota Spears — Season KPI Report</h1>
+          <div class="rec" id="h-rec"></div>
+        </div>
+        <div class="record-pill" id="h-pill"></div>
+      </div>
+      <div class="tabs" id="tabs"></div>
+      <div id="panels"></div>
     </div>
-    <div class="record-pill" id="h-pill"></div>
-  </div>
-  <div class="tabs" id="tabs"></div>
-  <div id="panels"></div>
-</div>
-<script>
-const DATA = {"team": "Kubota Spears", "n": 18, "nw": 14, "nl": 4, "pf_tot": 709, "pa_tot": 357, "groups": {"win": {"pf": 45.214285714285715, "pa": 18.071428571428573, "bip": 32.05628571428572, "poss": 49.47666455728169, "terr": 57.93956359667679, "tries": 6.642857142857143, "tries_con": 2.4285714285714284, "trate": 35.36977491961415, "pen": 9.714285714285714, "kicks": 30.357142857142858, "km": 749.2142857142857, "avg_kick": 24.68, "r2k": 2.461176470588235, "regain": 2.5, "hg": 4.571428571428571, "gk_pct": 74.03846153846155, "carries": 116.28571428571429, "metres": 540.6428571428571, "gl": 68.24324324324324, "lqb": 54.780114722753346, "offloads": 11.071428571428571, "e22": 14.214285714285714, "s22": 7.714285714285714, "s22_pct": 54.2713567839196, "to_con": 15.714285714285714, "tk": 176.78571428571428, "mt": 25, "tack_att": 201.78571428571428, "tack_pct": 87.61061946902655, "dom_pct": 5.656565656565657, "tw": 6.285714285714286, "lo_won": 13.357142857142858, "lo_lost": 1.0714285714285714, "lo_steal": 1.0714285714285714, "lo_pct": 92.57425742574257, "sc_tot": 7.857142857142857, "sc_reset": 0.6428571428571429, "sc_pct": 86.36363636363636, "ma_tot": 5.214285714285714, "ma_try": 0.5, "ma_m": 16.142857142857142}, "loss": {"pf": 19, "pa": 26, "bip": 33.89833333333331, "poss": 48.42322631397803, "terr": 53.42307879840964, "tries": 2.25, "tries_con": 3.75, "trate": 32.758620689655174, "pen": 8.5, "kicks": 32.75, "km": 851.5, "avg_kick": 26.0, "r2k": 2.6259541984732824, "regain": 2.75, "hg": 5.5, "gk_pct": 86.66666666666667, "carries": 107.75, "metres": 379.75, "gl": 59.62877030162414, "lqb": 59.30232558139535, "offloads": 5, "e22": 8.25, "s22": 3, "s22_pct": 36.36363636363637, "to_con": 14.25, "tk": 199.25, "mt": 27.75, "tack_att": 227.0, "tack_pct": 87.77533039647577, "dom_pct": 4.0150564617314926, "tw": 6.25, "lo_won": 13, "lo_lost": 2, "lo_steal": 1.25, "lo_pct": 86.66666666666667, "sc_tot": 8, "sc_reset": 0.75, "sc_pct": 87.5, "ma_tot": 5, "ma_try": 0.25, "ma_m": 13.75}, "season": {"pf": 39.388888888888886, "pa": 19.833333333333332, "bip": 32.46562962962963, "poss": 49.23223648485235, "terr": 56.86949005959357, "tries": 5.666666666666667, "tries_con": 2.7222222222222223, "trate": 34.79899497487437, "pen": 9.444444444444445, "kicks": 30.88888888888889, "km": 771.9444444444445, "avg_kick": 24.991007194244606, "r2k": 2.5, "regain": 2.5555555555555554, "hg": 4.777777777777778, "gk_pct": 75.63025210084034, "carries": 114.38888888888889, "metres": 504.8888888888889, "gl": 66.44001942690626, "lqb": 55.899280575539564, "offloads": 9.722222222222221, "e22": 12.88888888888889, "s22": 6.666666666666667, "s22_pct": 51.724137931034484, "to_con": 15.38888888888889, "tk": 181.77777777777777, "mt": 25.61111111111111, "tack_att": 207.38888888888889, "tack_pct": 87.65068309670507, "dom_pct": 5.256723716381418, "tw": 6.277777777777778, "lo_won": 13.277777777777779, "lo_lost": 1.2777777777777777, "lo_steal": 1.1111111111111112, "lo_pct": 91.22137404580153, "sc_tot": 7.888888888888889, "sc_reset": 0.6666666666666666, "sc_pct": 86.61971830985915, "ma_tot": 5.166666666666667, "ma_try": 0.4444444444444444, "ma_m": 15.61111111111111}}, "matches": [{"fxid": 948748, "date": "2025-12-13", "opp": "Kobelco Kobe Steelers", "ha": "A", "kub": 33, "opp_score": 28, "result": "W", "at_kub": 871.7600000000004, "at_tot": 2030.040000000004, "terr_num": 2040.0000000000045, "terr_den": 3708.4400000000023, "tw": 5, "kicks": 28, "km": 757, "rucks": 79, "regain": 4, "hg": 1, "carries": 111, "metres": 391, "glo": 69, "lqb_n": 48, "offloads": 12, "e22": 10, "s22": 5, "tries": 4, "pen": 10, "to_con": 9, "attacks": 35, "tk": 209, "mt": 27, "dom": 3, "gk_made": 5, "gk_att": 8, "lo_throw": 14, "lo_won": 12, "lo_lost": 2, "lo_steal": 0, "sc_tot": 2, "sc_won": 2, "sc_reset": 0, "ma_tot": 5, "ma_won": 4, "ma_try": 1, "ma_m": 13, "opp_carries": 160, "opp_glo": 94, "opp_rucks": 114, "opp_lqb": 77, "tries_conceded": 3, "opp_e22": 10, "opp_s22": 5}, {"fxid": 948753, "date": "2025-12-20", "opp": "BlackRams Tokyo", "ha": "H", "kub": 50, "opp_score": 28, "result": "W", "at_kub": 911.5200000000015, "at_tot": 1787.4400000000014, "terr_num": 2057.8, "terr_den": 3862.800000000003, "tw": 5, "kicks": 34, "km": 960, "rucks": 54, "regain": 3, "hg": 5, "carries": 95, "metres": 587, "glo": 79, "lqb_n": 36, "offloads": 14, "e22": 12, "s22": 7, "tries": 7, "pen": 17, "to_con": 16, "attacks": 49, "tk": 121, "mt": 23, "dom": 10, "gk_made": 7, "gk_att": 8, "lo_throw": 14, "lo_won": 13, "lo_lost": 1, "lo_steal": 2, "sc_tot": 4, "sc_won": 3, "sc_reset": 0, "ma_tot": 4, "ma_won": 3, "ma_try": 0, "ma_m": 18, "opp_carries": 88, "opp_glo": 50, "opp_rucks": 67, "opp_lqb": 35, "tries_conceded": 3, "opp_e22": 9, "opp_s22": 4}, {"fxid": 948759, "date": "2025-12-27", "opp": "Tokyo Sungoliath", "ha": "H", "kub": 79, "opp_score": 20, "result": "W", "at_kub": 925.1199999999989, "at_tot": 1981.7599999999989, "terr_num": 2310.600000000011, "terr_den": 3977.280000000005, "tw": 13, "kicks": 29, "km": 705, "rucks": 72, "regain": 4, "hg": 8, "carries": 124, "metres": 618, "glo": 91, "lqb_n": 36, "offloads": 12, "e22": 18, "s22": 11, "tries": 11, "pen": 8, "to_con": 13, "attacks": 42, "tk": 216, "mt": 37, "dom": 9, "gk_made": 11, "gk_att": 14, "lo_throw": 10, "lo_won": 9, "lo_lost": 1, "lo_steal": 0, "sc_tot": 4, "sc_won": 3, "sc_reset": 0, "ma_tot": 2, "ma_won": 2, "ma_try": 0, "ma_m": 1, "opp_carries": 126, "opp_glo": 70, "opp_rucks": 104, "opp_lqb": 59, "tries_conceded": 2, "opp_e22": 4, "opp_s22": 3}, {"fxid": 948770, "date": "2026-01-11", "opp": "Mie Honda Heat", "ha": "A", "kub": 45, "opp_score": 21, "result": "W", "at_kub": 891.5599999999995, "at_tot": 1896.8399999999997, "terr_num": 2135.399999999998, "terr_den": 3539.0400000000136, "tw": 6, "kicks": 23, "km": 375, "rucks": 73, "regain": 1, "hg": 4, "carries": 108, "metres": 693, "glo": 74, "lqb_n": 40, "offloads": 6, "e22": 17, "s22": 8, "tries": 7, "pen": 3, "to_con": 21, "attacks": 39, "tk": 211, "mt": 34, "dom": 11, "gk_made": 5, "gk_att": 7, "lo_throw": 18, "lo_won": 17, "lo_lost": 1, "lo_steal": 1, "sc_tot": 8, "sc_won": 8, "sc_reset": 0, "ma_tot": 7, "ma_won": 4, "ma_try": 1, "ma_m": 17, "opp_carries": 115, "opp_glo": 65, "opp_rucks": 91, "opp_lqb": 57, "tries_conceded": 3, "opp_e22": 7, "opp_s22": 3}, {"fxid": 948774, "date": "2026-01-17", "opp": "Toyota Verblitz", "ha": "H", "kub": 39, "opp_score": 10, "result": "W", "at_kub": 969.1600000000014, "at_tot": 2050.959999999999, "terr_num": 2696.9199999999964, "terr_den": 4603.0400000000045, "tw": 6, "kicks": 25, "km": 660, "rucks": 67, "regain": 2, "hg": 3, "carries": 115, "metres": 451, "glo": 69, "lqb_n": 38, "offloads": 18, "e22": 14, "s22": 7, "tries": 5, "pen": 15, "to_con": 15, "attacks": 40, "tk": 204, "mt": 27, "dom": 12, "gk_made": 5, "gk_att": 6, "lo_throw": 16, "lo_won": 16, "lo_lost": 0, "lo_steal": 0, "sc_tot": 10, "sc_won": 8, "sc_reset": 2, "ma_tot": 8, "ma_won": 5, "ma_try": 0, "ma_m": 19, "opp_carries": 126, "opp_glo": 78, "opp_rucks": 104, "opp_lqb": 76, "tries_conceded": 2, "opp_e22": 11, "opp_s22": 4}, {"fxid": 948781, "date": "2026-01-24", "opp": "Toshiba Brave Lupus Tokyo", "ha": "A", "kub": 20, "opp_score": 24, "result": "L", "at_kub": 1015.519999999998, "at_tot": 2269.0799999999977, "terr_num": 1703.7600000000016, "terr_den": 3788.5599999999968, "tw": 6, "kicks": 33, "km": 844, "rucks": 86, "regain": 4, "hg": 6, "carries": 108, "metres": 503, "glo": 71, "lqb_n": 52, "offloads": 8, "e22": 7, "s22": 4, "tries": 2, "pen": 11, "to_con": 14, "attacks": 45, "tk": 236, "mt": 38, "dom": 6, "gk_made": 4, "gk_att": 4, "lo_throw": 16, "lo_won": 16, "lo_lost": 0, "lo_steal": 2, "sc_tot": 7, "sc_won": 6, "sc_reset": 1, "ma_tot": 4, "ma_won": 3, "ma_try": 0, "ma_m": 4, "opp_carries": 147, "opp_glo": 83, "opp_rucks": 103, "opp_lqb": 53, "tries_conceded": 4, "opp_e22": 15, "opp_s22": 5}, {"fxid": 948786, "date": "2026-02-07", "opp": "Urayasu D-Rocks", "ha": "H", "kub": 48, "opp_score": 14, "result": "W", "at_kub": 1127.3599999999997, "at_tot": 1928.2800000000025, "terr_num": 3782.9199999999832, "terr_den": 5380.4799999999805, "tw": 4, "kicks": 38, "km": 860, "rucks": 91, "regain": 3, "hg": 8, "carries": 139, "metres": 473, "glo": 89, "lqb_n": 39, "offloads": 12, "e22": 19, "s22": 10, "tries": 8, "pen": 6, "to_con": 12, "attacks": 51, "tk": 142, "mt": 15, "dom": 11, "gk_made": 4, "gk_att": 8, "lo_throw": 13, "lo_won": 10, "lo_lost": 3, "lo_steal": 2, "sc_tot": 12, "sc_won": 11, "sc_reset": 1, "ma_tot": 5, "ma_won": 5, "ma_try": 0, "ma_m": 27, "opp_carries": 88, "opp_glo": 48, "opp_rucks": 71, "opp_lqb": 32, "tries_conceded": 2, "opp_e22": 5, "opp_s22": 3}, {"fxid": 948790, "date": "2026-02-14", "opp": "Shizuoka BlueRevs", "ha": "A", "kub": 42, "opp_score": 19, "result": "W", "at_kub": 1045.7200000000028, "at_tot": 1942.4000000000046, "terr_num": 2708.0000000000027, "terr_den": 4576.160000000012, "tw": 8, "kicks": 32, "km": 852, "rucks": 77, "regain": 2, "hg": 5, "carries": 134, "metres": 683, "glo": 94, "lqb_n": 40, "offloads": 14, "e22": 18, "s22": 8, "tries": 6, "pen": 11, "to_con": 25, "attacks": 59, "tk": 166, "mt": 23, "dom": 16, "gk_made": 6, "gk_att": 6, "lo_throw": 17, "lo_won": 15, "lo_lost": 2, "lo_steal": 4, "sc_tot": 6, "sc_won": 6, "sc_reset": 0, "ma_tot": 6, "ma_won": 4, "ma_try": 1, "ma_m": 14, "opp_carries": 110, "opp_glo": 67, "opp_rucks": 73, "opp_lqb": 42, "tries_conceded": 3, "opp_e22": 9, "opp_s22": 3}, {"fxid": 948795, "date": "2026-02-21", "opp": "Mitsubishi Sagamihara Dynaboars", "ha": "H", "kub": 26, "opp_score": 10, "result": "W", "at_kub": 932.9200000000004, "at_tot": 1976.44, "terr_num": 2955.919999999999, "terr_den": 4587.519999999984, "tw": 2, "kicks": 29, "km": 638, "rucks": 74, "regain": 3, "hg": 3, "carries": 99, "metres": 455, "glo": 75, "lqb_n": 43, "offloads": 10, "e22": 13, "s22": 4, "tries": 4, "pen": 15, "to_con": 17, "attacks": 41, "tk": 189, "mt": 19, "dom": 15, "gk_made": 3, "gk_att": 4, "lo_throw": 16, "lo_won": 16, "lo_lost": 0, "lo_steal": 3, "sc_tot": 5, "sc_won": 3, "sc_reset": 0, "ma_tot": 7, "ma_won": 5, "ma_try": 0, "ma_m": 20, "opp_carries": 113, "opp_glo": 68, "opp_rucks": 92, "opp_lqb": 30, "tries_conceded": 1, "opp_e22": 10, "opp_s22": 3}, {"fxid": 948804, "date": "2026-03-01", "opp": "Yokohama Canon Eagles", "ha": "A", "kub": 28, "opp_score": 10, "result": "W", "at_kub": 1021.7599999999992, "at_tot": 1664.3999999999994, "terr_num": 2731.0800000000013, "terr_den": 4318.600000000019, "tw": 8, "kicks": 34, "km": 649, "rucks": 97, "regain": 2, "hg": 3, "carries": 133, "metres": 374, "glo": 69, "lqb_n": 54, "offloads": 16, "e22": 15, "s22": 6, "tries": 4, "pen": 11, "to_con": 18, "attacks": 44, "tk": 99, "mt": 26, "dom": 7, "gk_made": 4, "gk_att": 4, "lo_throw": 16, "lo_won": 16, "lo_lost": 0, "lo_steal": 0, "sc_tot": 16, "sc_won": 11, "sc_reset": 4, "ma_tot": 5, "ma_won": 2, "ma_try": 0, "ma_m": 7, "opp_carries": 64, "opp_glo": 49, "opp_rucks": 44, "opp_lqb": 25, "tries_conceded": 2, "opp_e22": 7, "opp_s22": 3}, {"fxid": 948809, "date": "2026-03-14", "opp": "Saitama Wild Knights", "ha": "H", "kub": 30, "opp_score": 32, "result": "L", "at_kub": 1076.9200000000003, "at_tot": 2105.439999999999, "terr_num": 3342.440000000005, "terr_den": 5366.6, "tw": 10, "kicks": 38, "km": 937, "rucks": 98, "regain": 5, "hg": 6, "carries": 117, "metres": 338, "glo": 73, "lqb_n": 57, "offloads": 3, "e22": 6, "s22": 3, "tries": 3, "pen": 5, "to_con": 9, "attacks": 44, "tk": 190, "mt": 27, "dom": 12, "gk_made": 6, "gk_att": 7, "lo_throw": 12, "lo_won": 10, "lo_lost": 2, "lo_steal": 1, "sc_tot": 9, "sc_won": 8, "sc_reset": 1, "ma_tot": 5, "ma_won": 3, "ma_try": 0, "ma_m": 19, "opp_carries": 134, "opp_glo": 68, "opp_rucks": 106, "opp_lqb": 59, "tries_conceded": 4, "opp_e22": 8, "opp_s22": 6}, {"fxid": 948818, "date": "2026-03-21", "opp": "Urayasu D-Rocks", "ha": "A", "kub": 59, "opp_score": 35, "result": "W", "at_kub": 958.6000000000021, "at_tot": 1916.3600000000017, "terr_num": 1568.6000000000026, "terr_den": 3162.800000000013, "tw": 3, "kicks": 26, "km": 681, "rucks": 78, "regain": 2, "hg": 4, "carries": 128, "metres": 804, "glo": 106, "lqb_n": 48, "offloads": 11, "e22": 14, "s22": 9, "tries": 9, "pen": 6, "to_con": 14, "attacks": 40, "tk": 171, "mt": 24, "dom": 0, "gk_made": 7, "gk_att": 9, "lo_throw": 7, "lo_won": 7, "lo_lost": 0, "lo_steal": 0, "sc_tot": 4, "sc_won": 3, "sc_reset": 1, "ma_tot": 2, "ma_won": 1, "ma_try": 1, "ma_m": 27, "opp_carries": 109, "opp_glo": 81, "opp_rucks": 91, "opp_lqb": 45, "tries_conceded": 5, "opp_e22": 8, "opp_s22": 5}, {"fxid": 948821, "date": "2026-03-28", "opp": "Toshiba Brave Lupus Tokyo", "ha": "H", "kub": 51, "opp_score": 7, "result": "W", "at_kub": 911.8800000000003, "at_tot": 1936.2799999999995, "terr_num": 1607.4799999999955, "terr_den": 3789.8800000000056, "tw": 7, "kicks": 34, "km": 875, "rucks": 74, "regain": 3, "hg": 5, "carries": 102, "metres": 474, "glo": 69, "lqb_n": 38, "offloads": 4, "e22": 12, "s22": 8, "tries": 7, "pen": 7, "to_con": 17, "attacks": 49, "tk": 149, "mt": 18, "dom": 14, "gk_made": 7, "gk_att": 9, "lo_throw": 14, "lo_won": 14, "lo_lost": 0, "lo_steal": 2, "sc_tot": 8, "sc_won": 8, "sc_reset": 0, "ma_tot": 4, "ma_won": 3, "ma_try": 0, "ma_m": 9, "opp_carries": 111, "opp_glo": 52, "opp_rucks": 89, "opp_lqb": 48, "tries_conceded": 1, "opp_e22": 7, "opp_s22": 2}, {"fxid": 948827, "date": "2026-04-04", "opp": "Toyota Verblitz", "ha": "A", "kub": 7, "opp_score": 24, "result": "L", "at_kub": 1096.639999999998, "at_tot": 2036.4399999999982, "terr_num": 2208.9599999999937, "terr_den": 3986.159999999998, "tw": 3, "kicks": 32, "km": 809, "rucks": 99, "regain": 2, "hg": 6, "carries": 126, "metres": 410, "glo": 71, "lqb_n": 59, "offloads": 4, "e22": 13, "s22": 2, "tries": 1, "pen": 4, "to_con": 22, "attacks": 45, "tk": 168, "mt": 23, "dom": 12, "gk_made": 1, "gk_att": 1, "lo_throw": 18, "lo_won": 15, "lo_lost": 3, "lo_steal": 1, "sc_tot": 7, "sc_won": 7, "sc_reset": 0, "ma_tot": 8, "ma_won": 6, "ma_try": 0, "ma_m": 13, "opp_carries": 116, "opp_glo": 71, "opp_rucks": 82, "opp_lqb": 54, "tries_conceded": 4, "opp_e22": 7, "opp_s22": 4}, {"fxid": 948835, "date": "2026-04-18", "opp": "Tokyo Sungoliath", "ha": "A", "kub": 27, "opp_score": 22, "result": "W", "at_kub": 753.0799999999977, "at_tot": 2055.68, "terr_num": 1403.8399999999995, "terr_den": 3118.7200000000003, "tw": 8, "kicks": 32, "km": 918, "rucks": 54, "regain": 2, "hg": 4, "carries": 91, "metres": 346, "glo": 58, "lqb_n": 33, "offloads": 8, "e22": 11, "s22": 6, "tries": 4, "pen": 11, "to_con": 17, "attacks": 40, "tk": 269, "mt": 34, "dom": 12, "gk_made": 3, "gk_att": 5, "lo_throw": 17, "lo_won": 14, "lo_lost": 3, "lo_steal": 0, "sc_tot": 5, "sc_won": 5, "sc_reset": 0, "ma_tot": 7, "ma_won": 6, "ma_try": 1, "ma_m": 23, "opp_carries": 154, "opp_glo": 92, "opp_rucks": 131, "opp_lqb": 91, "tries_conceded": 3, "opp_e22": 10, "opp_s22": 6}, {"fxid": 948842, "date": "2026-04-25", "opp": "Mie Honda Heat", "ha": "H", "kub": 54, "opp_score": 21, "result": "W", "at_kub": 1166.4399999999978, "at_tot": 2011.7599999999973, "terr_num": 3299.4399999999973, "terr_den": 5648.879999999988, "tw": 6, "kicks": 29, "km": 737, "rucks": 106, "regain": 2, "hg": 5, "carries": 144, "metres": 625, "glo": 96, "lqb_n": 51, "offloads": 10, "e22": 14, "s22": 11, "tries": 9, "pen": 9, "to_con": 10, "attacks": 46, "tk": 151, "mt": 19, "dom": 8, "gk_made": 4, "gk_att": 9, "lo_throw": 12, "lo_won": 12, "lo_lost": 0, "lo_steal": 0, "sc_tot": 15, "sc_won": 15, "sc_reset": 0, "ma_tot": 6, "ma_won": 3, "ma_try": 1, "ma_m": 9, "opp_carries": 102, "opp_glo": 60, "opp_rucks": 78, "opp_lqb": 43, "tries_conceded": 3, "opp_e22": 10, "opp_s22": 4}, {"fxid": 948848, "date": "2026-05-03", "opp": "BlackRams Tokyo", "ha": "A", "kub": 52, "opp_score": 8, "result": "W", "at_kub": 835.840000000002, "at_tot": 1748.6399999999996, "terr_num": 2381.0399999999927, "terr_den": 3854.239999999999, "tw": 7, "kicks": 32, "km": 822, "rucks": 50, "regain": 2, "hg": 6, "carries": 105, "metres": 595, "glo": 73, "lqb_n": 29, "offloads": 8, "e22": 12, "s22": 8, "tries": 8, "pen": 7, "to_con": 16, "attacks": 47, "tk": 178, "mt": 24, "dom": 12, "gk_made": 6, "gk_att": 7, "lo_throw": 18, "lo_won": 16, "lo_lost": 2, "lo_steal": 1, "sc_tot": 11, "sc_won": 9, "sc_reset": 1, "ma_tot": 5, "ma_won": 3, "ma_try": 1, "ma_m": 22, "opp_carries": 110, "opp_glo": 60, "opp_rucks": 90, "opp_lqb": 55, "tries_conceded": 1, "opp_e22": 4, "opp_s22": 3}, {"fxid": 948852, "date": "2026-05-10", "opp": "Kobelco Kobe Steelers", "ha": "H", "kub": 19, "opp_score": 24, "result": "L", "at_kub": 750.4399999999978, "at_tot": 1724.6399999999999, "terr_num": 2386.680000000007, "terr_den": 4906.76, "tw": 6, "kicks": 28, "km": 816, "rucks": 61, "regain": 0, "hg": 4, "carries": 80, "metres": 268, "glo": 42, "lqb_n": 36, "offloads": 5, "e22": 7, "s22": 3, "tries": 3, "pen": 14, "to_con": 12, "attacks": 40, "tk": 203, "mt": 23, "dom": 2, "gk_made": 2, "gk_att": 3, "lo_throw": 14, "lo_won": 11, "lo_lost": 3, "lo_steal": 1, "sc_tot": 9, "sc_won": 7, "sc_reset": 1, "ma_tot": 3, "ma_won": 0, "ma_try": 1, "ma_m": 19, "opp_carries": 133, "opp_glo": 83, "opp_rucks": 92, "opp_lqb": 56, "tries_conceded": 3, "opp_e22": 9, "opp_s22": 3}], "penalty": {"total": 170, "full": 156, "fk": 14, "types": [["Scrum Offence", 28], ["Offside", 26], ["Not Releasing", 23], ["Not Rolling Away", 20], ["Off Feet at Ruck", 17], ["Foul Play - High Tackle", 10], ["Preventing Release", 7], ["Wrong Side at Ruck", 7], ["Lineout Offence", 4], ["Foul Play - Early Tackle", 4], ["Wrong Side at Maul", 4], ["Collapsing Maul", 3], ["Other Offence", 3], ["HandsInRuck", 3], ["Deliberate Knock On", 3], ["Offside at Kick", 2], ["Foul Play - Other", 2], ["Charging into Ruck", 1], ["Maul Obstruction", 1], ["Dissent Advance", 1], ["Obstruction", 1]], "od": {"Offence": 45, "Defence": 125}, "half": {"H1": 91, "H2": 79}, "quarter": {"Q1": 47, "Q2": 34, "Q3": 43, "Q4": 46}}, "league": {"tm": 36, "infr": 10.333333333333334, "full": 9.63888888888889, "fk": 0.6944444444444444, "att": 3.0555555555555554, "def": 7.277777777777778}, "players_attack": [{"name": "Yota Kamimori", "pos": "Loosehead Prop", "shirt": 1, "pt": 919, "carries": 42, "metres": 66, "avg": 1.6, "gl": 61.9, "lb": 2, "db": 5, "ol": 1, "tries": 1, "err": 0, "passes": 20, "pass_acc": 95.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 29, "ooa4": 9, "ooa_eff": 76.3}, {"name": "Kazuki Kato", "pos": "Loosehead Prop", "shirt": 1, "pt": 355, "carries": 8, "metres": 37, "avg": 4.6, "gl": 75.0, "lb": 1, "db": 0, "ol": 1, "tries": 0, "err": 2, "passes": 2, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 5, "ooa4": 1, "ooa_eff": 83.3}, {"name": "Kota Kaishi", "pos": "Loosehead Prop", "shirt": 17, "pt": 166, "carries": 9, "metres": 12, "avg": 1.3, "gl": 33.3, "lb": 0, "db": 0, "ol": 0, "tries": 0, "err": 1, "passes": 4, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 4, "ooa4": 5, "ooa_eff": 44.4}, {"name": "Malcolm Marx", "pos": "Hooker", "shirt": 2, "pt": 856, "carries": 103, "metres": 383, "avg": 3.7, "gl": 68.9, "lb": 8, "db": 15, "ol": 6, "tries": 5, "err": 12, "passes": 46, "pass_acc": 89.1, "kicks": 1, "kick_m": 28, "avg_kick": 28.0, "ooa13": 36, "ooa4": 32, "ooa_eff": 52.9}, {"name": "Rikuto Fukuda", "pos": "Hooker", "shirt": 2, "pt": 320, "carries": 21, "metres": 40, "avg": 1.9, "gl": 42.9, "lb": 1, "db": 4, "ol": 0, "tries": 2, "err": 2, "passes": 5, "pass_acc": 80.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 10, "ooa4": 9, "ooa_eff": 52.6}, {"name": "Hayate Era", "pos": "Hooker", "shirt": 16, "pt": 263, "carries": 31, "metres": 104, "avg": 3.4, "gl": 54.8, "lb": 2, "db": 7, "ol": 2, "tries": 2, "err": 2, "passes": 12, "pass_acc": 100.0, "kicks": 1, "kick_m": 47, "avg_kick": 47.0, "ooa13": 9, "ooa4": 11, "ooa_eff": 45.0}, {"name": "Opeti Helu", "pos": "Tighthead Prop", "shirt": 3, "pt": 733, "carries": 124, "metres": 351, "avg": 2.8, "gl": 64.5, "lb": 2, "db": 26, "ol": 21, "tries": 6, "err": 10, "passes": 53, "pass_acc": 94.3, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 58, "ooa4": 22, "ooa_eff": 72.5}, {"name": "Keijiro Tamefusa", "pos": "Tighthead Prop", "shirt": 18, "pt": 501, "carries": 33, "metres": 65, "avg": 2.0, "gl": 48.5, "lb": 1, "db": 1, "ol": 0, "tries": 1, "err": 0, "passes": 3, "pass_acc": 66.7, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 16, "ooa4": 13, "ooa_eff": 55.2}, {"name": "Izi Sword", "pos": "Tighthead Prop", "shirt": 3, "pt": 155, "carries": 11, "metres": 23, "avg": 2.1, "gl": 72.7, "lb": 0, "db": 0, "ol": 1, "tries": 0, "err": 1, "passes": 5, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 5, "ooa4": 5, "ooa_eff": 50.0}, {"name": "Ruan Botha", "pos": "Lock (4)", "shirt": 4, "pt": 918, "carries": 127, "metres": 231, "avg": 1.8, "gl": 55.9, "lb": 2, "db": 17, "ol": 6, "tries": 4, "err": 13, "passes": 70, "pass_acc": 94.3, "kicks": 1, "kick_m": 24, "avg_kick": 24.0, "ooa13": 59, "ooa4": 36, "ooa_eff": 62.1}, {"name": "Akira Ieremia", "pos": "Lock (4)", "shirt": 4, "pt": 570, "carries": 65, "metres": 204, "avg": 3.1, "gl": 63.1, "lb": 1, "db": 10, "ol": 3, "tries": 0, "err": 8, "passes": 46, "pass_acc": 91.3, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 27, "ooa4": 22, "ooa_eff": 55.1}, {"name": "Merwe Olivier", "pos": "Lock (4)", "shirt": 4, "pt": 544, "carries": 66, "metres": 230, "avg": 3.5, "gl": 69.7, "lb": 3, "db": 15, "ol": 3, "tries": 3, "err": 11, "passes": 38, "pass_acc": 92.1, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 32, "ooa4": 19, "ooa_eff": 62.7}, {"name": "David Van Zeeland", "pos": "Lock (4)", "shirt": 4, "pt": 126, "carries": 10, "metres": 12, "avg": 1.2, "gl": 50.0, "lb": 0, "db": 0, "ol": 0, "tries": 0, "err": 0, "passes": 8, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 4, "ooa4": 4, "ooa_eff": 50.0}, {"name": "David Bulbring", "pos": "Lock (5)", "shirt": 5, "pt": 899, "carries": 52, "metres": 79, "avg": 1.5, "gl": 40.4, "lb": 2, "db": 4, "ol": 4, "tries": 1, "err": 7, "passes": 67, "pass_acc": 92.5, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 32, "ooa4": 9, "ooa_eff": 78.0}, {"name": "Yuki Aoki", "pos": "Lock (5)", "shirt": 5, "pt": 88, "carries": 6, "metres": 1, "avg": 0.2, "gl": 16.7, "lb": 0, "db": 0, "ol": 0, "tries": 0, "err": 0, "passes": 5, "pass_acc": 80.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 5, "ooa4": 1, "ooa_eff": 83.3}, {"name": "Tyler Paul", "pos": "Blindside Flanker", "shirt": 6, "pt": 1085, "carries": 172, "metres": 435, "avg": 2.5, "gl": 65.1, "lb": 4, "db": 16, "ol": 7, "tries": 7, "err": 18, "passes": 77, "pass_acc": 92.2, "kicks": 2, "kick_m": 60, "avg_kick": 30.0, "ooa13": 88, "ooa4": 47, "ooa_eff": 65.2}, {"name": "Takeo Suenaga", "pos": "Openside Flanker", "shirt": 7, "pt": 1098, "carries": 61, "metres": 117, "avg": 1.9, "gl": 55.7, "lb": 2, "db": 6, "ol": 2, "tries": 0, "err": 11, "passes": 49, "pass_acc": 95.9, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 28, "ooa4": 22, "ooa_eff": 56.0}, {"name": "Pieter Labuschagne", "pos": "Openside Flanker", "shirt": 7, "pt": 133, "carries": 9, "metres": 17, "avg": 1.9, "gl": 66.7, "lb": 0, "db": 1, "ol": 0, "tries": 0, "err": 1, "passes": 6, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 8, "ooa4": 0, "ooa_eff": 100.0}, {"name": "Finau Tupa", "pos": "Openside Flanker", "shirt": 20, "pt": 74, "carries": 18, "metres": 63, "avg": 3.5, "gl": 94.4, "lb": 0, "db": 5, "ol": 0, "tries": 0, "err": 2, "passes": 5, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 13, "ooa4": 1, "ooa_eff": 92.9}, {"name": "Faulua Makisi", "pos": "Number 8", "shirt": 8, "pt": 1072, "carries": 153, "metres": 525, "avg": 3.4, "gl": 66.0, "lb": 6, "db": 17, "ol": 6, "tries": 12, "err": 10, "passes": 90, "pass_acc": 95.6, "kicks": 1, "kick_m": 18, "avg_kick": 18.0, "ooa13": 61, "ooa4": 52, "ooa_eff": 54.0}, {"name": "Asipeli Moala", "pos": "Number 8", "shirt": 20, "pt": 146, "carries": 23, "metres": 61, "avg": 2.7, "gl": 60.9, "lb": 1, "db": 5, "ol": 1, "tries": 0, "err": 4, "passes": 10, "pass_acc": 80.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 11, "ooa4": 8, "ooa_eff": 57.9}, {"name": "Shinobu Fujiwara", "pos": "Scrum Half", "shirt": 9, "pt": 822, "carries": 67, "metres": 325, "avg": 4.9, "gl": 68.7, "lb": 9, "db": 21, "ol": 1, "tries": 5, "err": 16, "passes": 657, "pass_acc": 98.3, "kicks": 71, "kick_m": 1479, "avg_kick": 20.8, "ooa13": 9, "ooa4": 18, "ooa_eff": 33.3}, {"name": "Ippei Okada", "pos": "Scrum Half", "shirt": 9, "pt": 195, "carries": 12, "metres": 53, "avg": 4.4, "gl": 75.0, "lb": 0, "db": 4, "ol": 1, "tries": 2, "err": 2, "passes": 172, "pass_acc": 97.1, "kicks": 10, "kick_m": 209, "avg_kick": 20.9, "ooa13": 0, "ooa4": 4, "ooa_eff": 0.0}, {"name": "Kazuhiro Taniguchi", "pos": "Scrum Half", "shirt": 21, "pt": 191, "carries": 8, "metres": 37, "avg": 4.6, "gl": 100.0, "lb": 0, "db": 1, "ol": 0, "tries": 0, "err": 1, "passes": 234, "pass_acc": 97.9, "kicks": 12, "kick_m": 235, "avg_kick": 19.6, "ooa13": 1, "ooa4": 1, "ooa_eff": 50.0}, {"name": "Shunta Koga", "pos": "Scrum Half", "shirt": 9, "pt": 93, "carries": 4, "metres": 10, "avg": 2.5, "gl": 100.0, "lb": 0, "db": 0, "ol": 0, "tries": 0, "err": 2, "passes": 99, "pass_acc": 96.0, "kicks": 10, "kick_m": 225, "avg_kick": 22.5, "ooa13": 0, "ooa4": 0, "ooa_eff": 0}, {"name": "Bryn Hall", "pos": "Scrum Half", "shirt": 21, "pt": 76, "carries": 5, "metres": 11, "avg": 2.2, "gl": 40.0, "lb": 0, "db": 0, "ol": 1, "tries": 0, "err": 1, "passes": 80, "pass_acc": 95.0, "kicks": 4, "kick_m": 108, "avg_kick": 27.0, "ooa13": 1, "ooa4": 1, "ooa_eff": 50.0}, {"name": "Bernard Foley", "pos": "Fly Half", "shirt": 10, "pt": 1001, "carries": 88, "metres": 412, "avg": 4.7, "gl": 67.0, "lb": 3, "db": 6, "ol": 5, "tries": 3, "err": 17, "passes": 287, "pass_acc": 93.7, "kicks": 211, "kick_m": 4815, "avg_kick": 22.8, "ooa13": 14, "ooa4": 13, "ooa_eff": 51.9}, {"name": "Atsushi Oshikawa", "pos": "Fly Half", "shirt": 10, "pt": 422, "carries": 35, "metres": 209, "avg": 6.0, "gl": 65.7, "lb": 2, "db": 7, "ol": 7, "tries": 0, "err": 7, "passes": 120, "pass_acc": 94.2, "kicks": 70, "kick_m": 1738, "avg_kick": 24.8, "ooa13": 8, "ooa4": 4, "ooa_eff": 66.7}, {"name": "Rikus Pretorius", "pos": "Inside Centre", "shirt": 12, "pt": 1363, "carries": 104, "metres": 777, "avg": 7.5, "gl": 74.0, "lb": 19, "db": 39, "ol": 7, "tries": 9, "err": 12, "passes": 90, "pass_acc": 88.9, "kicks": 5, "kick_m": 124, "avg_kick": 24.8, "ooa13": 29, "ooa4": 17, "ooa_eff": 63.0}, {"name": "Yuya Hirose", "pos": "Inside Centre", "shirt": 12, "pt": 815, "carries": 58, "metres": 217, "avg": 3.7, "gl": 62.1, "lb": 2, "db": 12, "ol": 5, "tries": 0, "err": 8, "passes": 85, "pass_acc": 92.9, "kicks": 17, "kick_m": 505, "avg_kick": 29.7, "ooa13": 21, "ooa4": 12, "ooa_eff": 63.6}, {"name": "Harumichi Tatekawa", "pos": "Inside Centre", "shirt": 22, "pt": 57, "carries": 4, "metres": 10, "avg": 2.5, "gl": 100.0, "lb": 0, "db": 1, "ol": 0, "tries": 0, "err": 0, "passes": 5, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 4, "ooa4": 0, "ooa_eff": 100.0}, {"name": "Halatoa Vailea", "pos": "Outside Centre", "shirt": 13, "pt": 1040, "carries": 99, "metres": 755, "avg": 7.6, "gl": 78.8, "lb": 18, "db": 47, "ol": 11, "tries": 11, "err": 17, "passes": 71, "pass_acc": 94.4, "kicks": 10, "kick_m": 291, "avg_kick": 29.1, "ooa13": 34, "ooa4": 10, "ooa_eff": 77.3}, {"name": "Koga Nezuka", "pos": "Right Wing", "shirt": 14, "pt": 663, "carries": 85, "metres": 648, "avg": 7.6, "gl": 76.5, "lb": 10, "db": 40, "ol": 9, "tries": 3, "err": 21, "passes": 25, "pass_acc": 92.0, "kicks": 2, "kick_m": 40, "avg_kick": 20.0, "ooa13": 33, "ooa4": 17, "ooa_eff": 66.0}, {"name": "Gerhard van den Heever", "pos": "Right Wing", "shirt": 14, "pt": 302, "carries": 35, "metres": 176, "avg": 5.0, "gl": 62.9, "lb": 4, "db": 9, "ol": 3, "tries": 2, "err": 5, "passes": 20, "pass_acc": 100.0, "kicks": 8, "kick_m": 326, "avg_kick": 40.8, "ooa13": 12, "ooa4": 10, "ooa_eff": 54.5}, {"name": "Haruto Kida", "pos": "Left Wing", "shirt": 11, "pt": 904, "carries": 110, "metres": 923, "avg": 8.4, "gl": 78.2, "lb": 23, "db": 50, "ol": 18, "tries": 12, "err": 17, "passes": 60, "pass_acc": 98.3, "kicks": 14, "kick_m": 529, "avg_kick": 37.8, "ooa13": 35, "ooa4": 13, "ooa_eff": 72.9}, {"name": "Hibiki Yamada", "pos": "Left Wing", "shirt": 11, "pt": 252, "carries": 27, "metres": 158, "avg": 5.9, "gl": 70.4, "lb": 3, "db": 10, "ol": 6, "tries": 4, "err": 4, "passes": 24, "pass_acc": 100.0, "kicks": 2, "kick_m": 67, "avg_kick": 33.5, "ooa13": 5, "ooa4": 5, "ooa_eff": 50.0}, {"name": "Shaun Stevenson", "pos": "Full Back", "shirt": 15, "pt": 1241, "carries": 169, "metres": 1297, "avg": 7.7, "gl": 72.8, "lb": 20, "db": 69, "ol": 37, "tries": 6, "err": 29, "passes": 238, "pass_acc": 93.3, "kicks": 104, "kick_m": 3027, "avg_kick": 29.1, "ooa13": 29, "ooa4": 19, "ooa_eff": 60.4}, {"name": "Reo Matsushita", "pos": "Full Back", "shirt": 23, "pt": 31, "carries": 5, "metres": 14, "avg": 2.8, "gl": 40.0, "lb": 0, "db": 3, "ol": 0, "tries": 0, "err": 1, "passes": 1, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 2, "ooa4": 3, "ooa_eff": 40.0}], "players_defence": [{"name": "Yota Kamimori", "pos": "Loosehead Prop", "shirt": 1, "pt": 919, "tk": 136, "mt": 7, "att": 143, "pct": 95.1, "dom": 4, "dom_pct": 2.8, "passive": 23, "oa": 6, "legs": 42, "ht_tot": 133, "leg_pct": 31.6, "jck": 0, "tow": 1, "pen": 5}, {"name": "Kazuki Kato", "pos": "Loosehead Prop", "shirt": 1, "pt": 355, "tk": 44, "mt": 4, "att": 48, "pct": 91.7, "dom": 3, "dom_pct": 6.2, "passive": 4, "oa": 2, "legs": 15, "ht_tot": 41, "leg_pct": 36.6, "jck": 0, "tow": 0, "pen": 8}, {"name": "Kota Kaishi", "pos": "Loosehead Prop", "shirt": 17, "pt": 166, "tk": 31, "mt": 4, "att": 35, "pct": 88.6, "dom": 2, "dom_pct": 5.7, "passive": 8, "oa": 0, "legs": 13, "ht_tot": 28, "leg_pct": 46.4, "jck": 1, "tow": 1, "pen": 3}, {"name": "Malcolm Marx", "pos": "Hooker", "shirt": 2, "pt": 856, "tk": 146, "mt": 16, "att": 162, "pct": 90.1, "dom": 7, "dom_pct": 4.3, "passive": 25, "oa": 5, "legs": 25, "ht_tot": 144, "leg_pct": 17.4, "jck": 7, "tow": 7, "pen": 6}, {"name": "Rikuto Fukuda", "pos": "Hooker", "shirt": 2, "pt": 320, "tk": 51, "mt": 9, "att": 60, "pct": 85.0, "dom": 1, "dom_pct": 1.7, "passive": 6, "oa": 1, "legs": 17, "ht_tot": 46, "leg_pct": 37.0, "jck": 2, "tow": 2, "pen": 1}, {"name": "Hayate Era", "pos": "Hooker", "shirt": 16, "pt": 263, "tk": 92, "mt": 14, "att": 106, "pct": 86.8, "dom": 7, "dom_pct": 6.6, "passive": 19, "oa": 4, "legs": 42, "ht_tot": 88, "leg_pct": 47.7, "jck": 2, "tow": 1, "pen": 5}, {"name": "Katsuya Okuma", "pos": "Hooker", "shirt": 16, "pt": 0, "tk": 1, "mt": 0, "att": 1, "pct": 100.0, "dom": 0, "dom_pct": 0.0, "passive": 0, "oa": 0, "legs": 0, "ht_tot": 1, "leg_pct": 0.0, "jck": 1, "tow": 1, "pen": 0}, {"name": "Opeti Helu", "pos": "Tighthead Prop", "shirt": 3, "pt": 733, "tk": 133, "mt": 15, "att": 148, "pct": 89.9, "dom": 14, "dom_pct": 9.5, "passive": 17, "oa": 6, "legs": 22, "ht_tot": 127, "leg_pct": 17.3, "jck": 0, "tow": 3, "pen": 19}, {"name": "Keijiro Tamefusa", "pos": "Tighthead Prop", "shirt": 18, "pt": 501, "tk": 108, "mt": 9, "att": 117, "pct": 92.3, "dom": 4, "dom_pct": 3.4, "passive": 19, "oa": 5, "legs": 43, "ht_tot": 101, "leg_pct": 42.6, "jck": 0, "tow": 0, "pen": 2}, {"name": "Izi Sword", "pos": "Tighthead Prop", "shirt": 3, "pt": 155, "tk": 46, "mt": 4, "att": 50, "pct": 92.0, "dom": 2, "dom_pct": 4.0, "passive": 10, "oa": 0, "legs": 18, "ht_tot": 44, "leg_pct": 40.9, "jck": 0, "tow": 0, "pen": 5}, {"name": "Ruan Botha", "pos": "Lock (4)", "shirt": 4, "pt": 918, "tk": 168, "mt": 14, "att": 182, "pct": 92.3, "dom": 10, "dom_pct": 5.5, "passive": 25, "oa": 4, "legs": 21, "ht_tot": 163, "leg_pct": 12.9, "jck": 2, "tow": 2, "pen": 13}, {"name": "Akira Ieremia", "pos": "Lock (4)", "shirt": 4, "pt": 570, "tk": 129, "mt": 18, "att": 147, "pct": 87.8, "dom": 11, "dom_pct": 7.5, "passive": 19, "oa": 10, "legs": 35, "ht_tot": 124, "leg_pct": 28.2, "jck": 0, "tow": 0, "pen": 6}, {"name": "Merwe Olivier", "pos": "Lock (4)", "shirt": 4, "pt": 544, "tk": 121, "mt": 13, "att": 134, "pct": 90.3, "dom": 15, "dom_pct": 11.2, "passive": 26, "oa": 7, "legs": 22, "ht_tot": 115, "leg_pct": 19.1, "jck": 0, "tow": 1, "pen": 6}, {"name": "David Van Zeeland", "pos": "Lock (4)", "shirt": 4, "pt": 126, "tk": 35, "mt": 2, "att": 37, "pct": 94.6, "dom": 0, "dom_pct": 0.0, "passive": 9, "oa": 3, "legs": 6, "ht_tot": 34, "leg_pct": 17.6, "jck": 0, "tow": 0, "pen": 0}, {"name": "David Bulbring", "pos": "Lock (5)", "shirt": 5, "pt": 899, "tk": 138, "mt": 7, "att": 145, "pct": 95.2, "dom": 3, "dom_pct": 2.1, "passive": 31, "oa": 3, "legs": 15, "ht_tot": 134, "leg_pct": 11.2, "jck": 1, "tow": 1, "pen": 3}, {"name": "Yuki Aoki", "pos": "Lock (5)", "shirt": 5, "pt": 88, "tk": 19, "mt": 1, "att": 20, "pct": 95.0, "dom": 3, "dom_pct": 15.0, "passive": 3, "oa": 1, "legs": 6, "ht_tot": 19, "leg_pct": 31.6, "jck": 1, "tow": 1, "pen": 1}, {"name": "Tyler Paul", "pos": "Blindside Flanker", "shirt": 6, "pt": 1085, "tk": 320, "mt": 31, "att": 351, "pct": 91.2, "dom": 18, "dom_pct": 5.1, "passive": 55, "oa": 17, "legs": 81, "ht_tot": 312, "leg_pct": 26.0, "jck": 5, "tow": 5, "pen": 11}, {"name": "Takeo Suenaga", "pos": "Openside Flanker", "shirt": 7, "pt": 1098, "tk": 193, "mt": 22, "att": 215, "pct": 89.8, "dom": 11, "dom_pct": 5.1, "passive": 35, "oa": 4, "legs": 79, "ht_tot": 187, "leg_pct": 42.2, "jck": 12, "tow": 8, "pen": 7}, {"name": "Pieter Labuschagne", "pos": "Openside Flanker", "shirt": 7, "pt": 133, "tk": 23, "mt": 0, "att": 23, "pct": 100.0, "dom": 3, "dom_pct": 13.0, "passive": 8, "oa": 1, "legs": 5, "ht_tot": 23, "leg_pct": 21.7, "jck": 0, "tow": 0, "pen": 1}, {"name": "Finau Tupa", "pos": "Openside Flanker", "shirt": 20, "pt": 74, "tk": 10, "mt": 2, "att": 12, "pct": 83.3, "dom": 0, "dom_pct": 0.0, "passive": 2, "oa": 0, "legs": 3, "ht_tot": 10, "leg_pct": 30.0, "jck": 0, "tow": 1, "pen": 0}, {"name": "Faulua Makisi", "pos": "Number 8", "shirt": 8, "pt": 1072, "tk": 170, "mt": 17, "att": 187, "pct": 90.9, "dom": 13, "dom_pct": 7.0, "passive": 32, "oa": 7, "legs": 32, "ht_tot": 166, "leg_pct": 19.3, "jck": 6, "tow": 5, "pen": 10}, {"name": "Asipeli Moala", "pos": "Number 8", "shirt": 20, "pt": 146, "tk": 42, "mt": 4, "att": 46, "pct": 91.3, "dom": 1, "dom_pct": 2.2, "passive": 16, "oa": 2, "legs": 3, "ht_tot": 40, "leg_pct": 7.5, "jck": 0, "tow": 1, "pen": 3}, {"name": "Shinobu Fujiwara", "pos": "Scrum Half", "shirt": 9, "pt": 822, "tk": 122, "mt": 32, "att": 154, "pct": 79.2, "dom": 2, "dom_pct": 1.3, "passive": 23, "oa": 8, "legs": 48, "ht_tot": 110, "leg_pct": 43.6, "jck": 2, "tow": 1, "pen": 9}, {"name": "Ippei Okada", "pos": "Scrum Half", "shirt": 9, "pt": 195, "tk": 27, "mt": 1, "att": 28, "pct": 96.4, "dom": 0, "dom_pct": 0.0, "passive": 6, "oa": 3, "legs": 12, "ht_tot": 26, "leg_pct": 46.2, "jck": 0, "tow": 1, "pen": 3}, {"name": "Kazuhiro Taniguchi", "pos": "Scrum Half", "shirt": 21, "pt": 191, "tk": 27, "mt": 8, "att": 35, "pct": 77.1, "dom": 0, "dom_pct": 0.0, "passive": 5, "oa": 4, "legs": 18, "ht_tot": 24, "leg_pct": 75.0, "jck": 0, "tow": 0, "pen": 1}, {"name": "Shunta Koga", "pos": "Scrum Half", "shirt": 9, "pt": 93, "tk": 16, "mt": 2, "att": 18, "pct": 88.9, "dom": 0, "dom_pct": 0.0, "passive": 6, "oa": 2, "legs": 7, "ht_tot": 16, "leg_pct": 43.8, "jck": 0, "tow": 0, "pen": 0}, {"name": "Bryn Hall", "pos": "Scrum Half", "shirt": 21, "pt": 76, "tk": 13, "mt": 2, "att": 15, "pct": 86.7, "dom": 0, "dom_pct": 0.0, "passive": 2, "oa": 2, "legs": 3, "ht_tot": 12, "leg_pct": 25.0, "jck": 0, "tow": 0, "pen": 0}, {"name": "Bernard Foley", "pos": "Fly Half", "shirt": 10, "pt": 1001, "tk": 87, "mt": 31, "att": 118, "pct": 73.7, "dom": 1, "dom_pct": 0.8, "passive": 20, "oa": 7, "legs": 31, "ht_tot": 78, "leg_pct": 39.7, "jck": 0, "tow": 2, "pen": 6}, {"name": "Atsushi Oshikawa", "pos": "Fly Half", "shirt": 10, "pt": 422, "tk": 28, "mt": 5, "att": 33, "pct": 84.8, "dom": 2, "dom_pct": 6.1, "passive": 3, "oa": 2, "legs": 16, "ht_tot": 26, "leg_pct": 61.5, "jck": 0, "tow": 0, "pen": 1}, {"name": "Rikus Pretorius", "pos": "Inside Centre", "shirt": 12, "pt": 1363, "tk": 193, "mt": 27, "att": 220, "pct": 87.7, "dom": 8, "dom_pct": 3.6, "passive": 62, "oa": 14, "legs": 37, "ht_tot": 181, "leg_pct": 20.4, "jck": 0, "tow": 1, "pen": 7}, {"name": "Yuya Hirose", "pos": "Inside Centre", "shirt": 12, "pt": 815, "tk": 116, "mt": 18, "att": 134, "pct": 86.6, "dom": 1, "dom_pct": 0.7, "passive": 46, "oa": 12, "legs": 32, "ht_tot": 105, "leg_pct": 30.5, "jck": 0, "tow": 0, "pen": 7}, {"name": "Harumichi Tatekawa", "pos": "Inside Centre", "shirt": 22, "pt": 57, "tk": 18, "mt": 7, "att": 25, "pct": 72.0, "dom": 0, "dom_pct": 0.0, "passive": 4, "oa": 1, "legs": 5, "ht_tot": 16, "leg_pct": 31.2, "jck": 0, "tow": 0, "pen": 1}, {"name": "Halatoa Vailea", "pos": "Outside Centre", "shirt": 13, "pt": 1040, "tk": 163, "mt": 41, "att": 204, "pct": 79.9, "dom": 8, "dom_pct": 3.9, "passive": 36, "oa": 9, "legs": 32, "ht_tot": 150, "leg_pct": 21.3, "jck": 3, "tow": 4, "pen": 6}, {"name": "Koga Nezuka", "pos": "Right Wing", "shirt": 14, "pt": 663, "tk": 94, "mt": 28, "att": 122, "pct": 77.0, "dom": 6, "dom_pct": 4.9, "passive": 25, "oa": 5, "legs": 24, "ht_tot": 86, "leg_pct": 27.9, "jck": 1, "tow": 2, "pen": 3}, {"name": "Gerhard van den Heever", "pos": "Right Wing", "shirt": 14, "pt": 302, "tk": 41, "mt": 11, "att": 52, "pct": 78.8, "dom": 2, "dom_pct": 3.8, "passive": 9, "oa": 4, "legs": 8, "ht_tot": 36, "leg_pct": 22.2, "jck": 0, "tow": 0, "pen": 1}, {"name": "Haruto Kida", "pos": "Left Wing", "shirt": 11, "pt": 904, "tk": 92, "mt": 20, "att": 112, "pct": 82.1, "dom": 5, "dom_pct": 4.5, "passive": 28, "oa": 6, "legs": 24, "ht_tot": 82, "leg_pct": 29.3, "jck": 1, "tow": 1, "pen": 7}, {"name": "Hibiki Yamada", "pos": "Left Wing", "shirt": 11, "pt": 252, "tk": 26, "mt": 6, "att": 32, "pct": 81.2, "dom": 1, "dom_pct": 3.1, "passive": 6, "oa": 4, "legs": 11, "ht_tot": 23, "leg_pct": 47.8, "jck": 1, "tow": 1, "pen": 0}, {"name": "Shaun Stevenson", "pos": "Full Back", "shirt": 15, "pt": 1241, "tk": 45, "mt": 7, "att": 52, "pct": 86.5, "dom": 3, "dom_pct": 5.8, "passive": 20, "oa": 4, "legs": 10, "ht_tot": 41, "leg_pct": 24.4, "jck": 0, "tow": 0, "pen": 2}, {"name": "Reo Matsushita", "pos": "Full Back", "shirt": 23, "pt": 31, "tk": 8, "mt": 2, "att": 10, "pct": 80.0, "dom": 1, "dom_pct": 10.0, "passive": 1, "oa": 1, "legs": 6, "ht_tot": 8, "leg_pct": 75.0, "jck": 0, "tow": 0, "pen": 0}], "lineout_players": [{"name": "Ruan Botha", "pos": "Lock (4)", "won": 49}, {"name": "David Bulbring", "pos": "Lock (5)", "won": 44}, {"name": "Faulua Makisi", "pos": "Number 8", "won": 41}, {"name": "Akira Ieremia", "pos": "Lock (4)", "won": 34}, {"name": "Tyler Paul", "pos": "Blindside Flanker", "won": 17}, {"name": "Merwe Olivier", "pos": "Lock (4)", "won": 15}, {"name": "David Van Zeeland", "pos": "Lock (4)", "won": 10}, {"name": "Bernard Foley", "pos": "Fly Half", "won": 7}, {"name": "Shaun Stevenson", "pos": "Full Back", "won": 5}, {"name": "Yuki Aoki", "pos": "Lock (5)", "won": 4}, {"name": "Yota Kamimori", "pos": "Loosehead Prop", "won": 2}, {"name": "Asipeli Moala", "pos": "Number 8", "won": 1}, {"name": "Haruto Kida", "pos": "Left Wing", "won": 1}, {"name": "Hibiki Yamada", "pos": "Left Wing", "won": 1}, {"name": "Ippei Okada", "pos": "Scrum Half", "won": 1}, {"name": "Rikus Pretorius", "pos": "Inside Centre", "won": 1}, {"name": "Yuya Hirose", "pos": "Inside Centre", "won": 1}], "lineout_throwers": [{"name": "Malcolm Marx", "pos": "Hooker", "won": 129, "lost": 14, "tot": 143, "pct": 90.2}, {"name": "Rikuto Fukuda", "pos": "Hooker", "won": 54, "lost": 2, "tot": 56, "pct": 96.4}, {"name": "Hayate Era", "pos": "Hooker", "won": 37, "lost": 7, "tot": 44, "pct": 84.1}, {"name": "Shaun Stevenson", "pos": "Full Back", "won": 6, "lost": 0, "tot": 6, "pct": 100.0}, {"name": "Bernard Foley", "pos": "Fly Half", "won": 4, "lost": 0, "tot": 4, "pct": 100.0}, {"name": "Haruto Kida", "pos": "Left Wing", "won": 3, "lost": 0, "tot": 3, "pct": 100.0}, {"name": "Katsuya Okuma", "pos": "Hooker", "won": 2, "lost": 0, "tot": 2, "pct": 100.0}, {"name": "Halatoa Vailea", "pos": "Outside Centre", "won": 1, "lost": 0, "tot": 1, "pct": 100.0}, {"name": "Koga Nezuka", "pos": "Right Wing", "won": 1, "lost": 0, "tot": 1, "pct": 100.0}, {"name": "Shinobu Fujiwara", "pos": "Scrum Half", "won": 1, "lost": 0, "tot": 1, "pct": 100.0}, {"name": "Yuya Hirose", "pos": "Inside Centre", "won": 1, "lost": 0, "tot": 1, "pct": 100.0}]};
-const G = DATA.groups, M = DATA.matches;
-const f1=x=>(Math.round(x*10)/10).toFixed(1);
-const f0=x=>Math.round(x).toString();
-const f2=x=>(Math.round(x*100)/100).toFixed(2);
-const fmtDate=d=>{const[y,m,da]=d.split('-');return da+'/'+m;};
-
-document.getElementById('h-rec').textContent =
-  `${DATA.n} matches · ${DATA.nw}W–${DATA.nl}L · PF ${DATA.pf_tot} / PA ${DATA.pa_tot} (${DATA.pf_tot-DATA.pa_tot>=0?'+':''}${DATA.pf_tot-DATA.pa_tot})`;
-document.getElementById('h-pill').textContent = `${DATA.nw}–${DATA.nl}`;
-
-// KPI rows for the avg-table: [key,label,note,fmt,goodHigh]
-// goodHigh: true => higher is better (delta W-L positive=green)
-function avgTable(rows){
-  const head=`<thead><tr><th class="k">KPI</th><th class="win">Win avg (${DATA.nw})</th>
-    <th class="loss">Loss avg (${DATA.nl})</th><th>Season avg (${DATA.n})</th><th>Δ Win–Loss</th></tr></thead>`;
-  const body=rows.map(([k,lbl,note,fmt,gh])=>{
-    const w=G.win[k], l=G.loss[k], s=G.season[k];
-    const d=w-l;
-    const dcls=(gh?d>=0:d<=0)?'pos':'neg';
-    const F=fmt===2?f2:fmt===0?f0:f1;
-    const suf=(''+lbl).includes('%')?'%':'';
-    return `<tr>
-      <td class="k">${lbl}<small>${note}</small></td>
-      <td class="win">${F(w)}${suf}</td>
-      <td class="loss">${F(l)}${suf}</td>
-      <td>${F(s)}${suf}</td>
-      <td class="delta ${dcls}">${d>=0?'+':''}${F(d)}${suf}</td>
-    </tr>`;}).join('');
-  return `<table class="avg-table">${head}<tbody>${body}</tbody></table>`;
-}
-
-function itTable(cols, foot){
-  const head=`<thead><tr>${cols.map(c=>`<th class="${c.l?'l':''} ${c.hcls||''}">${c.h}</th>`).join('')}</tr></thead>`;
-  const body=M.map(r=>`<tr class="${r.result==='W'?'win':r.result==='L'?'loss':''}">
-    ${cols.map(c=>`<td class="${c.cls?c.cls:''}">${c.fn(r)}</td>`).join('')}</tr>`).join('');
-  const tf=foot?`<tfoot><tr>${foot.map(c=>`<td class="${c.l?'l':''}">${c.v}</td>`).join('')}</tr></tfoot>`:'';
-  return `<div class="it-wrap"><table class="it-table">${head}<tbody>${body}</tbody>${tf}</table></div>`;
-}
-
-const baseCols=[
-  {h:'Date',l:1,cls:'l date',fn:r=>fmtDate(r.date)},
-  {h:'Home / Away',fn:r=>r.ha},
-  {h:'Opponent',l:1,cls:'l',fn:r=>r.opp},
-  {h:'Score',cls:'score',fn:r=>`${r.kub}–${r.opp_score}`},
-  {h:'Result',cls:'res',fn:r=>r.result},
-];
-
-const TABS=[
- {id:'overview',title:'Overview',build:()=>{
-   const cards=[
-     [`${DATA.nw}–${DATA.nl}`,'Record'],
-     [`${f1(G.season.pf)}`,'Pts For/g'],
-     [`${f1(G.season.pa)}`,'Pts Against/g'],
-     [`${f1(G.season.bip)}'`,'Ball In Play/g'],
-     [`${f1(G.season.poss)}%`,'Possession'],
-     [`${f1(G.season.terr)}%`,'Territory'],
-   ].map(([b,s])=>`<div class="card"><div class="big">${b}</div><div class="sub">${s}</div></div>`).join('');
-   const avg=avgTable([
-     ['pf','Points For','per match',1,true],
-     ['pa','Points Against','per match',1,false],
-     ['bip','Ball In Play','minutes/match (both teams)',1,true],
-     ['poss','Possession %','Kubota attack time ÷ total',1,true],
-     ['terr','Territory %','action-time in opp half (x 51–110)',1,true],
-     ['tries','Tries Scored','per match',1,true],
-     ['tries_con','Tries Conceded','per match',1,false],
-     ['trate','Turnover Rate %','TO conceded ÷ attacks',1,false],
-     ['pen','Penalties Conceded','per match',1,false],
-   ]);
-   const it=itTable(baseCols.concat([
-     {h:'Ball In Play (min)',fn:r=>f1(r.at_tot/60)},
-     {h:'Possession %',fn:r=>f1(r.at_kub/r.at_tot*100)},
-     {h:'Territory %',fn:r=>r.terr_den?f1(r.terr_num/r.terr_den*100):'-'},
-     {h:'Tries Scored',fn:r=>r.tries},
-     {h:'Turnover Rate %',fn:r=>f1(r.to_con/r.attacks*100)},
-   ]));
-   return `<div class="cards">${cards}</div>
-     <div class="sec-title">Win / Loss / Season — averages</div>${avg}
-     <div class="sec-title">Match-by-match</div>${it}
-     <div class="note">Territory % = Kubota action-time (ps_endstamp−ps_timestamp, summed over all Kubota events with a duration)
-       in the opposition half (x_coord 51–110) ÷ total action-time (x_coord −10–110). Computed from Kubota's perspective.</div>`;
- }},
- {id:'kicking',title:'Kicking Game',build:()=>{
-   const avg=avgTable([
-     ['kicks','Kicks In Play','per match',1,null],
-     ['km','Kick Metres','per match',0,null],
-     ['avg_kick','Avg m / Kick','metres ÷ kicks',1,null],
-     ['r2k','Ruck : Kick Ratio','rucks ÷ kicks',2,null],
-     ['regain','Kick Regain','Own Player – Collected /match',1,true],
-     ['hg','Kick Hit Grass','Collected Bounce /match',1,null],
-     ['gk_pct','Goal Kicking %','goals ÷ attempts',1,true],
-     ['trate','Turnover Rate %','TO conceded ÷ attacks',1,false],
-   ]);
-   const it=itTable(baseCols.concat([
-     {h:'Ball In Play (min)',fn:r=>f1(r.at_tot/60)},
-     {h:'Possession %',fn:r=>f1(r.at_kub/r.at_tot*100)},
-     {h:'Territory %',fn:r=>r.terr_den?f1(r.terr_num/r.terr_den*100):'-'},
-     {h:'Kicks In Play',fn:r=>r.kicks},
-     {h:'Kick Metres',fn:r=>r.km},
-     {h:'Avg Metres / Kick',fn:r=>r.kicks?f1(r.km/r.kicks):'-'},
-     {h:'Ruck : Kick Ratio',fn:r=>r.kicks?f2(r.rucks/r.kicks):'-'},
-     {h:'Kick Regain',fn:r=>r.regain},
-     {h:'Kick Hit Grass',fn:r=>r.hg},
-     {h:'Turnover Rate %',fn:r=>f1(r.to_con/r.attacks*100)},
-   ]));
-   return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
-     <div class="sec-title">Match-by-match</div>${it}
-     <div class="note">Kick Regain = kicking team recollects (Own Player – Collected). Kick Hit Grass = Collected Bounce only
-       (kick-in-touch-on-bounce excluded). GK% = (Conv+PG+DG made) ÷ attempts.</div>`;
- }},
- {id:'attack',title:'Attack',build:()=>{
-   const avg=avgTable([
-     ['carries','Ball Carries','per match',1,null],
-     ['metres','Carry Metres','per match',0,true],
-     ['gl','Gainline %','carries crossing gainline',1,true],
-     ['lqb','LQB %','rucks ≤3s (Lightning Quick Ball)',1,true],
-     ['offloads','Offloads','successful (to own player)',1,true],
-     ['e22','22m Entries','per match',1,true],
-     ['s22','22m Success','Try or Penalty won /match',1,true],
-     ['s22_pct','22m Success %','success ÷ entries',1,true],
-     ['to_con','Turnovers Conceded','per match',1,false],
-   ]);
-   const it=itTable(baseCols.concat([
-     {h:'Ball Carries',fn:r=>r.carries},
-     {h:'Carry Metres',fn:r=>r.metres},
-     {h:'Gainline %',fn:r=>r.carries?f1(r.glo/r.carries*100):'-'},
-     {h:'LQB %',fn:r=>r.rucks?f1(r.lqb_n/r.rucks*100):'-'},
-     {h:'Offloads',fn:r=>r.offloads},
-     {h:'22m Entries',fn:r=>r.e22},
-     {h:'22m Success',fn:r=>r.s22},
-     {h:'22m Success %',fn:r=>r.e22?f0(r.s22/r.e22*100)+'%':'-'},
-     {h:'Turnovers Conceded',fn:r=>r.to_con},
-   ]));
-   return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
-     <div class="sec-title">Match-by-match</div>${it}
-     <div class="note">Gainline % = carries tagged 'Crossed Gain line' ÷ all carries. LQB % = rucks with ruck-speed ≤3s.
-       22m Success = entries whose outcome was a Try or a won penalty (Penalty Conceded by opponent).</div>`;
- }},
- {id:'defence',title:'Defence',build:()=>{
-   const avg=avgTable([
-     ['tack_att','Tackle Attempts','per match',1,null],
-     ['tack_pct','Tackle %','made ÷ attempted',1,true],
-     ['dom_pct','Dominant Tackle %','dominant ÷ tackles made',1,true],
-     ['tw','Turnovers Won','Poss TO + Jackal /match',1,true],
-     ['pen','Penalties Conceded','per match',1,false],
-   ]);
-   const it=itTable(baseCols.concat([
-     {h:'Tackles Made',fn:r=>r.tk},
-     {h:'Tackles Missed',fn:r=>r.mt},
-     {h:'Tackle Attempts',fn:r=>r.tk+r.mt},
-     {h:'Tackle %',fn:r=>(r.tk+r.mt)?f1(r.tk/(r.tk+r.mt)*100):'-'},
-     {h:'Dominant Tackle %',fn:r=>r.tk?f1(r.dom/r.tk*100):'-'},
-     {h:'Turnovers Won',fn:r=>r.tw},
-     {h:'Infringements',fn:r=>r.pen},
-     {h:'Opponent Gainline %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_carries?f1(r.opp_glo/r.opp_carries*100):'-'},
-     {h:'Opponent LQB %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_rucks?f1(r.opp_lqb/r.opp_rucks*100):'-'},
-     {h:'Tries Conceded',hcls:'opp',cls:'oppcol',fn:r=>r.tries_conceded},
-     {h:'Opponent 22m Entries',hcls:'opp',cls:'oppcol',fn:r=>r.opp_e22},
-     {h:'Opponent 22m Success',hcls:'opp',cls:'oppcol',fn:r=>r.opp_s22},
-   ]));
-   return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
-     <div class="sec-title">Match-by-match</div>${it}
-     <div class="note">Tackle % = tackles made ÷ (made+missed). Dominant Tackle % = qualifier 'Dominant Tackle' ÷ tackles made.
-       Turnovers Won = Possession 'Turnover Won' + Jackal success (events within 0.5 match-min de-duplicated).
-       <span style="color:#c4600f;font-weight:700">Orange columns = opponent stats</span>: Gainline % / LQB % / Tries scored vs Kubota /
-       22m Entries / 22m Success (Try or penalty won) by the opposition.</div>`;
- }},
- {id:'setpiece',title:'Set Piece',build:()=>{
-   const avg=avgTable([
-     ['lo_won','Lineout Won','per match',1,true],
-     ['lo_lost','Lineout Lost','per match',1,false],
-     ['lo_pct','Lineout Win %','won ÷ throws',1,true],
-     ['lo_steal','Lineout Steals','opp throw stolen /match',1,true],
-     ['sc_tot','Scrums','per match',1,null],
-     ['sc_reset','Scrum Resets','per match',1,false],
-     ['sc_pct','Scrum Win %','won ÷ scrums',1,true],
-     ['ma_tot','Mauls','per match',1,null],
-     ['ma_try','Maul Tries','per match',1,true],
-     ['ma_m','Maul Metres','per match',0,true],
-   ]);
-   const it=itTable(baseCols.concat([
-     {h:'Lineouts Won',fn:r=>r.lo_won},{h:'Lineouts Lost',fn:r=>r.lo_lost},
-     {h:'Lineout Win %',fn:r=>r.lo_throw?f0(r.lo_won/r.lo_throw*100)+'%':'-'},
-     {h:'Lineout Steals',fn:r=>r.lo_steal},
-     {h:'Scrums',fn:r=>r.sc_tot},{h:'Scrum Resets',fn:r=>r.sc_reset},
-     {h:'Scrum Win %',fn:r=>r.sc_tot?f0(r.sc_won/r.sc_tot*100)+'%':'-'},
-     {h:'Mauls',fn:r=>r.ma_tot},{h:'Maul Tries',fn:r=>r.ma_try},{h:'Maul Metres',fn:r=>r.ma_m},
-   ]));
-   const th=DATA.lineout_throwers.map(p=>`<tr><td>${p.name}</td><td class="pos">${p.pos}</td>
-     <td class="n">${p.tot}</td><td class="n" style="color:var(--good)">${p.won}</td>
-     <td class="n" style="color:var(--loss)">${p.lost}</td><td class="n">${p.pct}%</td></tr>`).join('');
-   const lp=DATA.lineout_players.map(p=>`<tr><td>${p.name}</td><td class="pos">${p.pos}</td><td class="n">${p.won}</td></tr>`).join('');
-   return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
-     <div class="sec-title">Match-by-match</div>${it}
-     <div style="display:flex;gap:30px;flex-wrap:wrap;margin-top:4px">
-       <div style="flex:1;min-width:380px">
-         <div class="sec-title">Thrower success rate (season)</div>
-         <table class="mini-table" style="max-width:none"><thead><tr><th>Thrower</th><th>Position</th>
-           <th style="text-align:right">Thrown</th><th style="text-align:right">Won</th>
-           <th style="text-align:right">Lost</th><th style="text-align:right">Win%</th></tr></thead>
-         <tbody>${th}</tbody></table>
-       </div>
-       <div style="flex:1;min-width:300px">
-         <div class="sec-title">Lineout claims by player (season)</div>
-         <table class="mini-table"><thead><tr><th>Player</th><th>Position</th><th style="text-align:right">LO Won</th></tr></thead><tbody>${lp}</tbody></table>
-       </div>
-     </div>
-     <div class="note">Thrower Win% = that player's Lineout Throws won ÷ thrown (Won* / Lost* outcomes). Steals = own team winning the
-       opposition throw (Lineout Take 'Lineout Steal*'). Maul Metres uses the <code>metres</code> column on Maul events.</div>`;
- }},
- {id:'penalty',title:'Penalty',build:()=>{
-   const P=DATA.penalty, max=Math.max(...P.types.map(t=>t[1]),1);
-   const bars=P.types.map(([t,n])=>`<div class="pen-bar-row">
-     <span class="pen-bar-label">${t}</span>
-     <div class="pen-bar-track"><div class="pen-bar-fill" style="width:${Math.round(n/max*100)}%"></div></div>
-     <span class="pen-bar-num">${n}</span></div>`).join('');
-   const att=P.od.Offence, def=P.od.Defence, odtot=att+def||1;
-   const stack=`<div class="stack">
-     <div class="seg att" style="width:${att/odtot*100}%">Attack ${att}</div>
-     <div class="seg def" style="width:${def/odtot*100}%">Defence ${def}</div></div>`;
-   const qmax=Math.max(...['Q1','Q2','Q3','Q4'].map(q=>P.quarter[q]),1);
-   const qb=['Q1','Q2','Q3','Q4'].map(q=>`<div class="vbar-col">
-     <div class="vbar-num">${P.quarter[q]}</div>
-     <div class="vbar" style="height:${Math.round(P.quarter[q]/qmax*96)+4}px"></div>
-     <div class="vbar-lbl">${q}</div></div>`).join('');
-   const ht=(P.half.H1+P.half.H2)||1;
-   const hb=`<div class="stack" style="height:38px">
-     <div class="seg att" style="width:${P.half.H1/ht*100}%">1st Half &nbsp;${P.half.H1} (${Math.round(P.half.H1/ht*100)}%)</div>
-     <div class="seg def" style="width:${P.half.H2/ht*100}%">2nd Half &nbsp;${P.half.H2} (${Math.round(P.half.H2/ht*100)}%)</div></div>`;
-   const cards=[[`${P.total}`,'Total Infringements'],[`${f1(G.season.pen)}`,'Per Match'],
-     [`${att}`,'In Attack'],[`${def}`,'In Defence']]
-     .map(([b,s])=>`<div class="card"><div class="big">${b}</div><div class="sub">${s}</div></div>`).join('');
-   // league comparison (per match)
-   const Lg=DATA.league;
-   const cmp=[
-     ['Infringements / match', P.total/DATA.n, Lg.infr],
-     ['Full Penalties / match', P.full/DATA.n, Lg.full],
-     ['Free Kicks / match', P.fk/DATA.n, Lg.fk],
-     ['In Attack / match', att/DATA.n, Lg.att],
-     ['In Defence / match', def/DATA.n, Lg.def],
-   ];
-   const cmpRows=cmp.map(([lbl,k,l])=>{
-     const d=k-l; const cls=d<=0?'pos':'neg';  // fewer infringements = good
-     return `<tr><td class="k">${lbl}</td><td>${f1(k)}</td><td>${f1(l)}</td>
-       <td class="delta ${cls}">${d>=0?'+':''}${f1(d)}</td></tr>`;}).join('');
-   const cmpTable=`<table class="avg-table"><thead><tr><th class="k">Metric</th>
-     <th>Kubota</th><th>League avg</th><th>Δ vs League</th></tr></thead><tbody>${cmpRows}</tbody></table>`;
-   return `<div class="cards">${cards}</div>
-     <div class="sec-title">Kubota vs League average (per match)</div>${cmpTable}
-     <div class="pen-cols">
-       <div class="pen-col">
-         <div class="sec-title">By Type (season total)</div>${bars}
-       </div>
-       <div class="pen-col">
-         <div class="sec-title">Attack vs Defence (qualifier3)</div>${stack}
-         <div class="sec-title">By Half</div>${hb}
-         <div class="sec-title">By Quarter</div><div class="vbar-chart">${qb}</div>
-       </div>
-     </div>
-     <div class="note">Infringements = Penalty Conceded (Full Penalty ${P.full} + Free Kick ${P.fk} = ${P.total}).
-       League avg = all ${Lg.tm} team-matches in rugby.db (12 teams × Kubota's ${DATA.n} fixtures); Δ negative = fewer than league (better).
-       Attack/Defence from qualifier3. Quarters from match-minute (Q1≤20', Q2≤40', Q3≤60', Q4&gt;60').</div>`;
- }},
- {id:'ind-attack',title:'Indiv Attack',build:()=>{
-   const R=DATA.players_attack;
-   const tot=R.reduce((a,r)=>{['carries','metres','glo_x','lb','db','ol','tries','err','passes','pass_acc_n','kicks','kick_m','ooa13','ooa4'].forEach(k=>a[k]=(a[k]||0)+(r[k]||0));return a;},{});
-   // recompute weighted totals needing raw: gl% and acc% from components
-   const totGlo=R.reduce((s,r)=>s+Math.round(r.gl/100*r.carries),0);
-   const totAccN=R.reduce((s,r)=>s+Math.round(r.pass_acc/100*r.passes),0);
-   const totOOA=tot.ooa13+tot.ooa4;
-   const rows=R.map(r=>`<tr>
-     <td class="shirt">${r.shirt}</td><td class="name">${r.name}</td><td class="pos">${r.pos}</td><td>${r.pt}</td>
-     <td>${r.carries}</td><td>${r.metres}</td><td>${r.avg}</td>
-     <td class="${r.gl>=60?'cell-good':r.gl&&r.gl<45?'cell-warn':''}">${r.carries?r.gl+'%':'-'}</td>
-     <td class="${r.lb?'cell-good':'cell-dim'}">${r.lb||'-'}</td>
-     <td>${r.db||'-'}</td><td>${r.ol||'-'}</td>
-     <td class="${r.tries?'cell-good':'cell-dim'}">${r.tries||'-'}</td>
-     <td class="${r.err>=20?'cell-warn':''}">${r.err||'-'}</td>
-     <td>${r.passes||'-'}</td><td>${r.passes?r.pass_acc+'%':'-'}</td>
-     <td>${r.kicks||'-'}</td><td>${r.kick_m||'-'}</td><td>${r.kicks?r.avg_kick:'-'}</td>
-     <td>${r.ooa13||'-'}</td><td>${r.ooa4||'-'}</td>
-     <td class="${(r.ooa13+r.ooa4)?(r.ooa_eff>=70?'cell-good':r.ooa_eff<55?'cell-warn':''):'cell-dim'}">${(r.ooa13+r.ooa4)?r.ooa_eff+'%':'-'}</td></tr>`).join('');
-   return `<div class="sec-title">Individual Attack — season totals (ranked by carries)</div>
-     <div class="rank-wrap"><table class="rank-table">
-       <thead><tr><th>No.</th><th class="l">Name</th><th class="l">Position</th><th>Play Time (min)</th>
-         <th>Ball Carries</th><th>Carry Metres</th><th>Avg Metres / Carry</th><th>Gainline %</th>
-         <th>Linebreaks</th><th>Defenders Beaten</th><th>Offloads</th><th>Tries</th><th>Errors</th>
-         <th>Passes</th><th>Pass Accuracy %</th><th>Kicks In Play</th><th>Kick Metres</th><th>Avg Kick Metres</th>
-         <th>OOA 1-3s</th><th>OOA 4+s</th><th>OOA Effectiveness %</th></tr></thead>
-       <tbody>${rows}</tbody>
-       <tfoot><tr><td></td><td class="l">TOTAL (${R.length} players)</td><td></td><td></td>
-         <td>${tot.carries}</td><td>${tot.metres}</td><td>${(tot.metres/tot.carries).toFixed(1)}</td>
-         <td>${(totGlo/tot.carries*100).toFixed(1)}%</td>
-         <td>${tot.lb}</td><td>${tot.db}</td><td>${tot.ol}</td><td>${tot.tries}</td><td>${tot.err}</td>
-         <td>${tot.passes}</td><td>${(totAccN/tot.passes*100).toFixed(1)}%</td>
-         <td>${tot.kicks}</td><td>${tot.kick_m}</td><td>${(tot.kick_m/tot.kicks).toFixed(1)}</td>
-         <td>${tot.ooa13}</td><td>${tot.ooa4}</td><td>${(tot.ooa13/totOOA*100).toFixed(1)}%</td></tr></tfoot>
-     </table></div>
-     <div class="note">Avg/C = metres ÷ carries · GL% = carries crossing the gainline ÷ carries · LB = Linebreaks · DB = Defenders Beaten ·
-       OL = Offloads (to own player) · Err = Turnovers conceded · Acc% = passes not Incomplete/Error/Forward/Intercepted/Off-Target ·
-       OOA 1-3 / 4+ = ruck (breakdown) speed ≤3s / &gt;3s from action 'Ruck' speed buckets · OOA Eff% = 1-3 ÷ (1-3 + 4+).
-       <b>Handling Count: データなし</b>（DBに該当フィールドなし）.</div>`;
- }},
- {id:'ind-defence',title:'Indiv Defence',build:()=>{
-   const R=DATA.players_defence;
-   const tot=R.reduce((a,r)=>{['tk','mt','att','dom','passive','oa','legs','ht_tot','jck','tow','pen'].forEach(k=>a[k]=(a[k]||0)+(r[k]||0));return a;},{});
-   const rows=R.map(r=>`<tr>
-     <td class="shirt">${r.shirt}</td><td class="name">${r.name}</td><td class="pos">${r.pos}</td><td>${r.pt}</td>
-     <td>${r.att}</td><td>${r.tk}</td><td class="${r.mt>=20?'cell-warn':''}">${r.mt}</td>
-     <td class="${r.pct>=90?'cell-good':r.pct<75?'cell-warn':''}">${r.pct}%</td>
-     <td>${r.ht_tot?r.leg_pct+'%':'-'}</td>
-     <td class="${r.dom?'cell-good':'cell-dim'}">${r.dom||'-'}</td>
-     <td>${r.att?r.dom_pct+'%':'-'}</td>
-     <td>${r.passive||'-'}</td>
-     <td class="${r.oa>=10?'cell-warn':''}">${r.oa||'-'}</td>
-     <td class="${r.jck?'cell-good':'cell-dim'}">${r.jck||'-'}</td>
-     <td class="${r.tow?'cell-good':'cell-dim'}">${r.tow||'-'}</td>
-     <td class="${r.pen>=12?'cell-warn':''}">${r.pen||'-'}</td></tr>`).join('');
-   return `<div class="sec-title">Individual Defence — season totals (ranked by tackles made)</div>
-     <div class="rank-wrap"><table class="rank-table">
-       <thead><tr><th>No.</th><th class="l">Name</th><th class="l">Position</th><th>Play Time (min)</th>
-         <th>Tackle Attempts</th><th>Tackles Made</th><th>Tackles Missed</th><th>Tackle %</th><th>Leg Tackle %</th>
-         <th>Dominant Tackles</th><th>Dominant Tackle %</th><th>Passive Tackles</th><th>Offloads Allowed</th>
-         <th>Jackal Success</th><th>Turnovers Won</th><th>Infringements</th></tr></thead>
-       <tbody>${rows}</tbody>
-       <tfoot><tr><td></td><td class="l">TOTAL (${R.length} players)</td><td></td><td></td>
-         <td>${tot.att}</td><td>${tot.tk}</td><td>${tot.mt}</td>
-         <td>${(tot.tk/tot.att*100).toFixed(1)}%</td>
-         <td>${(tot.legs/tot.ht_tot*100).toFixed(1)}%</td>
-         <td>${tot.dom}</td><td>${(tot.dom/tot.att*100).toFixed(1)}%</td>
-         <td>${tot.passive}</td><td>${tot.oa}</td><td>${tot.jck}</td><td>${tot.tow}</td>
-         <td>${tot.pen}</td></tr></tfoot>
-     </table></div>
-     <div class="note">Att/Made/Miss tackles · Tkl% = made ÷ att · Leg% = leg tackles ÷ tackles with height tag (qualifier6) ·
-       Dom% = dominant ÷ att · Passive = passive tackles · OA = offloads allowed (own tackle) · Jackal = Collection/Jackal success ·
-       <b>Turnovers Won = tackle turnovers (Tackle/Turnover Won) + breakdown penalties won (Ruck OOA/Penalty Won)</b> ·
-       Infringements = Penalties + Free Kicks conceded.</div>`;
- }},
-];
-
-const tabsEl=document.getElementById('tabs'), panelsEl=document.getElementById('panels');
-TABS.forEach((t,i)=>{
-  const b=document.createElement('button');
-  b.className='tab-btn'+(i===0?' active':''); b.textContent=t.title; b.dataset.id=t.id;
-  b.onclick=()=>{
-    document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active'); document.getElementById('panel-'+t.id).classList.add('active');
-  };
-  tabsEl.appendChild(b);
-  const p=document.createElement('div');
-  p.className='tab-panel'+(i===0?' active':''); p.id='panel-'+t.id; p.innerHTML=t.build();
-  panelsEl.appendChild(p);
-});
-</script>
-</body></html>
+    <script>
+    const DATA = {"team": "Kubota Spears", "n": 21, "nw": 16, "nl": 5, "pf_tot": 774, "pa_tot": 406, "groups": {"win": {"pf": 42.8125, "pa": 17.5, "bip": 34.78950000000001, "poss": 50.25789552778227, "terr": 48.89463305178151, "tries": 6.1875, "tries_con": 2.375, "trate": 35.28591352859135, "pen": 9.5625, "kicks": 22.6875, "km": 592.6875, "avg_kick": 26.123966942148762, "r2k": 3.303030303030303, "regain": 1.875, "contest_tot": 6.5625, "hg": 5, "gk_pct": 74.78260869565217, "carries": 116.1875, "metres": 530.4375, "gl": 67.29424421732114, "lqb": 54.54545454545454, "offloads": 10.9375, "db": 26.125, "lb": 9.4375, "e22": 14, "s22": 6.75, "s22_pct": 48.214285714285715, "to_con": 15.8125, "tk": 172.5, "mt": 23.8125, "tack_att": 196.3125, "tack_pct": 87.87010506208213, "dom": 9.5, "dom_pct": 5.507246376811594, "passive": 35.1875, "oa": 9.3125, "tw": 6.8125, "opp_gl": 59.82857142857143, "opp_lqb": 57.34011627906976, "opp_e22": 7.6875, "opp_s22_pct": 38.21138211382114, "lo_won": 14, "lo_lost": 1, "lo_steal": 0.9375, "lo_pct": 93.33333333333333, "sc_tot": 7.5, "sc_reset": 0.5625, "sc_pct": 93.7, "ma_tot": 5.625, "ma_try": 0.4375, "ma_m": 16.875}, "loss": {"pf": 17.8, "pa": 25.2, "bip": 36.43773333333331, "poss": 48.224727935256304, "terr": 49.86243817556185, "tries": 2, "tries_con": 3.2, "trate": 32.71028037383177, "pen": 10, "kicks": 25.8, "km": 707.2, "avg_kick": 27.410852713178294, "r2k": 3.2713178294573644, "regain": 2.6, "contest_tot": 7.8, "hg": 5.6, "gk_pct": 84.21052631578947, "carries": 108.4, "metres": 383, "gl": 61.80811808118081, "lqb": 56.6350710900474, "offloads": 5.4, "db": 21.2, "lb": 4.4, "e22": 8, "s22": 2.2, "s22_pct": 27.500000000000004, "to_con": 14, "tk": 199.6, "mt": 27.4, "tack_att": 227.0, "tack_pct": 87.9295154185022, "dom": 9.2, "dom_pct": 4.609218436873747, "passive": 37.6, "oa": 11, "tw": 8.8, "opp_gl": 57.84615384615385, "opp_lqb": 56.69456066945606, "opp_e22": 9.8, "opp_s22_pct": 40.816326530612244, "lo_won": 12.2, "lo_lost": 2.2, "lo_steal": 1.6, "lo_pct": 84.72222222222221, "sc_tot": 7.6, "sc_reset": 0.6, "sc_pct": 97.1, "ma_tot": 4.4, "ma_try": 0.2, "ma_m": 13.2}, "season": {"pf": 36.857142857142854, "pa": 19.333333333333332, "bip": 35.18193650793651, "poss": 49.75507655259963, "terr": 49.12661745337171, "tries": 5.190476190476191, "tries_con": 2.5714285714285716, "trate": 34.69387755102041, "pen": 9.666666666666666, "kicks": 23.428571428571427, "km": 619.952380952381, "avg_kick": 26.461382113821138, "r2k": 3.2947154471544717, "regain": 2.0476190476190474, "contest_tot": 6.857142857142857, "hg": 5.142857142857143, "gk_pct": 76.11940298507463, "carries": 114.33333333333333, "metres": 495.3333333333333, "gl": 66.05581007913369, "lqb": 55.08945095619988, "offloads": 9.619047619047619, "db": 24.952380952380953, "lb": 8.238095238095237, "e22": 12.571428571428571, "s22": 5.666666666666667, "s22_pct": 45.07575757575758, "to_con": 15.380952380952381, "tk": 178.95238095238096, "mt": 24.666666666666668, "tack_att": 203.61904761904762, "tack_pct": 87.88587464920487, "dom": 9.428571428571429, "dom_pct": 5.2687599787120805, "passive": 35.76190476190476, "oa": 9.714285714285714, "tw": 7.285714285714286, "opp_gl": 59.291666666666664, "opp_lqb": 57.17367853290184, "opp_e22": 8.19047619047619, "opp_s22_pct": 38.95348837209303, "lo_won": 13.571428571428571, "lo_lost": 1.2857142857142858, "lo_steal": 1.0952380952380953, "lo_pct": 91.34615384615384, "sc_tot": 7.523809523809524, "sc_reset": 0.5714285714285714, "sc_pct": 94.5, "ma_tot": 5.333333333333333, "ma_try": 0.38095238095238093, "ma_m": 16}}, "matches": [{"fxid": 948748, "date": "2025-12-13", "opp": "Kobelco Kobe Steelers", "ha": "A", "kub": 33, "opp_score": 28, "result": "W", "at_kub": 900.2400000000016, "at_tot": 2195.5200000000077, "poss_den": 2089.560000000007, "terr_num": 369.68000000000393, "terr_den": 900.2400000000016, "tw": 3, "kicks": 20, "km": 546, "rucks": 79, "contest_tot": 5, "regain": 3, "hg": 1, "carries": 111, "metres": 391, "glo": 69, "lqb_n": 48, "offloads": 12, "db": 16, "lb": 3, "e22": 10, "s22": 6, "tries": 4, "pen": 10, "to_con": 9, "attacks": 35, "tk": 209, "mt": 27, "dom": 3, "passive": 34, "oa": 11, "gk_made": 5, "gk_att": 8, "lo_throw": 14, "lo_won": 12, "lo_lost": 2, "lo_steal": 0, "sc_tot": 2, "sc_won": 2, "sc_reset": 0, "ma_tot": 5, "ma_won": 4, "ma_try": 1, "ma_m": 13, "opp_carries": 160, "opp_glo": 94, "opp_rucks": 114, "opp_lqb": 77, "tries_conceded": 3, "opp_e22": 10, "opp_s22": 4}, {"fxid": 948753, "date": "2025-12-20", "opp": "BlackRams Tokyo", "ha": "H", "kub": 50, "opp_score": 28, "result": "W", "at_kub": 1000.3600000000016, "at_tot": 2044.4000000000026, "poss_den": 1933.440000000002, "terr_num": 477.16000000000145, "terr_den": 1000.3600000000016, "tw": 9, "kicks": 31, "km": 915, "rucks": 54, "contest_tot": 7, "regain": 4, "hg": 5, "carries": 95, "metres": 587, "glo": 79, "lqb_n": 36, "offloads": 14, "db": 30, "lb": 7, "e22": 12, "s22": 8, "tries": 7, "pen": 17, "to_con": 16, "attacks": 49, "tk": 121, "mt": 23, "dom": 10, "passive": 16, "oa": 6, "gk_made": 7, "gk_att": 8, "lo_throw": 14, "lo_won": 13, "lo_lost": 1, "lo_steal": 2, "sc_tot": 4, "sc_won": 3, "sc_reset": 0, "ma_tot": 4, "ma_won": 3, "ma_try": 0, "ma_m": 18, "opp_carries": 88, "opp_glo": 50, "opp_rucks": 67, "opp_lqb": 35, "tries_conceded": 3, "opp_e22": 9, "opp_s22": 6}, {"fxid": 948759, "date": "2025-12-27", "opp": "Tokyo Sungoliath", "ha": "H", "kub": 79, "opp_score": 20, "result": "W", "at_kub": 952.1199999999999, "at_tot": 2132.519999999999, "poss_den": 2044.04, "terr_num": 426.44000000000057, "terr_den": 952.1199999999999, "tw": 13, "kicks": 22, "km": 568, "rucks": 72, "contest_tot": 4, "regain": 2, "hg": 8, "carries": 124, "metres": 618, "glo": 91, "lqb_n": 36, "offloads": 12, "db": 28, "lb": 13, "e22": 18, "s22": 13, "tries": 11, "pen": 8, "to_con": 13, "attacks": 42, "tk": 216, "mt": 37, "dom": 9, "passive": 63, "oa": 5, "gk_made": 11, "gk_att": 14, "lo_throw": 10, "lo_won": 9, "lo_lost": 1, "lo_steal": 0, "sc_tot": 4, "sc_won": 3, "sc_reset": 0, "ma_tot": 2, "ma_won": 2, "ma_try": 0, "ma_m": 1, "opp_carries": 126, "opp_glo": 70, "opp_rucks": 104, "opp_lqb": 59, "tries_conceded": 2, "opp_e22": 4, "opp_s22": 3}, {"fxid": 948770, "date": "2026-01-11", "opp": "Mie Honda Heat", "ha": "A", "kub": 45, "opp_score": 21, "result": "W", "at_kub": 929.8000000000008, "at_tot": 2042.2800000000018, "poss_den": 1978.6000000000013, "terr_num": 488.03999999999894, "terr_den": 929.8000000000008, "tw": 7, "kicks": 12, "km": 227, "rucks": 73, "contest_tot": 4, "regain": 0, "hg": 4, "carries": 108, "metres": 693, "glo": 74, "lqb_n": 40, "offloads": 6, "db": 43, "lb": 12, "e22": 17, "s22": 7, "tries": 7, "pen": 3, "to_con": 21, "attacks": 39, "tk": 211, "mt": 34, "dom": 11, "passive": 32, "oa": 19, "gk_made": 5, "gk_att": 7, "lo_throw": 18, "lo_won": 17, "lo_lost": 1, "lo_steal": 1, "sc_tot": 8, "sc_won": 8, "sc_reset": 0, "ma_tot": 7, "ma_won": 4, "ma_try": 1, "ma_m": 17, "opp_carries": 115, "opp_glo": 65, "opp_rucks": 91, "opp_lqb": 57, "tries_conceded": 3, "opp_e22": 7, "opp_s22": 3}, {"fxid": 948774, "date": "2026-01-17", "opp": "Toyota Verblitz", "ha": "H", "kub": 39, "opp_score": 10, "result": "W", "at_kub": 1027.360000000004, "at_tot": 2228.5199999999995, "poss_den": 2173.2799999999993, "terr_num": 481.76000000000136, "terr_den": 1027.360000000004, "tw": 5, "kicks": 14, "km": 418, "rucks": 67, "contest_tot": 5, "regain": 4, "hg": 3, "carries": 115, "metres": 451, "glo": 69, "lqb_n": 38, "offloads": 18, "db": 19, "lb": 11, "e22": 14, "s22": 6, "tries": 5, "pen": 15, "to_con": 15, "attacks": 40, "tk": 204, "mt": 27, "dom": 12, "passive": 67, "oa": 10, "gk_made": 5, "gk_att": 6, "lo_throw": 16, "lo_won": 16, "lo_lost": 0, "lo_steal": 0, "sc_tot": 10, "sc_won": 8, "sc_reset": 2, "ma_tot": 8, "ma_won": 5, "ma_try": 0, "ma_m": 19, "opp_carries": 126, "opp_glo": 78, "opp_rucks": 104, "opp_lqb": 76, "tries_conceded": 2, "opp_e22": 11, "opp_s22": 2}, {"fxid": 948781, "date": "2026-01-24", "opp": "Toshiba Brave Lupus Tokyo", "ha": "A", "kub": 20, "opp_score": 24, "result": "L", "at_kub": 1072.519999999999, "at_tot": 2491.399999999998, "poss_den": 2436.3999999999974, "terr_num": 407.000000000001, "terr_den": 1072.519999999999, "tw": 10, "kicks": 26, "km": 703, "rucks": 86, "contest_tot": 7, "regain": 3, "hg": 6, "carries": 108, "metres": 503, "glo": 71, "lqb_n": 52, "offloads": 8, "db": 19, "lb": 7, "e22": 7, "s22": 2, "tries": 2, "pen": 11, "to_con": 14, "attacks": 45, "tk": 236, "mt": 38, "dom": 6, "passive": 38, "oa": 21, "gk_made": 4, "gk_att": 4, "lo_throw": 16, "lo_won": 16, "lo_lost": 0, "lo_steal": 2, "sc_tot": 7, "sc_won": 6, "sc_reset": 1, "ma_tot": 4, "ma_won": 3, "ma_try": 0, "ma_m": 4, "opp_carries": 147, "opp_glo": 83, "opp_rucks": 103, "opp_lqb": 53, "tries_conceded": 4, "opp_e22": 15, "opp_s22": 4}, {"fxid": 948786, "date": "2026-02-07", "opp": "Urayasu D-Rocks", "ha": "H", "kub": 48, "opp_score": 14, "result": "W", "at_kub": 1212.3999999999976, "at_tot": 2125.6800000000026, "poss_den": 2056.880000000002, "terr_num": 810.7999999999989, "terr_den": 1212.3999999999978, "tw": 7, "kicks": 28, "km": 669, "rucks": 91, "contest_tot": 13, "regain": 4, "hg": 8, "carries": 139, "metres": 473, "glo": 89, "lqb_n": 39, "offloads": 12, "db": 23, "lb": 9, "e22": 19, "s22": 8, "tries": 8, "pen": 6, "to_con": 12, "attacks": 51, "tk": 142, "mt": 15, "dom": 11, "passive": 15, "oa": 14, "gk_made": 4, "gk_att": 8, "lo_throw": 13, "lo_won": 10, "lo_lost": 3, "lo_steal": 2, "sc_tot": 12, "sc_won": 11, "sc_reset": 1, "ma_tot": 5, "ma_won": 5, "ma_try": 0, "ma_m": 27, "opp_carries": 88, "opp_glo": 48, "opp_rucks": 71, "opp_lqb": 32, "tries_conceded": 2, "opp_e22": 5, "opp_s22": 2}, {"fxid": 948790, "date": "2026-02-14", "opp": "Shizuoka BlueRevs", "ha": "A", "kub": 42, "opp_score": 19, "result": "W", "at_kub": 1083.4000000000049, "at_tot": 2117.1200000000067, "poss_den": 2053.8400000000065, "terr_num": 442.5200000000028, "terr_den": 1083.4000000000046, "tw": 8, "kicks": 26, "km": 743, "rucks": 77, "contest_tot": 4, "regain": 0, "hg": 5, "carries": 134, "metres": 683, "glo": 94, "lqb_n": 40, "offloads": 14, "db": 28, "lb": 8, "e22": 18, "s22": 6, "tries": 6, "pen": 11, "to_con": 25, "attacks": 59, "tk": 166, "mt": 23, "dom": 16, "passive": 38, "oa": 17, "gk_made": 6, "gk_att": 6, "lo_throw": 17, "lo_won": 15, "lo_lost": 2, "lo_steal": 4, "sc_tot": 6, "sc_won": 6, "sc_reset": 0, "ma_tot": 6, "ma_won": 4, "ma_try": 1, "ma_m": 14, "opp_carries": 110, "opp_glo": 67, "opp_rucks": 73, "opp_lqb": 42, "tries_conceded": 3, "opp_e22": 9, "opp_s22": 3}, {"fxid": 948795, "date": "2026-02-21", "opp": "Mitsubishi Sagamihara Dynaboars", "ha": "H", "kub": 26, "opp_score": 10, "result": "W", "at_kub": 969.9599999999978, "at_tot": 2116.159999999997, "poss_den": 2068.0399999999977, "terr_num": 569.2399999999999, "terr_den": 969.9599999999978, "tw": 8, "kicks": 20, "km": 466, "rucks": 74, "contest_tot": 10, "regain": 3, "hg": 3, "carries": 99, "metres": 455, "glo": 75, "lqb_n": 43, "offloads": 10, "db": 33, "lb": 9, "e22": 13, "s22": 4, "tries": 4, "pen": 15, "to_con": 17, "attacks": 41, "tk": 189, "mt": 19, "dom": 15, "passive": 40, "oa": 11, "gk_made": 3, "gk_att": 4, "lo_throw": 16, "lo_won": 16, "lo_lost": 0, "lo_steal": 3, "sc_tot": 5, "sc_won": 3, "sc_reset": 0, "ma_tot": 7, "ma_won": 5, "ma_try": 0, "ma_m": 20, "opp_carries": 113, "opp_glo": 68, "opp_rucks": 92, "opp_lqb": 30, "tries_conceded": 1, "opp_e22": 10, "opp_s22": 2}, {"fxid": 948804, "date": "2026-03-01", "opp": "Yokohama Canon Eagles", "ha": "A", "kub": 28, "opp_score": 10, "result": "W", "at_kub": 1102.0399999999984, "at_tot": 1840.5599999999993, "poss_den": 1792.3999999999992, "terr_num": 681.8399999999984, "terr_den": 1102.0399999999981, "tw": 10, "kicks": 21, "km": 353, "rucks": 97, "contest_tot": 7, "regain": 3, "hg": 3, "carries": 133, "metres": 374, "glo": 69, "lqb_n": 54, "offloads": 16, "db": 25, "lb": 6, "e22": 15, "s22": 4, "tries": 4, "pen": 11, "to_con": 18, "attacks": 44, "tk": 99, "mt": 26, "dom": 7, "passive": 17, "oa": 6, "gk_made": 4, "gk_att": 4, "lo_throw": 16, "lo_won": 16, "lo_lost": 0, "lo_steal": 0, "sc_tot": 16, "sc_won": 11, "sc_reset": 4, "ma_tot": 5, "ma_won": 2, "ma_try": 0, "ma_m": 7, "opp_carries": 64, "opp_glo": 49, "opp_rucks": 44, "opp_lqb": 25, "tries_conceded": 2, "opp_e22": 7, "opp_s22": 2}, {"fxid": 948809, "date": "2026-03-14", "opp": "Saitama Wild Knights", "ha": "H", "kub": 30, "opp_score": 32, "result": "L", "at_kub": 1133.3600000000006, "at_tot": 2291.7999999999984, "poss_den": 2194.1999999999994, "terr_num": 614.400000000001, "terr_den": 1133.3600000000006, "tw": 11, "kicks": 32, "km": 818, "rucks": 98, "contest_tot": 15, "regain": 4, "hg": 6, "carries": 117, "metres": 338, "glo": 73, "lqb_n": 57, "offloads": 3, "db": 28, "lb": 6, "e22": 6, "s22": 3, "tries": 3, "pen": 5, "to_con": 9, "attacks": 44, "tk": 190, "mt": 27, "dom": 12, "passive": 82, "oa": 2, "gk_made": 6, "gk_att": 7, "lo_throw": 12, "lo_won": 10, "lo_lost": 2, "lo_steal": 1, "sc_tot": 9, "sc_won": 8, "sc_reset": 1, "ma_tot": 5, "ma_won": 3, "ma_try": 0, "ma_m": 19, "opp_carries": 134, "opp_glo": 68, "opp_rucks": 106, "opp_lqb": 59, "tries_conceded": 4, "opp_e22": 8, "opp_s22": 4}, {"fxid": 948818, "date": "2026-03-21", "opp": "Urayasu D-Rocks", "ha": "A", "kub": 59, "opp_score": 35, "result": "W", "at_kub": 973.9200000000026, "at_tot": 2085.880000000001, "poss_den": 1982.0800000000029, "terr_num": 355.96000000000026, "terr_den": 973.9200000000026, "tw": 3, "kicks": 20, "km": 558, "rucks": 78, "contest_tot": 5, "regain": 2, "hg": 4, "carries": 128, "metres": 804, "glo": 106, "lqb_n": 48, "offloads": 11, "db": 33, "lb": 14, "e22": 14, "s22": 9, "tries": 9, "pen": 6, "to_con": 14, "attacks": 40, "tk": 171, "mt": 24, "dom": 0, "passive": 34, "oa": 5, "gk_made": 7, "gk_att": 9, "lo_throw": 7, "lo_won": 7, "lo_lost": 0, "lo_steal": 0, "sc_tot": 4, "sc_won": 3, "sc_reset": 1, "ma_tot": 2, "ma_won": 1, "ma_try": 1, "ma_m": 27, "opp_carries": 109, "opp_glo": 81, "opp_rucks": 91, "opp_lqb": 45, "tries_conceded": 5, "opp_e22": 8, "opp_s22": 5}, {"fxid": 948821, "date": "2026-03-28", "opp": "Toshiba Brave Lupus Tokyo", "ha": "H", "kub": 51, "opp_score": 7, "result": "W", "at_kub": 949.2400000000006, "at_tot": 2086.8399999999997, "poss_den": 2011.999999999999, "terr_num": 388.75999999999976, "terr_den": 949.2400000000006, "tw": 9, "kicks": 27, "km": 704, "rucks": 74, "contest_tot": 6, "regain": 1, "hg": 5, "carries": 102, "metres": 474, "glo": 69, "lqb_n": 38, "offloads": 4, "db": 28, "lb": 10, "e22": 12, "s22": 7, "tries": 7, "pen": 7, "to_con": 17, "attacks": 49, "tk": 149, "mt": 18, "dom": 14, "passive": 25, "oa": 8, "gk_made": 7, "gk_att": 9, "lo_throw": 14, "lo_won": 14, "lo_lost": 0, "lo_steal": 2, "sc_tot": 8, "sc_won": 8, "sc_reset": 0, "ma_tot": 4, "ma_won": 3, "ma_try": 0, "ma_m": 9, "opp_carries": 111, "opp_glo": 52, "opp_rucks": 89, "opp_lqb": 48, "tries_conceded": 1, "opp_e22": 7, "opp_s22": 1}, {"fxid": 948827, "date": "2026-04-04", "opp": "Toyota Verblitz", "ha": "A", "kub": 7, "opp_score": 24, "result": "L", "at_kub": 1148.6399999999971, "at_tot": 2177.1199999999967, "poss_den": 2121.759999999996, "terr_num": 617.2799999999978, "terr_den": 1148.6399999999971, "tw": 3, "kicks": 25, "km": 623, "rucks": 99, "contest_tot": 5, "regain": 1, "hg": 6, "carries": 126, "metres": 410, "glo": 71, "lqb_n": 59, "offloads": 4, "db": 35, "lb": 3, "e22": 13, "s22": 1, "tries": 1, "pen": 4, "to_con": 22, "attacks": 45, "tk": 168, "mt": 23, "dom": 12, "passive": 30, "oa": 6, "gk_made": 1, "gk_att": 1, "lo_throw": 18, "lo_won": 15, "lo_lost": 3, "lo_steal": 1, "sc_tot": 7, "sc_won": 7, "sc_reset": 0, "ma_tot": 8, "ma_won": 6, "ma_try": 0, "ma_m": 13, "opp_carries": 116, "opp_glo": 71, "opp_rucks": 82, "opp_lqb": 54, "tries_conceded": 4, "opp_e22": 7, "opp_s22": 4}, {"fxid": 948835, "date": "2026-04-18", "opp": "Tokyo Sungoliath", "ha": "A", "kub": 27, "opp_score": 22, "result": "W", "at_kub": 807.7599999999975, "at_tot": 2216.1200000000013, "poss_den": 2147.5600000000004, "terr_num": 319.999999999999, "terr_den": 807.7599999999975, "tw": 6, "kicks": 21, "km": 601, "rucks": 54, "contest_tot": 3, "regain": 0, "hg": 4, "carries": 91, "metres": 346, "glo": 58, "lqb_n": 33, "offloads": 8, "db": 16, "lb": 8, "e22": 11, "s22": 4, "tries": 4, "pen": 11, "to_con": 17, "attacks": 40, "tk": 269, "mt": 34, "dom": 12, "passive": 53, "oa": 5, "gk_made": 3, "gk_att": 5, "lo_throw": 17, "lo_won": 14, "lo_lost": 3, "lo_steal": 0, "sc_tot": 5, "sc_won": 5, "sc_reset": 0, "ma_tot": 7, "ma_won": 6, "ma_try": 1, "ma_m": 23, "opp_carries": 154, "opp_glo": 92, "opp_rucks": 131, "opp_lqb": 91, "tries_conceded": 3, "opp_e22": 10, "opp_s22": 4}, {"fxid": 948842, "date": "2026-04-25", "opp": "Mie Honda Heat", "ha": "H", "kub": 54, "opp_score": 21, "result": "W", "at_kub": 1245.5199999999975, "at_tot": 2218.7999999999984, "poss_den": 2131.439999999998, "terr_num": 625.6799999999985, "terr_den": 1245.5199999999977, "tw": 3, "kicks": 22, "km": 566, "rucks": 106, "contest_tot": 6, "regain": 0, "hg": 5, "carries": 144, "metres": 625, "glo": 96, "lqb_n": 51, "offloads": 10, "db": 32, "lb": 11, "e22": 14, "s22": 9, "tries": 9, "pen": 9, "to_con": 10, "attacks": 46, "tk": 151, "mt": 19, "dom": 8, "passive": 64, "oa": 8, "gk_made": 4, "gk_att": 9, "lo_throw": 12, "lo_won": 12, "lo_lost": 0, "lo_steal": 0, "sc_tot": 15, "sc_won": 15, "sc_reset": 0, "ma_tot": 6, "ma_won": 3, "ma_try": 1, "ma_m": 9, "opp_carries": 102, "opp_glo": 60, "opp_rucks": 78, "opp_lqb": 43, "tries_conceded": 3, "opp_e22": 10, "opp_s22": 3}, {"fxid": 948848, "date": "2026-05-03", "opp": "BlackRams Tokyo", "ha": "A", "kub": 52, "opp_score": 8, "result": "W", "at_kub": 900.6400000000008, "at_tot": 1937.3599999999997, "poss_den": 1870.1999999999994, "terr_num": 470.6400000000002, "terr_den": 900.6400000000008, "tw": 6, "kicks": 22, "km": 651, "rucks": 50, "contest_tot": 5, "regain": 3, "hg": 6, "carries": 105, "metres": 595, "glo": 73, "lqb_n": 29, "offloads": 8, "db": 27, "lb": 11, "e22": 12, "s22": 8, "tries": 8, "pen": 7, "to_con": 16, "attacks": 47, "tk": 178, "mt": 24, "dom": 12, "passive": 21, "oa": 12, "gk_made": 6, "gk_att": 7, "lo_throw": 18, "lo_won": 16, "lo_lost": 2, "lo_steal": 1, "sc_tot": 11, "sc_won": 9, "sc_reset": 1, "ma_tot": 5, "ma_won": 3, "ma_try": 1, "ma_m": 22, "opp_carries": 110, "opp_glo": 60, "opp_rucks": 90, "opp_lqb": 55, "tries_conceded": 1, "opp_e22": 4, "opp_s22": 2}, {"fxid": 948852, "date": "2026-05-10", "opp": "Kobelco Kobe Steelers", "ha": "H", "kub": 19, "opp_score": 24, "result": "L", "at_kub": 806.3599999999963, "at_tot": 1877.6000000000013, "poss_den": 1813.520000000001, "terr_num": 369.11999999999836, "terr_den": 806.3599999999963, "tw": 10, "kicks": 22, "km": 728, "rucks": 61, "contest_tot": 5, "regain": 2, "hg": 4, "carries": 80, "metres": 268, "glo": 42, "lqb_n": 36, "offloads": 5, "db": 10, "lb": 3, "e22": 7, "s22": 3, "tries": 3, "pen": 14, "to_con": 12, "attacks": 40, "tk": 203, "mt": 23, "dom": 2, "passive": 25, "oa": 10, "gk_made": 2, "gk_att": 3, "lo_throw": 14, "lo_won": 11, "lo_lost": 3, "lo_steal": 1, "sc_tot": 9, "sc_won": 7, "sc_reset": 1, "ma_tot": 3, "ma_won": 0, "ma_try": 1, "ma_m": 19, "opp_carries": 133, "opp_glo": 83, "opp_rucks": 92, "opp_lqb": 56, "tries_conceded": 3, "opp_e22": 9, "opp_s22": 3}, {"fxid": 948856, "date": "2026-05-24", "opp": "Toshiba Brave Lupus Tokyo", "ha": "H", "kub": 26, "opp_score": 3, "result": "W", "at_kub": 1118.7999999999975, "at_tot": 1996.1599999999953, "poss_den": 1947.9199999999967, "terr_num": 737.7599999999977, "terr_den": 1118.7999999999972, "tw": 7, "kicks": 26, "km": 643, "rucks": 78, "contest_tot": 12, "regain": 0, "hg": 7, "carries": 137, "metres": 493, "glo": 79, "lqb_n": 46, "offloads": 12, "db": 22, "lb": 14, "e22": 18, "s22": 4, "tries": 4, "pen": 5, "to_con": 20, "attacks": 54, "tk": 129, "mt": 14, "dom": 5, "passive": 15, "oa": 10, "gk_made": 3, "gk_att": 4, "lo_throw": 22, "lo_won": 22, "lo_lost": 0, "lo_steal": 0, "sc_tot": 6, "sc_won": 6, "sc_reset": 0, "ma_tot": 13, "ma_won": 10, "ma_try": 0, "ma_m": 32, "opp_carries": 81, "opp_glo": 45, "opp_rucks": 64, "opp_lqb": 33, "tries_conceded": 0, "opp_e22": 6, "opp_s22": 1}, {"fxid": 948858, "date": "2026-05-31", "opp": "Saitama Wild Knights", "ha": "A", "kub": 26, "opp_score": 24, "result": "W", "at_kub": 1012.9200000000009, "at_tot": 2014.0000000000048, "poss_den": 1925.5600000000043, "terr_num": 268.04000000000144, "terr_den": 1012.920000000001, "tw": 5, "kicks": 31, "km": 855, "rucks": 75, "contest_tot": 9, "regain": 1, "hg": 9, "carries": 94, "metres": 425, "glo": 61, "lqb_n": 35, "offloads": 8, "db": 15, "lb": 5, "e22": 7, "s22": 5, "tries": 2, "pen": 12, "to_con": 13, "attacks": 41, "tk": 156, "mt": 17, "dom": 7, "passive": 29, "oa": 2, "gk_made": 6, "gk_att": 7, "lo_throw": 16, "lo_won": 15, "lo_lost": 1, "lo_steal": 0, "sc_tot": 4, "sc_won": 3, "sc_reset": 0, "ma_tot": 4, "ma_won": 4, "ma_try": 0, "ma_m": 12, "opp_carries": 93, "opp_glo": 68, "opp_rucks": 73, "opp_lqb": 41, "tries_conceded": 4, "opp_e22": 6, "opp_s22": 4}, {"fxid": 948860, "date": "2026-06-07", "opp": "Kobelco Kobe Steelers", "ha": "A", "kub": 13, "opp_score": 22, "result": "L", "at_kub": 942.2799999999999, "at_tot": 2093.4000000000005, "poss_den": 2016.1599999999994, "terr_num": 536.7600000000007, "terr_den": 942.2799999999999, "tw": 10, "kicks": 24, "km": 664, "rucks": 78, "contest_tot": 7, "regain": 3, "hg": 6, "carries": 111, "metres": 396, "glo": 78, "lqb_n": 35, "offloads": 7, "db": 14, "lb": 3, "e22": 7, "s22": 2, "tries": 1, "pen": 16, "to_con": 13, "attacks": 40, "tk": 201, "mt": 26, "dom": 14, "passive": 13, "oa": 16, "gk_made": 3, "gk_att": 4, "lo_throw": 12, "lo_won": 9, "lo_lost": 3, "lo_steal": 3, "sc_tot": 6, "sc_won": 6, "sc_reset": 0, "ma_tot": 2, "ma_won": 1, "ma_try": 0, "ma_m": 11, "opp_carries": 120, "opp_glo": 71, "opp_rucks": 95, "opp_lqb": 49, "tries_conceded": 1, "opp_e22": 10, "opp_s22": 5}], "penalty": {"total": 203, "full": 187, "fk": 16, "types": [["Scrum Offence", 34], ["Offside", 33], ["Not Releasing", 30], ["Not Rolling Away", 22], ["Off Feet at Ruck", 19], ["Foul Play - High Tackle", 11], ["Preventing Release", 9], ["Wrong Side at Ruck", 7], ["Other Offence", 5], ["Lineout Offence", 5], ["Collapsing Maul", 4], ["Foul Play - Early Tackle", 4], ["Wrong Side at Maul", 4], ["Obstruction", 3], ["HandsInRuck", 3], ["Deliberate Knock On", 3], ["Offside at Kick", 2], ["Foul Play - Other", 2], ["Charging into Ruck", 1], ["Maul Obstruction", 1], ["Dissent Advance", 1]], "od": {"Offence": 58, "Defence": 145}, "half": {"H1": 106, "H2": 97}, "quarter": {"Q1": 56, "Q2": 39, "Q3": 49, "Q4": 59}, "pos_group": {"Front Row": 65, "Lock": 27, "Loosie": 46, "Inside": 23, "Midfield": 18, "Back 3": 23}}, "league": {"tm": 42, "infr": 10.523809523809524, "full": 9.857142857142858, "fk": 0.6666666666666666, "att": 3.261904761904762, "def": 7.261904761904762}, "players_attack": [{"name": "Yota Kamimori", "pos": "Loosehead Prop", "shirt": 1, "pt": 1123, "carries": 43, "metres": 66, "avg": 1.5, "gl": 60.5, "lb": 2, "db": 5, "ol": 1, "tries": 1, "err": 1, "passes": 22, "pass_acc": 95.5, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 29, "ooa4": 10, "ooa_eff": 74.4}, {"name": "Kazuki Kato", "pos": "Loosehead Prop", "shirt": 17, "pt": 391, "carries": 10, "metres": 40, "avg": 4.0, "gl": 70.0, "lb": 1, "db": 0, "ol": 1, "tries": 0, "err": 2, "passes": 2, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 6, "ooa4": 2, "ooa_eff": 75.0}, {"name": "Kota Kaishi", "pos": "Loosehead Prop", "shirt": 17, "pt": 166, "carries": 9, "metres": 12, "avg": 1.3, "gl": 33.3, "lb": 0, "db": 0, "ol": 0, "tries": 0, "err": 1, "passes": 4, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 4, "ooa4": 5, "ooa_eff": 44.4}, {"name": "Malcolm Marx", "pos": "Hooker", "shirt": 2, "pt": 970, "carries": 116, "metres": 418, "avg": 3.6, "gl": 69.0, "lb": 11, "db": 15, "ol": 8, "tries": 5, "err": 13, "passes": 50, "pass_acc": 90.0, "kicks": 2, "kick_m": 36, "avg_kick": 18.0, "ooa13": 41, "ooa4": 35, "ooa_eff": 53.9}, {"name": "Hayate Era", "pos": "Hooker", "shirt": 16, "pt": 382, "carries": 37, "metres": 121, "avg": 3.3, "gl": 59.5, "lb": 2, "db": 7, "ol": 2, "tries": 2, "err": 3, "passes": 19, "pass_acc": 89.5, "kicks": 1, "kick_m": 47, "avg_kick": 47.0, "ooa13": 12, "ooa4": 13, "ooa_eff": 48.0}, {"name": "Rikuto Fukuda", "pos": "Hooker", "shirt": 2, "pt": 328, "carries": 23, "metres": 50, "avg": 2.2, "gl": 43.5, "lb": 1, "db": 4, "ol": 0, "tries": 2, "err": 2, "passes": 5, "pass_acc": 80.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 11, "ooa4": 10, "ooa_eff": 52.4}, {"name": "Opeti Helu", "pos": "Tighthead Prop", "shirt": 3, "pt": 782, "carries": 133, "metres": 371, "avg": 2.8, "gl": 65.4, "lb": 2, "db": 28, "ol": 21, "tries": 6, "err": 10, "passes": 54, "pass_acc": 94.4, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 62, "ooa4": 25, "ooa_eff": 71.3}, {"name": "Keijiro Tamefusa", "pos": "Tighthead Prop", "shirt": 3, "pt": 686, "carries": 46, "metres": 77, "avg": 1.7, "gl": 45.7, "lb": 1, "db": 2, "ol": 0, "tries": 2, "err": 2, "passes": 8, "pass_acc": 87.5, "kicks": 1, "kick_m": 0, "avg_kick": 0.0, "ooa13": 21, "ooa4": 16, "ooa_eff": 56.8}, {"name": "Izi Sword", "pos": "Tighthead Prop", "shirt": 3, "pt": 161, "carries": 12, "metres": 23, "avg": 1.9, "gl": 66.7, "lb": 0, "db": 0, "ol": 1, "tries": 0, "err": 1, "passes": 6, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 5, "ooa4": 6, "ooa_eff": 45.5}, {"name": "Ruan Botha", "pos": "Lock (4)", "shirt": 4, "pt": 940, "carries": 130, "metres": 258, "avg": 2.0, "gl": 56.2, "lb": 3, "db": 17, "ol": 6, "tries": 4, "err": 13, "passes": 70, "pass_acc": 94.3, "kicks": 1, "kick_m": 24, "avg_kick": 24.0, "ooa13": 60, "ooa4": 38, "ooa_eff": 61.2}, {"name": "Akira Ieremia", "pos": "Lock (4)", "shirt": 4, "pt": 774, "carries": 88, "metres": 231, "avg": 2.6, "gl": 61.4, "lb": 1, "db": 13, "ol": 4, "tries": 0, "err": 9, "passes": 55, "pass_acc": 90.9, "kicks": 1, "kick_m": 19, "avg_kick": 19.0, "ooa13": 35, "ooa4": 28, "ooa_eff": 55.6}, {"name": "Merwe Olivier", "pos": "Lock (4)", "shirt": 4, "pt": 631, "carries": 82, "metres": 263, "avg": 3.2, "gl": 67.1, "lb": 3, "db": 18, "ol": 3, "tries": 3, "err": 12, "passes": 44, "pass_acc": 86.4, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 44, "ooa4": 22, "ooa_eff": 66.7}, {"name": "David Van Zeeland", "pos": "Lock (4)", "shirt": 4, "pt": 140, "carries": 12, "metres": 16, "avg": 1.3, "gl": 58.3, "lb": 0, "db": 0, "ol": 0, "tries": 0, "err": 0, "passes": 11, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 5, "ooa4": 4, "ooa_eff": 55.6}, {"name": "David Bulbring", "pos": "Lock (5)", "shirt": 5, "pt": 1139, "carries": 64, "metres": 89, "avg": 1.4, "gl": 42.2, "lb": 2, "db": 4, "ol": 5, "tries": 1, "err": 9, "passes": 89, "pass_acc": 92.1, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 36, "ooa4": 13, "ooa_eff": 73.5}, {"name": "Yuki Aoki", "pos": "Lock (5)", "shirt": 5, "pt": 88, "carries": 6, "metres": 1, "avg": 0.2, "gl": 16.7, "lb": 0, "db": 0, "ol": 0, "tries": 0, "err": 0, "passes": 5, "pass_acc": 80.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 5, "ooa4": 1, "ooa_eff": 83.3}, {"name": "Tyler Paul", "pos": "Blindside Flanker", "shirt": 6, "pt": 1205, "carries": 190, "metres": 477, "avg": 2.5, "gl": 63.7, "lb": 4, "db": 16, "ol": 8, "tries": 7, "err": 19, "passes": 80, "pass_acc": 92.5, "kicks": 2, "kick_m": 60, "avg_kick": 30.0, "ooa13": 95, "ooa4": 55, "ooa_eff": 63.3}, {"name": "Takeo Suenaga", "pos": "Openside Flanker", "shirt": 7, "pt": 1338, "carries": 74, "metres": 143, "avg": 1.9, "gl": 59.5, "lb": 2, "db": 8, "ol": 2, "tries": 0, "err": 15, "passes": 59, "pass_acc": 94.9, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 33, "ooa4": 27, "ooa_eff": 55.0}, {"name": "Pieter Labuschagne", "pos": "Openside Flanker", "shirt": 7, "pt": 187, "carries": 17, "metres": 29, "avg": 1.7, "gl": 58.8, "lb": 0, "db": 1, "ol": 0, "tries": 0, "err": 1, "passes": 7, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 12, "ooa4": 4, "ooa_eff": 75.0}, {"name": "Finau Tupa", "pos": "Openside Flanker", "shirt": 20, "pt": 74, "carries": 18, "metres": 63, "avg": 3.5, "gl": 94.4, "lb": 0, "db": 5, "ol": 0, "tries": 0, "err": 2, "passes": 5, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 13, "ooa4": 1, "ooa_eff": 92.9}, {"name": "Faulua Makisi", "pos": "Number 8", "shirt": 8, "pt": 1288, "carries": 186, "metres": 616, "avg": 3.3, "gl": 64.0, "lb": 7, "db": 20, "ol": 6, "tries": 13, "err": 12, "passes": 109, "pass_acc": 93.6, "kicks": 1, "kick_m": 18, "avg_kick": 18.0, "ooa13": 73, "ooa4": 64, "ooa_eff": 53.3}, {"name": "Asipeli Moala", "pos": "Number 8", "shirt": 20, "pt": 146, "carries": 23, "metres": 61, "avg": 2.7, "gl": 60.9, "lb": 1, "db": 5, "ol": 1, "tries": 0, "err": 4, "passes": 10, "pass_acc": 80.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 11, "ooa4": 8, "ooa_eff": 57.9}, {"name": "Shinobu Fujiwara", "pos": "Scrum Half", "shirt": 9, "pt": 822, "carries": 67, "metres": 325, "avg": 4.9, "gl": 68.7, "lb": 9, "db": 21, "ol": 1, "tries": 5, "err": 16, "passes": 657, "pass_acc": 98.3, "kicks": 71, "kick_m": 1479, "avg_kick": 20.8, "ooa13": 9, "ooa4": 18, "ooa_eff": 33.3}, {"name": "Ippei Okada", "pos": "Scrum Half", "shirt": 9, "pt": 409, "carries": 26, "metres": 80, "avg": 3.1, "gl": 69.2, "lb": 1, "db": 5, "ol": 3, "tries": 3, "err": 3, "passes": 341, "pass_acc": 96.5, "kicks": 29, "kick_m": 592, "avg_kick": 20.4, "ooa13": 1, "ooa4": 8, "ooa_eff": 11.1}, {"name": "Kazuhiro Taniguchi", "pos": "Scrum Half", "shirt": 21, "pt": 191, "carries": 8, "metres": 37, "avg": 4.6, "gl": 100.0, "lb": 0, "db": 1, "ol": 0, "tries": 0, "err": 1, "passes": 234, "pass_acc": 97.9, "kicks": 12, "kick_m": 235, "avg_kick": 19.6, "ooa13": 1, "ooa4": 1, "ooa_eff": 50.0}, {"name": "Bryn Hall", "pos": "Scrum Half", "shirt": 21, "pt": 102, "carries": 5, "metres": 11, "avg": 2.2, "gl": 40.0, "lb": 0, "db": 0, "ol": 1, "tries": 0, "err": 2, "passes": 119, "pass_acc": 96.6, "kicks": 6, "kick_m": 144, "avg_kick": 24.0, "ooa13": 1, "ooa4": 1, "ooa_eff": 50.0}, {"name": "Shunta Koga", "pos": "Scrum Half", "shirt": 9, "pt": 93, "carries": 4, "metres": 10, "avg": 2.5, "gl": 100.0, "lb": 0, "db": 0, "ol": 0, "tries": 0, "err": 2, "passes": 99, "pass_acc": 96.0, "kicks": 10, "kick_m": 225, "avg_kick": 22.5, "ooa13": 0, "ooa4": 0, "ooa_eff": 0}, {"name": "Bernard Foley", "pos": "Fly Half", "shirt": 10, "pt": 1223, "carries": 106, "metres": 496, "avg": 4.7, "gl": 67.0, "lb": 3, "db": 8, "ol": 7, "tries": 3, "err": 22, "passes": 348, "pass_acc": 93.4, "kicks": 253, "kick_m": 5827, "avg_kick": 23.0, "ooa13": 16, "ooa4": 13, "ooa_eff": 55.2}, {"name": "Atsushi Oshikawa", "pos": "Fly Half", "shirt": 10, "pt": 441, "carries": 36, "metres": 217, "avg": 6.0, "gl": 66.7, "lb": 3, "db": 8, "ol": 7, "tries": 0, "err": 8, "passes": 125, "pass_acc": 94.4, "kicks": 75, "kick_m": 1871, "avg_kick": 24.9, "ooa13": 8, "ooa4": 5, "ooa_eff": 61.5}, {"name": "Rikus Pretorius", "pos": "Inside Centre", "shirt": 12, "pt": 1603, "carries": 117, "metres": 849, "avg": 7.3, "gl": 71.8, "lb": 22, "db": 42, "ol": 8, "tries": 10, "err": 14, "passes": 103, "pass_acc": 87.4, "kicks": 6, "kick_m": 176, "avg_kick": 29.3, "ooa13": 33, "ooa4": 20, "ooa_eff": 62.3}, {"name": "Yuya Hirose", "pos": "Inside Centre", "shirt": 12, "pt": 1006, "carries": 66, "metres": 236, "avg": 3.6, "gl": 62.1, "lb": 2, "db": 12, "ol": 6, "tries": 0, "err": 11, "passes": 104, "pass_acc": 91.3, "kicks": 19, "kick_m": 601, "avg_kick": 31.6, "ooa13": 25, "ooa4": 15, "ooa_eff": 62.5}, {"name": "Harumichi Tatekawa", "pos": "Inside Centre", "shirt": 22, "pt": 57, "carries": 4, "metres": 10, "avg": 2.5, "gl": 100.0, "lb": 0, "db": 1, "ol": 0, "tries": 0, "err": 0, "passes": 5, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 4, "ooa4": 0, "ooa_eff": 100.0}, {"name": "Halatoa Vailea", "pos": "Outside Centre", "shirt": 13, "pt": 1145, "carries": 117, "metres": 903, "avg": 7.7, "gl": 76.9, "lb": 23, "db": 56, "ol": 13, "tries": 13, "err": 21, "passes": 77, "pass_acc": 94.8, "kicks": 13, "kick_m": 331, "avg_kick": 25.5, "ooa13": 40, "ooa4": 13, "ooa_eff": 75.5}, {"name": "Koga Nezuka", "pos": "Right Wing", "shirt": 14, "pt": 749, "carries": 104, "metres": 747, "avg": 7.2, "gl": 76.0, "lb": 12, "db": 44, "ol": 9, "tries": 3, "err": 27, "passes": 29, "pass_acc": 89.7, "kicks": 3, "kick_m": 50, "avg_kick": 16.7, "ooa13": 41, "ooa4": 23, "ooa_eff": 64.1}, {"name": "Gerhard van den Heever", "pos": "Right Wing", "shirt": 14, "pt": 302, "carries": 35, "metres": 176, "avg": 5.0, "gl": 62.9, "lb": 4, "db": 9, "ol": 3, "tries": 2, "err": 5, "passes": 20, "pass_acc": 100.0, "kicks": 8, "kick_m": 326, "avg_kick": 40.8, "ooa13": 12, "ooa4": 10, "ooa_eff": 54.5}, {"name": "Haruto Kida", "pos": "Left Wing", "shirt": 11, "pt": 1144, "carries": 143, "metres": 1137, "avg": 8.0, "gl": 79.0, "lb": 25, "db": 55, "ol": 21, "tries": 13, "err": 21, "passes": 72, "pass_acc": 98.6, "kicks": 18, "kick_m": 667, "avg_kick": 37.1, "ooa13": 48, "ooa4": 20, "ooa_eff": 70.6}, {"name": "Hibiki Yamada", "pos": "Left Wing", "shirt": 11, "pt": 252, "carries": 27, "metres": 158, "avg": 5.9, "gl": 70.4, "lb": 3, "db": 10, "ol": 6, "tries": 4, "err": 4, "passes": 24, "pass_acc": 100.0, "kicks": 2, "kick_m": 67, "avg_kick": 33.5, "ooa13": 5, "ooa4": 5, "ooa_eff": 50.0}, {"name": "Shaun Stevenson", "pos": "Full Back", "shirt": 15, "pt": 1481, "carries": 212, "metres": 1571, "avg": 7.4, "gl": 72.2, "lb": 23, "db": 81, "ol": 48, "tries": 6, "err": 32, "passes": 269, "pass_acc": 94.1, "kicks": 127, "kick_m": 3762, "avg_kick": 29.6, "ooa13": 34, "ooa4": 23, "ooa_eff": 59.6}, {"name": "Reo Matsushita", "pos": "Full Back", "shirt": 23, "pt": 31, "carries": 5, "metres": 14, "avg": 2.8, "gl": 40.0, "lb": 0, "db": 3, "ol": 0, "tries": 0, "err": 1, "passes": 1, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "ooa13": 2, "ooa4": 3, "ooa_eff": 40.0}], "players_defence": [{"name": "Yota Kamimori", "pos": "Loosehead Prop", "shirt": 1, "pt": 1123, "tk": 161, "mt": 11, "att": 172, "tkl_assist": 69, "pct": 93.6, "dom": 5, "dom_pct": 2.9, "passive": 24, "oa": 7, "legs": 54, "ht_tot": 156, "leg_pct": 34.6, "jck": 0, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 1, "tow": 1, "pen": 8}, {"name": "Kazuki Kato", "pos": "Loosehead Prop", "shirt": 17, "pt": 391, "tk": 53, "mt": 4, "att": 57, "tkl_assist": 24, "pct": 93.0, "dom": 3, "dom_pct": 5.3, "passive": 5, "oa": 3, "legs": 19, "ht_tot": 50, "leg_pct": 38.0, "jck": 0, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 0, "pen": 10}, {"name": "Kota Kaishi", "pos": "Loosehead Prop", "shirt": 17, "pt": 166, "tk": 31, "mt": 4, "att": 35, "tkl_assist": 8, "pct": 88.6, "dom": 2, "dom_pct": 5.7, "passive": 8, "oa": 0, "legs": 13, "ht_tot": 28, "leg_pct": 46.4, "jck": 1, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 1, "pen": 3}, {"name": "Malcolm Marx", "pos": "Hooker", "shirt": 2, "pt": 970, "tk": 153, "mt": 16, "att": 169, "tkl_assist": 82, "pct": 90.5, "dom": 7, "dom_pct": 4.1, "passive": 27, "oa": 5, "legs": 27, "ht_tot": 151, "leg_pct": 17.9, "jck": 9, "lo_steal": 1, "fit": 0, "try_saver": 0, "to_t": 3, "tow": 11, "pen": 8}, {"name": "Hayate Era", "pos": "Hooker", "shirt": 16, "pt": 382, "tk": 118, "mt": 18, "att": 136, "tkl_assist": 43, "pct": 86.8, "dom": 9, "dom_pct": 6.6, "passive": 21, "oa": 5, "legs": 56, "ht_tot": 113, "leg_pct": 49.6, "jck": 3, "lo_steal": 2, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 4, "pen": 6}, {"name": "Rikuto Fukuda", "pos": "Hooker", "shirt": 2, "pt": 328, "tk": 53, "mt": 10, "att": 63, "tkl_assist": 29, "pct": 84.1, "dom": 1, "dom_pct": 1.6, "passive": 6, "oa": 1, "legs": 18, "ht_tot": 48, "leg_pct": 37.5, "jck": 2, "lo_steal": 0, "fit": 0, "try_saver": 1, "to_t": 0, "tow": 2, "pen": 1}, {"name": "Katsuya Okuma", "pos": "Hooker", "shirt": 16, "pt": 0, "tk": 1, "mt": 0, "att": 1, "tkl_assist": 0, "pct": 100.0, "dom": 0, "dom_pct": 0.0, "passive": 0, "oa": 0, "legs": 0, "ht_tot": 1, "leg_pct": 0.0, "jck": 1, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 1, "pen": 0}, {"name": "Opeti Helu", "pos": "Tighthead Prop", "shirt": 3, "pt": 782, "tk": 147, "mt": 18, "att": 165, "tkl_assist": 53, "pct": 89.1, "dom": 15, "dom_pct": 9.1, "passive": 19, "oa": 7, "legs": 23, "ht_tot": 139, "leg_pct": 16.5, "jck": 0, "lo_steal": 0, "fit": 1, "try_saver": 0, "to_t": 4, "tow": 4, "pen": 21}, {"name": "Keijiro Tamefusa", "pos": "Tighthead Prop", "shirt": 3, "pt": 686, "tk": 133, "mt": 11, "att": 144, "tkl_assist": 67, "pct": 92.4, "dom": 5, "dom_pct": 3.5, "passive": 22, "oa": 6, "legs": 53, "ht_tot": 125, "leg_pct": 42.4, "jck": 0, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 0, "pen": 3}, {"name": "Izi Sword", "pos": "Tighthead Prop", "shirt": 3, "pt": 161, "tk": 49, "mt": 4, "att": 53, "tkl_assist": 26, "pct": 92.5, "dom": 2, "dom_pct": 3.8, "passive": 10, "oa": 0, "legs": 20, "ht_tot": 47, "leg_pct": 42.6, "jck": 0, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 0, "pen": 5}, {"name": "Ruan Botha", "pos": "Lock (4)", "shirt": 4, "pt": 940, "tk": 172, "mt": 14, "att": 186, "tkl_assist": 85, "pct": 92.5, "dom": 10, "dom_pct": 5.4, "passive": 25, "oa": 4, "legs": 23, "ht_tot": 167, "leg_pct": 13.8, "jck": 3, "lo_steal": 3, "fit": 0, "try_saver": 0, "to_t": 2, "tow": 5, "pen": 13}, {"name": "Akira Ieremia", "pos": "Lock (4)", "shirt": 4, "pt": 774, "tk": 151, "mt": 19, "att": 170, "tkl_assist": 67, "pct": 88.8, "dom": 14, "dom_pct": 8.2, "passive": 22, "oa": 11, "legs": 40, "ht_tot": 146, "leg_pct": 27.4, "jck": 0, "lo_steal": 4, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 4, "pen": 7}, {"name": "Merwe Olivier", "pos": "Lock (4)", "shirt": 4, "pt": 631, "tk": 145, "mt": 15, "att": 160, "tkl_assist": 54, "pct": 90.6, "dom": 16, "dom_pct": 10.0, "passive": 29, "oa": 8, "legs": 25, "ht_tot": 137, "leg_pct": 18.2, "jck": 0, "lo_steal": 4, "fit": 1, "try_saver": 0, "to_t": 2, "tow": 6, "pen": 8}, {"name": "David Van Zeeland", "pos": "Lock (4)", "shirt": 4, "pt": 140, "tk": 40, "mt": 3, "att": 43, "tkl_assist": 17, "pct": 93.0, "dom": 0, "dom_pct": 0.0, "passive": 9, "oa": 3, "legs": 6, "ht_tot": 39, "leg_pct": 15.4, "jck": 0, "lo_steal": 1, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 1, "pen": 1}, {"name": "David Bulbring", "pos": "Lock (5)", "shirt": 5, "pt": 1139, "tk": 182, "mt": 9, "att": 191, "tkl_assist": 91, "pct": 95.3, "dom": 4, "dom_pct": 2.1, "passive": 36, "oa": 7, "legs": 24, "ht_tot": 178, "leg_pct": 13.5, "jck": 1, "lo_steal": 3, "fit": 0, "try_saver": 0, "to_t": 1, "tow": 5, "pen": 5}, {"name": "Yuki Aoki", "pos": "Lock (5)", "shirt": 5, "pt": 88, "tk": 19, "mt": 1, "att": 20, "tkl_assist": 11, "pct": 95.0, "dom": 3, "dom_pct": 15.0, "passive": 3, "oa": 1, "legs": 6, "ht_tot": 19, "leg_pct": 31.6, "jck": 1, "lo_steal": 1, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 2, "pen": 1}, {"name": "Tyler Paul", "pos": "Blindside Flanker", "shirt": 6, "pt": 1205, "tk": 346, "mt": 32, "att": 378, "tkl_assist": 138, "pct": 91.5, "dom": 19, "dom_pct": 5.0, "passive": 55, "oa": 17, "legs": 89, "ht_tot": 337, "leg_pct": 26.4, "jck": 5, "lo_steal": 2, "fit": 0, "try_saver": 0, "to_t": 1, "tow": 7, "pen": 12}, {"name": "Takeo Suenaga", "pos": "Openside Flanker", "shirt": 7, "pt": 1338, "tk": 231, "mt": 26, "att": 257, "tkl_assist": 116, "pct": 89.9, "dom": 12, "dom_pct": 4.7, "passive": 41, "oa": 6, "legs": 100, "ht_tot": 224, "leg_pct": 44.6, "jck": 15, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 3, "tow": 10, "pen": 11}, {"name": "Pieter Labuschagne", "pos": "Openside Flanker", "shirt": 7, "pt": 187, "tk": 37, "mt": 0, "att": 37, "tkl_assist": 22, "pct": 100.0, "dom": 3, "dom_pct": 8.1, "passive": 9, "oa": 1, "legs": 9, "ht_tot": 37, "leg_pct": 24.3, "jck": 0, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 0, "pen": 1}, {"name": "Finau Tupa", "pos": "Openside Flanker", "shirt": 20, "pt": 74, "tk": 10, "mt": 2, "att": 12, "tkl_assist": 6, "pct": 83.3, "dom": 0, "dom_pct": 0.0, "passive": 2, "oa": 0, "legs": 3, "ht_tot": 10, "leg_pct": 30.0, "jck": 0, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 1, "tow": 1, "pen": 0}, {"name": "Faulua Makisi", "pos": "Number 8", "shirt": 8, "pt": 1288, "tk": 199, "mt": 23, "att": 222, "tkl_assist": 83, "pct": 89.6, "dom": 17, "dom_pct": 7.7, "passive": 34, "oa": 8, "legs": 36, "ht_tot": 191, "leg_pct": 18.8, "jck": 6, "lo_steal": 1, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 6, "pen": 11}, {"name": "Asipeli Moala", "pos": "Number 8", "shirt": 20, "pt": 146, "tk": 42, "mt": 4, "att": 46, "tkl_assist": 23, "pct": 91.3, "dom": 1, "dom_pct": 2.2, "passive": 16, "oa": 2, "legs": 3, "ht_tot": 40, "leg_pct": 7.5, "jck": 0, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 1, "tow": 1, "pen": 3}, {"name": "Shinobu Fujiwara", "pos": "Scrum Half", "shirt": 9, "pt": 822, "tk": 122, "mt": 32, "att": 154, "tkl_assist": 39, "pct": 79.2, "dom": 2, "dom_pct": 1.3, "passive": 23, "oa": 8, "legs": 48, "ht_tot": 110, "leg_pct": 43.6, "jck": 2, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 1, "tow": 1, "pen": 9}, {"name": "Ippei Okada", "pos": "Scrum Half", "shirt": 9, "pt": 409, "tk": 43, "mt": 4, "att": 47, "tkl_assist": 19, "pct": 91.5, "dom": 0, "dom_pct": 0.0, "passive": 8, "oa": 4, "legs": 24, "ht_tot": 42, "leg_pct": 57.1, "jck": 0, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 1, "tow": 1, "pen": 6}, {"name": "Kazuhiro Taniguchi", "pos": "Scrum Half", "shirt": 21, "pt": 191, "tk": 27, "mt": 8, "att": 35, "tkl_assist": 5, "pct": 77.1, "dom": 0, "dom_pct": 0.0, "passive": 5, "oa": 4, "legs": 18, "ht_tot": 24, "leg_pct": 75.0, "jck": 0, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 0, "pen": 1}, {"name": "Bryn Hall", "pos": "Scrum Half", "shirt": 21, "pt": 102, "tk": 22, "mt": 3, "att": 25, "tkl_assist": 15, "pct": 88.0, "dom": 0, "dom_pct": 0.0, "passive": 2, "oa": 3, "legs": 6, "ht_tot": 21, "leg_pct": 28.6, "jck": 0, "lo_steal": 0, "fit": 0, "try_saver": 1, "to_t": 0, "tow": 0, "pen": 0}, {"name": "Shunta Koga", "pos": "Scrum Half", "shirt": 9, "pt": 93, "tk": 16, "mt": 2, "att": 18, "tkl_assist": 8, "pct": 88.9, "dom": 0, "dom_pct": 0.0, "passive": 6, "oa": 2, "legs": 7, "ht_tot": 16, "leg_pct": 43.8, "jck": 0, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 0, "pen": 0}, {"name": "Bernard Foley", "pos": "Fly Half", "shirt": 10, "pt": 1223, "tk": 99, "mt": 33, "att": 132, "tkl_assist": 37, "pct": 75.0, "dom": 1, "dom_pct": 0.8, "passive": 22, "oa": 8, "legs": 39, "ht_tot": 89, "leg_pct": 43.8, "jck": 0, "lo_steal": 0, "fit": 1, "try_saver": 0, "to_t": 3, "tow": 3, "pen": 7}, {"name": "Atsushi Oshikawa", "pos": "Fly Half", "shirt": 10, "pt": 441, "tk": 38, "mt": 8, "att": 46, "tkl_assist": 10, "pct": 82.6, "dom": 3, "dom_pct": 6.5, "passive": 4, "oa": 2, "legs": 20, "ht_tot": 35, "leg_pct": 57.1, "jck": 0, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 0, "pen": 1}, {"name": "Rikus Pretorius", "pos": "Inside Centre", "shirt": 12, "pt": 1603, "tk": 225, "mt": 29, "att": 254, "tkl_assist": 105, "pct": 88.6, "dom": 10, "dom_pct": 3.9, "passive": 69, "oa": 17, "legs": 45, "ht_tot": 213, "leg_pct": 21.1, "jck": 0, "lo_steal": 0, "fit": 1, "try_saver": 0, "to_t": 2, "tow": 2, "pen": 8}, {"name": "Yuya Hirose", "pos": "Inside Centre", "shirt": 12, "pt": 1006, "tk": 140, "mt": 24, "att": 164, "tkl_assist": 55, "pct": 85.4, "dom": 1, "dom_pct": 0.6, "passive": 48, "oa": 14, "legs": 42, "ht_tot": 129, "leg_pct": 32.6, "jck": 1, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 1, "pen": 7}, {"name": "Harumichi Tatekawa", "pos": "Inside Centre", "shirt": 22, "pt": 57, "tk": 18, "mt": 7, "att": 25, "tkl_assist": 8, "pct": 72.0, "dom": 0, "dom_pct": 0.0, "passive": 4, "oa": 1, "legs": 5, "ht_tot": 16, "leg_pct": 31.2, "jck": 0, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 0, "pen": 1}, {"name": "Halatoa Vailea", "pos": "Outside Centre", "shirt": 13, "pt": 1145, "tk": 180, "mt": 46, "att": 226, "tkl_assist": 62, "pct": 79.6, "dom": 8, "dom_pct": 3.5, "passive": 37, "oa": 10, "legs": 35, "ht_tot": 165, "leg_pct": 21.2, "jck": 3, "lo_steal": 0, "fit": 1, "try_saver": 0, "to_t": 3, "tow": 5, "pen": 7}, {"name": "Koga Nezuka", "pos": "Right Wing", "shirt": 14, "pt": 749, "tk": 118, "mt": 30, "att": 148, "tkl_assist": 42, "pct": 79.7, "dom": 9, "dom_pct": 6.1, "passive": 31, "oa": 9, "legs": 36, "ht_tot": 109, "leg_pct": 33.0, "jck": 1, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 2, "tow": 2, "pen": 4}, {"name": "Gerhard van den Heever", "pos": "Right Wing", "shirt": 14, "pt": 302, "tk": 41, "mt": 11, "att": 52, "tkl_assist": 15, "pct": 78.8, "dom": 2, "dom_pct": 3.8, "passive": 9, "oa": 4, "legs": 8, "ht_tot": 36, "leg_pct": 22.2, "jck": 0, "lo_steal": 0, "fit": 1, "try_saver": 0, "to_t": 1, "tow": 1, "pen": 1}, {"name": "Haruto Kida", "pos": "Left Wing", "shirt": 11, "pt": 1144, "tk": 106, "mt": 20, "att": 126, "tkl_assist": 37, "pct": 84.1, "dom": 8, "dom_pct": 6.3, "passive": 30, "oa": 7, "legs": 26, "ht_tot": 96, "leg_pct": 27.1, "jck": 2, "lo_steal": 1, "fit": 2, "try_saver": 0, "to_t": 2, "tow": 4, "pen": 8}, {"name": "Hibiki Yamada", "pos": "Left Wing", "shirt": 11, "pt": 252, "tk": 26, "mt": 6, "att": 32, "tkl_assist": 9, "pct": 81.2, "dom": 1, "dom_pct": 3.1, "passive": 6, "oa": 4, "legs": 11, "ht_tot": 23, "leg_pct": 47.8, "jck": 1, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 1, "pen": 0}, {"name": "Shaun Stevenson", "pos": "Full Back", "shirt": 15, "pt": 1481, "tk": 56, "mt": 9, "att": 65, "tkl_assist": 23, "pct": 86.2, "dom": 4, "dom_pct": 6.2, "passive": 23, "oa": 4, "legs": 11, "ht_tot": 51, "leg_pct": 21.6, "jck": 1, "lo_steal": 0, "fit": 1, "try_saver": 0, "to_t": 1, "tow": 2, "pen": 4}, {"name": "Reo Matsushita", "pos": "Full Back", "shirt": 23, "pt": 31, "tk": 8, "mt": 2, "att": 10, "tkl_assist": 2, "pct": 80.0, "dom": 1, "dom_pct": 10.0, "passive": 1, "oa": 1, "legs": 6, "ht_tot": 8, "leg_pct": 75.0, "jck": 0, "lo_steal": 0, "fit": 0, "try_saver": 0, "to_t": 0, "tow": 0, "pen": 0}], "lineout_players": [{"name": "David Bulbring", "pos": "Lock (5)", "won": 61}, {"name": "Faulua Makisi", "pos": "Number 8", "won": 53}, {"name": "Ruan Botha", "pos": "Lock (4)", "won": 50}, {"name": "Akira Ieremia", "pos": "Lock (4)", "won": 42}, {"name": "Merwe Olivier", "pos": "Lock (4)", "won": 20}, {"name": "Tyler Paul", "pos": "Blindside Flanker", "won": 18}, {"name": "David Van Zeeland", "pos": "Lock (4)", "won": 10}, {"name": "Bernard Foley", "pos": "Fly Half", "won": 8}, {"name": "Shaun Stevenson", "pos": "Full Back", "won": 5}, {"name": "Yuki Aoki", "pos": "Lock (5)", "won": 4}, {"name": "Yota Kamimori", "pos": "Loosehead Prop", "won": 2}, {"name": "Yuya Hirose", "pos": "Inside Centre", "won": 2}, {"name": "Asipeli Moala", "pos": "Number 8", "won": 1}, {"name": "Haruto Kida", "pos": "Left Wing", "won": 1}, {"name": "Hibiki Yamada", "pos": "Left Wing", "won": 1}, {"name": "Ippei Okada", "pos": "Scrum Half", "won": 1}, {"name": "Rikus Pretorius", "pos": "Inside Centre", "won": 1}], "lineout_throwers": [{"name": "Malcolm Marx", "pos": "Hooker", "won": 157, "lost": 14, "tot": 171, "pct": 91.8}, {"name": "Hayate Era", "pos": "Hooker", "won": 54, "lost": 11, "tot": 65, "pct": 83.1}, {"name": "Rikuto Fukuda", "pos": "Hooker", "won": 54, "lost": 2, "tot": 56, "pct": 96.4}, {"name": "Shaun Stevenson", "pos": "Full Back", "won": 7, "lost": 0, "tot": 7, "pct": 100.0}, {"name": "Bernard Foley", "pos": "Fly Half", "won": 4, "lost": 0, "tot": 4, "pct": 100.0}, {"name": "Haruto Kida", "pos": "Left Wing", "won": 3, "lost": 0, "tot": 3, "pct": 100.0}, {"name": "Katsuya Okuma", "pos": "Hooker", "won": 2, "lost": 0, "tot": 2, "pct": 100.0}, {"name": "Halatoa Vailea", "pos": "Outside Centre", "won": 1, "lost": 0, "tot": 1, "pct": 100.0}, {"name": "Koga Nezuka", "pos": "Right Wing", "won": 1, "lost": 0, "tot": 1, "pct": 100.0}, {"name": "Shinobu Fujiwara", "pos": "Scrum Half", "won": 1, "lost": 0, "tot": 1, "pct": 100.0}, {"name": "Yuya Hirose", "pos": "Inside Centre", "won": 1, "lost": 0, "tot": 1, "pct": 100.0}]};
+    const G = DATA.groups, M = DATA.matches;
+    const f1=x=>(Math.round(x*10)/10).toFixed(1);
+    const f0=x=>Math.round(x).toString();
+    const f2=x=>(Math.round(x*100)/100).toFixed(2);
+    const fmtDate=d=>{const[y,m,da]=d.split('-');return da+'/'+m;};
+    
+    document.getElementById('h-rec').textContent =
+      `${DATA.n} matches · ${DATA.nw}W–${DATA.nl}L · PF ${DATA.pf_tot} / PA ${DATA.pa_tot} (${DATA.pf_tot-DATA.pa_tot>=0?'+':''}${DATA.pf_tot-DATA.pa_tot})`;
+    document.getElementById('h-pill').textContent = `${DATA.nw}–${DATA.nl}`;
+    
+    // KPI rows for the avg-table: [key,label,note,fmt,goodHigh]
+    // goodHigh: true => higher is better (delta W-L positive=green)
+    function avgTable(rows){
+      const head=`<thead><tr><th class="k">KPI</th><th class="win">Win avg (${DATA.nw})</th>
+        <th class="loss">Loss avg (${DATA.nl})</th><th>Season avg (${DATA.n})</th><th>Δ Win–Loss</th></tr></thead>`;
+      const body=rows.map(([k,lbl,note,fmt,gh])=>{
+        const w=G.win[k], l=G.loss[k], s=G.season[k];
+        const d=w-l;
+        const dcls=(gh?d>=0:d<=0)?'pos':'neg';
+        const F=fmt===2?f2:fmt===0?f0:f1;
+        const suf=(''+lbl).includes('%')?'%':'';
+        return `<tr>
+          <td class="k">${lbl}<small>${note}</small></td>
+          <td class="win">${F(w)}${suf}</td>
+          <td class="loss">${F(l)}${suf}</td>
+          <td>${F(s)}${suf}</td>
+          <td class="delta ${dcls}">${d>=0?'+':''}${F(d)}${suf}</td>
+        </tr>`;}).join('');
+      return `<table class="avg-table">${head}<tbody>${body}</tbody></table>`;
+    }
+    
+    function itTable(cols, foot){
+      const head=`<thead><tr>${cols.map(c=>`<th class="${c.l?'l':''} ${c.hcls||''}">${c.h}</th>`).join('')}</tr></thead>`;
+      const body=M.map(r=>`<tr class="${r.result==='W'?'win':r.result==='L'?'loss':''}">
+        ${cols.map(c=>`<td class="${c.cls?c.cls:''}">${c.fn(r)}</td>`).join('')}</tr>`).join('');
+      const tf=foot?`<tfoot><tr>${foot.map(c=>`<td class="${c.l?'l':''}">${c.v}</td>`).join('')}</tr></tfoot>`:'';
+      return `<div class="it-wrap"><table class="it-table">${head}<tbody>${body}</tbody>${tf}</table></div>`;
+    }
+    
+    const baseCols=[
+      {h:'Date',l:1,cls:'l date',fn:r=>fmtDate(r.date)},
+      {h:'Home / Away',fn:r=>r.ha},
+      {h:'Opponent',l:1,cls:'l',fn:r=>r.opp},
+      {h:'Score',cls:'score',fn:r=>`${r.kub}–${r.opp_score}`},
+      {h:'Result',cls:'res',fn:r=>r.result},
+    ];
+    
+    const TABS=[
+     {id:'overview',title:'Overview',build:()=>{
+       const cards=[
+         [`${DATA.nw}–${DATA.nl}`,'Record'],
+         [`${f1(G.season.pf)}`,'Pts For/g'],
+         [`${f1(G.season.pa)}`,'Pts Against/g'],
+         [`${f1(G.season.bip)}'`,'Ball In Play/g'],
+         [`${f1(G.season.poss)}%`,'Possession'],
+         [`${f1(G.season.terr)}%`,'Territory'],
+       ].map(([b,s])=>`<div class="card"><div class="big">${b}</div><div class="sub">${s}</div></div>`).join('');
+       const avg=avgTable([
+         ['pf','Points For','per match',1,true],
+         ['pa','Points Against','per match',1,false],
+         ['bip','Ball In Play','minutes/match (both teams)',1,true],
+         ['poss','Possession %','Kubota attack time ÷ total',1,true],
+         ['terr','Territory %','action-time in opp half (x 51–110)',1,true],
+         ['tries','Tries Scored','per match',1,true],
+         ['tries_con','Tries Conceded','per match',1,false],
+         ['trate','Turnover Rate %','TO conceded ÷ attacks',1,false],
+         ['pen','Penalties Conceded','per match',1,false],
+       ]);
+       const it=itTable(baseCols.concat([
+         {h:'Ball In Play (min)',fn:r=>f1(r.at_tot/60)},
+         {h:'Possession %',fn:r=>r.poss_den?f1(r.at_kub/r.poss_den*100):'-'},
+         {h:'Territory %',fn:r=>r.terr_den?f1(r.terr_num/r.terr_den*100):'-'},
+         {h:'Tries Scored',fn:r=>r.tries},
+         {h:'Turnover Rate %',fn:r=>f1(r.to_con/r.attacks*100)},
+       ]));
+       return `<div class="cards">${cards}</div>
+         <div class="sec-title">Win / Loss / Season — averages</div>${avg}
+         <div class="sec-title">Match-by-match</div>${it}
+         <div class="note">Territory % = Kubota action-time (ps_endstamp−ps_timestamp, summed over all Kubota events with a duration)
+           in the opposition half (x_coord 51–110) ÷ total action-time (x_coord −10–110). Computed from Kubota's perspective.</div>`;
+     }},
+     {id:'kicking',title:'Kicking Game',build:()=>{
+       const avg=avgTable([
+         ['kicks','Kicks In Play','per match',1,null],
+         ['km','Kick Metres','per match',0,null],
+         ['avg_kick','Avg m / Kick','metres ÷ kicks',1,null],
+         ['r2k','Ruck : Kick Ratio','rucks ÷ kicks',2,null],
+         ['regain','Contest Ret','Own Player – Collected /match',1,true],
+         ['hg','Kick Hit Grass','Collected Bounce /match',1,null],
+         ['gk_pct','Goal Kicking %','goals ÷ attempts',1,true],
+         ['trate','Turnover Rate %','TO conceded ÷ attacks',1,false],
+       ]);
+       const it=itTable(baseCols.concat([
+         {h:'Ball In Play (min)',fn:r=>f1(r.at_tot/60)},
+         {h:'Possession %',fn:r=>r.poss_den?f1(r.at_kub/r.poss_den*100):'-'},
+         {h:'Territory %',fn:r=>r.terr_den?f1(r.terr_num/r.terr_den*100):'-'},
+         {h:'Kicks In Play',fn:r=>r.kicks},
+         {h:'Kick Metres',fn:r=>r.km},
+         {h:'Avg Metres / Kick',fn:r=>r.kicks?f1(r.km/r.kicks):'-'},
+         {h:'Ruck : Kick Ratio',fn:r=>r.kicks?f2(r.rucks/r.kicks):'-'},
+         {h:'Contest Ret',fn:r=>r.regain},
+         {h:'Kick Hit Grass',fn:r=>r.hg},
+         {h:'Turnover Rate %',fn:r=>f1(r.to_con/r.attacks*100)},
+       ]));
+       return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
+         <div class="sec-title">Match-by-match</div>${it}
+         <div class="note">Contest Ret = contest kicks (Bomb/Low/Chip/Cross Pitch) regained. Kick Hit Grass = Collected Bounce only
+           (kick-in-touch-on-bounce excluded). GK% = (Conv+PG+DG made) ÷ attempts.</div>`;
+     }},
+     {id:'attack',title:'Attack',build:()=>{
+       const avg=avgTable([
+         ['gl','Gainline %','carries crossing gainline',1,true],
+         ['lqb','LQB %','rucks ≤3s (Lightning Quick Ball)',1,true],
+         ['carries','Ball Carries','per match',1,null],
+         ['metres','Carry Metres','per match',0,true],
+         ['db','Defenders Beaten','per match',1,true],
+         ['lb','Linebreaks','Attacking Qualities/Initial Break /match',1,true],
+         ['offloads','Offloads','successful (to own player)',1,true],
+         ['e22','22m Entries','per match',1,true],
+         ['s22','22m Success','Try or Penalty won /match',1,true],
+         ['s22_pct','22m Success %','success ÷ entries',1,true],
+         ['to_con','Turnovers Conceded','per match',1,false],
+       ]);
+       const it=itTable(baseCols.concat([
+         {h:'Gainline %',fn:r=>r.carries?f1(r.glo/r.carries*100):'-'},
+         {h:'LQB %',fn:r=>r.rucks?f1(r.lqb_n/r.rucks*100):'-'},
+         {h:'Ball Carries',fn:r=>r.carries},
+         {h:'Carry Metres',fn:r=>r.metres},
+         {h:'Defenders Beaten',fn:r=>r.db},
+         {h:'Linebreaks',fn:r=>r.lb},
+         {h:'Offloads',fn:r=>r.offloads},
+         {h:'22m Entries',fn:r=>r.e22},
+         {h:'22m Success',fn:r=>r.s22},
+         {h:'22m Success %',fn:r=>r.e22?f0(r.s22/r.e22*100)+'%':'-'},
+         {h:'Turnovers Conceded',fn:r=>r.to_con},
+       ]));
+       return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
+         <div class="sec-title">Match-by-match</div>${it}
+         <div class="note">Gainline % = carries tagged 'Crossed Gain line' ÷ all carries. LQB % = rucks with ruck-speed ≤3s.
+           Defenders Beaten = Attacking Qualities/Defender Beaten. Linebreaks = Attacking Qualities/Initial Break (Line Break + Kick Line Break + Intercepted Break).
+           22m Success = entries whose outcome was a Try or a won penalty (Penalty Conceded by opponent).</div>`;
+     }},
+     {id:'defence',title:'Defence',build:()=>{
+       const avg=avgTable([
+         ['tack_att','Tackle Attempts','per match',1,null],
+         ['tack_pct','Tackle %','made ÷ attempted',1,true],
+         ['dom','Dominant Tackles','per match',1,true],
+         ['dom_pct','Dominant Tackle %','dominant ÷ tackles made',1,true],
+         ['passive','Passive Tackles','per match',1,false],
+         ['oa','Offloads Allowed','per match',1,false],
+         ['tw','Turnovers Won','Poss TO + Jackal /match',1,true],
+         ['pen','Penalties Conceded','per match',1,false],
+         ['opp_gl','Opponent Gainline %','opponent carries crossing gainline',1,false],
+         ['opp_lqb','Opponent LQB %','opponent rucks ≤3s',1,false],
+         ['tries_con','Tries Conceded','per match',1,false],
+         ['opp_e22','Opponent 22m Entries','per match',1,false],
+         ['opp_s22_pct','Opponent 22m Success %','opponent success ÷ entries',1,false],
+       ]);
+       const it=itTable(baseCols.concat([
+         {h:'Tackles Made',fn:r=>r.tk},
+         {h:'Tackles Missed',fn:r=>r.mt},
+         {h:'Tackle Attempts',fn:r=>r.tk+r.mt},
+         {h:'Tackle %',fn:r=>(r.tk+r.mt)?f1(r.tk/(r.tk+r.mt)*100):'-'},
+         {h:'Dominant Tackle %',fn:r=>r.tk?f1(r.dom/r.tk*100):'-'},
+         {h:'Turnovers Won',fn:r=>r.tw},
+         {h:'Infringements',fn:r=>r.pen},
+         {h:'Opponent Gainline %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_carries?f1(r.opp_glo/r.opp_carries*100):'-'},
+         {h:'Opponent LQB %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_rucks?f1(r.opp_lqb/r.opp_rucks*100):'-'},
+         {h:'Tries Conceded',hcls:'opp',cls:'oppcol',fn:r=>r.tries_conceded},
+         {h:'Opponent 22m Entries',hcls:'opp',cls:'oppcol',fn:r=>r.opp_e22},
+         {h:'Opponent 22m Success %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_e22?f1(r.opp_s22/r.opp_e22*100):'-'},
+       ]));
+       return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
+         <div class="sec-title">Match-by-match</div>${it}
+         <div class="note">Tackle % = tackles made ÷ (made+missed). Dominant Tackle % = qualifier 'Dominant Tackle' ÷ tackles made.
+           Turnovers Won = Possession 'Turnover Won' + Jackal success (events within 0.5 match-min de-duplicated).
+           <span style="color:#c4600f;font-weight:700">Orange columns = opponent stats</span>: Gainline % / LQB % / Tries scored vs Kubota /
+           22m Entries / 22m Success % (Try or penalty won ÷ entries) by the opposition.</div>`;
+     }},
+     {id:'setpiece',title:'Set Piece',build:()=>{
+       const avg=avgTable([
+         ['lo_won','Lineout Won','per match',1,true],
+         ['lo_lost','Lineout Lost','per match',1,false],
+         ['lo_pct','Lineout Win %','won ÷ throws',1,true],
+         ['lo_steal','Lineout Steals','opp throw stolen /match',1,true],
+         ['sc_tot','Scrums','per match',1,null],
+         ['sc_reset','Scrum Resets','per match',1,false],
+         ['sc_pct','Scrum Win %','won ÷ scrums',1,true],
+         ['ma_tot','Mauls','per match',1,null],
+         ['ma_try','Maul Tries','per match',1,true],
+         ['ma_m','Maul Metres','per match',0,true],
+       ]);
+       const it=itTable(baseCols.concat([
+         {h:'Lineouts Won',fn:r=>r.lo_won},{h:'Lineouts Lost',fn:r=>r.lo_lost},
+         {h:'Lineout Win %',fn:r=>r.lo_throw?f0(r.lo_won/r.lo_throw*100)+'%':'-'},
+         {h:'Lineout Steals',fn:r=>r.lo_steal},
+         {h:'Scrums',fn:r=>r.sc_tot},{h:'Scrum Resets',fn:r=>r.sc_reset},
+         {h:'Scrum Won %',fn:r=>(r.sc_tot-r.sc_reset)?f0(r.sc_won/(r.sc_tot-r.sc_reset)*100)+'%':'-'},
+         {h:'Mauls',fn:r=>r.ma_tot},{h:'Maul Tries',fn:r=>r.ma_try},{h:'Maul Metres',fn:r=>r.ma_m},
+       ]));
+       const th=DATA.lineout_throwers.map(p=>`<tr><td>${p.name}</td><td class="pos">${p.pos}</td>
+         <td class="n">${p.tot}</td><td class="n" style="color:var(--good)">${p.won}</td>
+         <td class="n" style="color:var(--loss)">${p.lost}</td><td class="n">${p.pct}%</td></tr>`).join('');
+       const lp=DATA.lineout_players.map(p=>`<tr><td>${p.name}</td><td class="pos">${p.pos}</td><td class="n">${p.won}</td></tr>`).join('');
+       return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
+         <div class="sec-title">Match-by-match</div>${it}
+         <div style="display:flex;gap:30px;flex-wrap:wrap;margin-top:4px">
+           <div style="flex:1;min-width:380px">
+             <div class="sec-title">Thrower success rate (season)</div>
+             <table class="mini-table" style="max-width:none"><thead><tr><th>Thrower</th><th>Position</th>
+               <th style="text-align:right">Thrown</th><th style="text-align:right">Won</th>
+               <th style="text-align:right">Lost</th><th style="text-align:right">Win%</th></tr></thead>
+             <tbody>${th}</tbody></table>
+           </div>
+           <div style="flex:1;min-width:300px">
+             <div class="sec-title">Lineout claims by player (season)</div>
+             <table class="mini-table"><thead><tr><th>Player</th><th>Position</th><th style="text-align:right">LO Won</th></tr></thead><tbody>${lp}</tbody></table>
+           </div>
+         </div>
+         <div class="note">Thrower Win% = that player's Lineout Throws won ÷ thrown (Won* / Lost* outcomes). Steals = own team winning the
+           opposition throw (Lineout Take 'Lineout Steal*'). Maul Metres uses the <code>metres</code> column on Maul events.</div>`;
+     }},
+     {id:'penalty',title:'Penalty',build:()=>{
+       const P=DATA.penalty, max=Math.max(...P.types.map(t=>t[1]),1);
+       const bars=P.types.map(([t,n])=>`<div class="pen-bar-row">
+         <span class="pen-bar-label">${t}</span>
+         <div class="pen-bar-track"><div class="pen-bar-fill" style="width:${Math.round(n/max*100)}%"></div></div>
+         <span class="pen-bar-num">${n}</span></div>`).join('');
+       const posOrder=['Front Row','Lock','Loosie','Inside','Midfield','Back 3'];
+       const posMax=Math.max(...posOrder.map(g=>P.pos_group[g]),1);
+       const posBars=posOrder.filter(g=>P.pos_group[g]).map(g=>`<div class="pen-bar-row">
+         <span class="pen-bar-label">${g}</span>
+         <div class="pen-bar-track"><div class="pen-bar-fill" style="width:${Math.round(P.pos_group[g]/posMax*100)}%"></div></div>
+         <span class="pen-bar-num">${P.pos_group[g]}</span></div>`).join('');
+       const att=P.od.Offence, def=P.od.Defence, odtot=att+def||1;
+       const stack=`<div class="stack">
+         <div class="seg att" style="width:${att/odtot*100}%">Attack ${att}</div>
+         <div class="seg def" style="width:${def/odtot*100}%">Defence ${def}</div></div>`;
+       const qmax=Math.max(...['Q1','Q2','Q3','Q4'].map(q=>P.quarter[q]),1);
+       const qb=['Q1','Q2','Q3','Q4'].map(q=>`<div class="vbar-col">
+         <div class="vbar-num">${P.quarter[q]}</div>
+         <div class="vbar" style="height:${Math.round(P.quarter[q]/qmax*96)+4}px"></div>
+         <div class="vbar-lbl">${q}</div></div>`).join('');
+       const ht=(P.half.H1+P.half.H2)||1;
+       const hb=`<div class="stack" style="height:38px">
+         <div class="seg att" style="width:${P.half.H1/ht*100}%">1st Half &nbsp;${P.half.H1} (${Math.round(P.half.H1/ht*100)}%)</div>
+         <div class="seg def" style="width:${P.half.H2/ht*100}%">2nd Half &nbsp;${P.half.H2} (${Math.round(P.half.H2/ht*100)}%)</div></div>`;
+       const cards=[[`${P.total}`,'Total Infringements'],[`${f1(G.season.pen)}`,'Per Match'],
+         [`${att}`,'In Attack'],[`${def}`,'In Defence']]
+         .map(([b,s])=>`<div class="card"><div class="big">${b}</div><div class="sub">${s}</div></div>`).join('');
+       // league comparison (per match)
+       const Lg=DATA.league;
+       const cmp=[
+         ['Infringements / match', P.total/DATA.n, Lg.infr],
+         ['Full Penalties / match', P.full/DATA.n, Lg.full],
+         ['Free Kicks / match', P.fk/DATA.n, Lg.fk],
+         ['In Attack / match', att/DATA.n, Lg.att],
+         ['In Defence / match', def/DATA.n, Lg.def],
+       ];
+       const cmpRows=cmp.map(([lbl,k,l])=>{
+         const d=k-l; const cls=d<=0?'pos':'neg';  // fewer infringements = good
+         return `<tr><td class="k">${lbl}</td><td>${f1(k)}</td><td>${f1(l)}</td>
+           <td class="delta ${cls}">${d>=0?'+':''}${f1(d)}</td></tr>`;}).join('');
+       const cmpTable=`<table class="avg-table"><thead><tr><th class="k">Metric</th>
+         <th>Kubota</th><th>League avg</th><th>Δ vs League</th></tr></thead><tbody>${cmpRows}</tbody></table>`;
+       return `<div class="cards">${cards}</div>
+         <div class="sec-title">Kubota vs League average (per match)</div>${cmpTable}
+         <div class="pen-cols">
+           <div class="pen-col">
+             <div class="sec-title">By Type (season total)</div>${bars}
+             <div class="sec-title">By Position Group (season total)</div>${posBars}
+           </div>
+           <div class="pen-col">
+             <div class="sec-title">Attack vs Defence (qualifier3)</div>${stack}
+             <div class="sec-title">By Half</div>${hb}
+             <div class="sec-title">By Quarter</div><div class="vbar-chart">${qb}</div>
+           </div>
+         </div>
+         <div class="note">Infringements = Penalty Conceded (Full Penalty ${P.full} + Free Kick ${P.fk} = ${P.total}).
+           League avg = all ${Lg.tm} team-matches in rugby.db (12 teams × Kubota's ${DATA.n} fixtures); Δ negative = fewer than league (better).
+           Attack/Defence from qualifier3. Quarters from match-minute (Q1≤20', Q2≤40', Q3≤60', Q4&gt;60').
+           Position groups: Front Row (1-3), Lock (4-5), Loosie (6-8), Inside (9-10), Midfield (12-13), Back 3 (11,14,15).</div>`;
+     }},
+     {id:'ind-attack',title:'Indiv Attack',build:()=>{
+       const R=DATA.players_attack;
+       const tot=R.reduce((a,r)=>{['carries','metres','glo_x','lb','db','ol','tries','err','passes','pass_acc_n','kicks','kick_m','ooa13','ooa4'].forEach(k=>a[k]=(a[k]||0)+(r[k]||0));return a;},{});
+       // recompute weighted totals needing raw: gl% and acc% from components
+       const totGlo=R.reduce((s,r)=>s+Math.round(r.gl/100*r.carries),0);
+       const totAccN=R.reduce((s,r)=>s+Math.round(r.pass_acc/100*r.passes),0);
+       const totOOA=tot.ooa13+tot.ooa4;
+       const rows=R.map(r=>`<tr>
+         <td class="shirt">${r.shirt}</td><td class="name">${r.name}</td><td class="pos">${r.pos}</td><td>${r.pt}</td>
+         <td>${r.carries}</td><td>${r.metres}</td><td>${r.avg}</td>
+         <td class="${r.gl>=60?'cell-good':r.gl&&r.gl<45?'cell-warn':''}">${r.carries?r.gl+'%':'-'}</td>
+         <td class="${r.lb?'cell-good':'cell-dim'}">${r.lb||'-'}</td>
+         <td>${r.db||'-'}</td><td>${r.ol||'-'}</td>
+         <td class="${r.tries?'cell-good':'cell-dim'}">${r.tries||'-'}</td>
+         <td class="${r.err>=20?'cell-warn':''}">${r.err||'-'}</td>
+         <td>${r.passes||'-'}</td><td>${r.passes?r.pass_acc+'%':'-'}</td>
+         <td>${r.kicks||'-'}</td><td>${r.kick_m||'-'}</td><td>${r.kicks?r.avg_kick:'-'}</td>
+         <td>${r.ooa13||'-'}</td><td>${r.ooa4||'-'}</td>
+         <td class="${(r.ooa13+r.ooa4)?(r.ooa_eff>=70?'cell-good':r.ooa_eff<55?'cell-warn':''):'cell-dim'}">${(r.ooa13+r.ooa4)?r.ooa_eff+'%':'-'}</td></tr>`).join('');
+       return `<div class="sec-title">Individual Attack — season totals (ranked by carries)</div>
+         <div class="rank-wrap"><table class="rank-table">
+           <thead><tr><th>No.</th><th class="l">Name</th><th class="l">Position</th><th>Play Time (min)</th>
+             <th>Ball Carries</th><th>Carry Metres</th><th>Avg Metres / Carry</th><th>Gainline %</th>
+             <th>Linebreaks</th><th>Defenders Beaten</th><th>Offloads</th><th>Tries</th><th>Errors</th>
+             <th>Passes</th><th>Pass Accuracy %</th><th>Kicks In Play</th><th>Kick Metres</th><th>Avg Kick Metres</th>
+             <th>OOA 1-3s</th><th>OOA 4+s</th><th>OOA Effectiveness %</th></tr></thead>
+           <tbody>${rows}</tbody>
+           <tfoot><tr><td></td><td class="l">TOTAL (${R.length} players)</td><td></td><td></td>
+             <td>${tot.carries}</td><td>${tot.metres}</td><td>${(tot.metres/tot.carries).toFixed(1)}</td>
+             <td>${(totGlo/tot.carries*100).toFixed(1)}%</td>
+             <td>${tot.lb}</td><td>${tot.db}</td><td>${tot.ol}</td><td>${tot.tries}</td><td>${tot.err}</td>
+             <td>${tot.passes}</td><td>${(totAccN/tot.passes*100).toFixed(1)}%</td>
+             <td>${tot.kicks}</td><td>${tot.kick_m}</td><td>${(tot.kick_m/tot.kicks).toFixed(1)}</td>
+             <td>${tot.ooa13}</td><td>${tot.ooa4}</td><td>${(tot.ooa13/totOOA*100).toFixed(1)}%</td></tr></tfoot>
+         </table></div>
+         <div class="note">Avg/C = metres ÷ carries · GL% = carries crossing the gainline ÷ carries · LB = Linebreaks · DB = Defenders Beaten ·
+           OL = Offloads (to own player) · Err = Turnovers conceded · Acc% = passes not Incomplete/Error/Forward/Intercepted/Off-Target ·
+           OOA 1-3 / 4+ = ruck (breakdown) speed ≤3s / &gt;3s from action 'Ruck' speed buckets · OOA Eff% = 1-3 ÷ (1-3 + 4+).
+           <b>Handling Count: データなし</b>（DBに該当フィールドなし）.</div>`;
+     }},
+     {id:'ind-defence',title:'Indiv Defence',build:()=>{
+       const R=DATA.players_defence;
+       const tot=R.reduce((a,r)=>{['tk','mt','att','tkl_assist','dom','try_saver','to_t','passive','oa','legs','ht_tot','jck','tow','pen'].forEach(k=>a[k]=(a[k]||0)+(r[k]||0));return a;},{});
+       const rows=R.map(r=>`<tr>
+         <td class="shirt">${r.shirt}</td><td class="name">${r.name}</td><td class="pos">${r.pos}</td><td>${r.pt}</td>
+         <td>${r.att}</td><td class="${r.tkl_assist?'cell-good':'cell-dim'}">${r.tkl_assist||'-'}</td><td>${r.tk}</td><td class="${r.mt>=20?'cell-warn':''}">${r.mt}</td>
+         <td class="${r.pct>=90?'cell-good':r.pct<75?'cell-warn':''}">${r.pct}%</td>
+         <td>${r.ht_tot?r.leg_pct+'%':'-'}</td>
+         <td class="${r.dom?'cell-good':'cell-dim'}">${r.dom||'-'}</td>
+         <td>${r.att?r.dom_pct+'%':'-'}</td>
+         <td class="${r.try_saver?'cell-good':'cell-dim'}">${r.try_saver||'-'}</td>
+         <td class="${r.to_t?'cell-good':'cell-dim'}">${r.to_t||'-'}</td>
+         <td class="${r.oa>=10?'cell-warn':''}">${r.oa||'-'}</td>
+         <td>${r.passive||'-'}</td>
+         <td class="${r.jck?'cell-good':'cell-dim'}">${r.jck||'-'}</td>
+         <td class="${r.tow?'cell-good':'cell-dim'}">${r.tow||'-'}</td>
+         <td class="${r.pen>=12?'cell-warn':''}">${r.pen||'-'}</td></tr>`).join('');
+       return `<div class="sec-title">Individual Defence — season totals (ranked by tackles made)</div>
+         <div class="rank-wrap"><table class="rank-table">
+           <thead><tr><th>No.</th><th class="l">Name</th><th class="l">Position</th><th>Play Time (min)</th>
+             <th>Tackle Attempts</th><th>Tackle Assist</th><th>Tackles Made</th><th>Tackles Missed</th><th>Tackle %</th><th>Leg Tackle %</th>
+             <th>Dominant Tackles</th><th>Dominant Tackle %</th><th>Try Saver Tackles</th>
+             <th>Turnover Won Tackles</th><th>Offloads Allowed</th><th>Passive Tackles</th>
+             <th>Jackal Success</th><th>Turnovers Won</th><th>Infringements</th></tr></thead>
+           <tbody>${rows}</tbody>
+           <tfoot><tr><td></td><td class="l">TOTAL (${R.length} players)</td><td></td><td></td>
+             <td>${tot.att}</td><td>${tot.tkl_assist}</td><td>${tot.tk}</td><td>${tot.mt}</td>
+             <td>${(tot.tk/tot.att*100).toFixed(1)}%</td>
+             <td>${(tot.legs/tot.ht_tot*100).toFixed(1)}%</td>
+             <td>${tot.dom}</td><td>${(tot.dom/tot.att*100).toFixed(1)}%</td>
+             <td>${tot.try_saver}</td><td>${tot.to_t}</td>
+             <td>${tot.oa}</td><td>${tot.passive}</td><td>${tot.jck}</td><td>${tot.tow}</td>
+             <td>${tot.pen}</td></tr></tfoot>
+         </table></div>
+         <div class="note">Att/Made/Miss tackles · Tackle Assist = qualifier3Name 'Assist' · Tkl% = made ÷ att · Leg% = leg tackles ÷ tackles with height tag (qualifier6) ·
+           Dom% = dominant ÷ att · Try Saver = Tackle/Try Saver results ·
+           <b>Turnover Won Tackle = Tackle/Turnover Won + Forced in Touch Tackles</b> (Forced in Touch Tackles not shown separately) ·
+           OA = offloads allowed (own tackle) · Passive = passive tackles · Jackal = Collection/Jackal success ·
+           <b>Turnovers Won = tackle turnovers (Tackle/Turnover Won) + breakdown penalties won (Ruck OOA/Penalty Won) + Lineout Steals
+           + Forced in Touch Tackles</b> ·
+           Infringements = Penalties + Free Kicks conceded.</div>`;
+     }},
+    ];
+    
+    const tabsEl=document.getElementById('tabs'), panelsEl=document.getElementById('panels');
+    TABS.forEach((t,i)=>{
+      const b=document.createElement('button');
+      b.className='tab-btn'+(i===0?' active':''); b.textContent=t.title; b.dataset.id=t.id;
+      b.onclick=()=>{
+        document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active'); document.getElementById('panel-'+t.id).classList.add('active');
+      };
+      tabsEl.appendChild(b);
+      const p=document.createElement('div');
+      p.className='tab-panel'+(i===0?' active':''); p.id='panel-'+t.id; p.innerHTML=t.build();
+      panelsEl.appendChild(p);
+    });
+    </script>
+    </body></html>
