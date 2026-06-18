@@ -16,3 +16,6 @@ node_modules/
 
 # --- Local tool settings (machine-specific) ---
 .claude/
+
+# --- Raw data CSVs (large, regeneratable) ---
+*.csv

@@ -45,7 +45,9 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f0ece4;color:var(
 .ts2-reserves .ts2-body{flex:0 0 44%}
 
 /* ── MATCH SUMMARY (dashboard) ── */
-.sum-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:auto auto 1fr;gap:6px;padding:6px 10px;height:100%}
+.sum-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:auto auto 12px 1fr;gap:6px;padding:6px 10px;height:100%}
+.sum-grid>.sum-card:nth-child(n+6){grid-row:4}
+
 .sum-card{background:#fff;border:1px solid var(--ru);border-radius:6px;padding:7px 10px;display:flex;flex-direction:column;gap:4px;min-width:0;min-height:0;overflow:hidden}
 .sum-card.wide{grid-column:1/-1}
 .sum-card-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#222;border-bottom:1px solid var(--ru);padding-bottom:5px;margin-bottom:2px;display:flex;justify-content:space-between;align-items:baseline}
@@ -261,7 +263,7 @@ const HOME=D.info.home, AWAY=D.info.away, H=HOME, A=AWAY;
 
 // TOTAL + Q別データ (quarters_v5_retry design)
 const TOT={"h": {"pts": 59, "tries": 9, "pos_t": "16:14", "pos_p": 49, "ter_p": 49, "car": 128, "mtr": 804, "amc": 6.3, "pas": 199, "r2k": 3.9, "ta": 195, "tm": 24, "tp": 87.7, "lb": 14, "tow": 3, "toc": 14, "pen": 6, "e22": 14, "s22": 9}, "a": {"pts": 35, "tries": 5, "pos_t": "16:48", "pos_p": 51, "ter_p": 51, "car": 109, "mtr": 451, "amc": 4.1, "pas": 146, "r2k": 4.0, "ta": 236, "tm": 33, "tp": 86.0, "lb": 5, "tow": 7, "toc": 7, "pen": 8, "e22": 8, "s22": 5}};
-const QD={"h": {"Q1": {"pts": 26, "tries": 4, "pos_t": "04:52", "pos_p": 60, "ter_p": 44, "car": 40, "mtr": 263, "amc": 6.6, "pas": 61, "r2k": 3.7, "ta": 33, "tm": 6, "tp": 81.8, "lb": 5, "tow": 1, "toc": 3, "pen": 2, "e22": 5, "s22": 4}, "Q2": {"pts": 2, "tries": 0, "pos_t": "02:08", "pos_p": 29, "ter_p": 37, "car": 16, "mtr": 48, "amc": 3.0, "pas": 20, "r2k": 1.3, "ta": 56, "tm": 4, "tp": 92.9, "lb": 1, "tow": 0, "toc": 4, "pen": 3, "e22": 0, "s22": 0}, "Q3": {"pts": 17, "tries": 3, "pos_t": "04:10", "pos_p": 58, "ter_p": 48, "car": 31, "mtr": 250, "amc": 8.1, "pas": 47, "r2k": 2.4, "ta": 37, "tm": 1, "tp": 97.3, "lb": 4, "tow": 0, "toc": 1, "pen": 1, "e22": 4, "s22": 3}, "Q4": {"pts": 14, "tries": 2, "pos_t": "04:48", "pos_p": 52, "ter_p": 60, "car": 41, "mtr": 243, "amc": 5.9, "pas": 71, "r2k": 4.5, "ta": 69, "tm": 13, "tp": 81.2, "lb": 4, "tow": 2, "toc": 6, "pen": 0, "e22": 5, "s22": 2}}, "a": {"Q1": {"pts": 0, "tries": 0, "pos_t": "03:18", "pos_p": 40, "ter_p": 36, "car": 19, "mtr": 108, "amc": 5.7, "pas": 28, "r2k": 2.1, "ta": 91, "tm": 17, "tp": 81.3, "lb": 2, "tow": 2, "toc": 3, "pen": 1, "e22": 1, "s22": 0}, "Q2": {"pts": 12, "tries": 2, "pos_t": "05:18", "pos_p": 71, "ter_p": 55, "car": 33, "mtr": 102, "amc": 3.1, "pas": 47, "r2k": 2.5, "ta": 25, "tm": 1, "tp": 96.0, "lb": 0, "tow": 1, "toc": 0, "pen": 1, "e22": 3, "s22": 2}, "Q3": {"pts": 9, "tries": 1, "pos_t": "03:01", "pos_p": 42, "ter_p": 42, "car": 21, "mtr": 68, "amc": 3.2, "pas": 22, "r2k": 3.6, "ta": 52, "tm": 9, "tp": 82.7, "lb": 0, "tow": 0, "toc": 1, "pen": 3, "e22": 1, "s22": 1}, "Q4": {"pts": 14, "tries": 2, "pos_t": "04:21", "pos_p": 48, "ter_p": 41, "car": 36, "mtr": 173, "amc": 4.8, "pas": 49, "r2k": 6.0, "ta": 68, "tm": 6, "tp": 91.2, "lb": 3, "tow": 2, "toc": 3, "pen": 3, "e22": 3, "s22": 2}}};
+const QD={"h": {"Q1": {"pts": 26, "tries": 4, "pos_t": "04:52", "pos_p": 60, "ter_p": 44, "car": 40, "mtr": 263, "amc": 6.6, "pas": 61, "r2k": 3.7, "ta": 33, "tm": 6, "tp": 81.8, "lb": 5, "def_beaten": 17, "tow": 1, "toc": 3, "pen": 2, "e22": 5, "s22": 4}, "Q2": {"pts": 2, "tries": 0, "pos_t": "02:08", "pos_p": 29, "ter_p": 37, "car": 16, "mtr": 48, "amc": 3.0, "pas": 20, "r2k": 1.3, "ta": 56, "tm": 4, "tp": 92.9, "lb": 1, "def_beaten": 1, "tow": 0, "toc": 4, "pen": 3, "e22": 0, "s22": 0}, "Q3": {"pts": 17, "tries": 3, "pos_t": "04:10", "pos_p": 58, "ter_p": 48, "car": 31, "mtr": 250, "amc": 8.1, "pas": 47, "r2k": 2.4, "ta": 37, "tm": 1, "tp": 97.3, "lb": 4, "def_beaten": 9, "tow": 0, "toc": 1, "pen": 1, "e22": 4, "s22": 3}, "Q4": {"pts": 14, "tries": 2, "pos_t": "04:48", "pos_p": 52, "ter_p": 60, "car": 41, "mtr": 243, "amc": 5.9, "pas": 71, "r2k": 4.5, "ta": 69, "tm": 13, "tp": 81.2, "lb": 4, "def_beaten": 6, "tow": 2, "toc": 6, "pen": 0, "e22": 5, "s22": 2}}, "a": {"Q1": {"pts": 0, "tries": 0, "pos_t": "03:18", "pos_p": 40, "ter_p": 36, "car": 19, "mtr": 108, "amc": 5.7, "pas": 28, "r2k": 2.1, "ta": 91, "tm": 17, "tp": 81.3, "lb": 2, "def_beaten": 6, "tow": 2, "toc": 3, "pen": 1, "e22": 1, "s22": 0}, "Q2": {"pts": 12, "tries": 2, "pos_t": "05:18", "pos_p": 71, "ter_p": 55, "car": 33, "mtr": 102, "amc": 3.1, "pas": 47, "r2k": 2.5, "ta": 25, "tm": 1, "tp": 96.0, "lb": 0, "def_beaten": 4, "tow": 1, "toc": 0, "pen": 1, "e22": 3, "s22": 2}, "Q3": {"pts": 9, "tries": 1, "pos_t": "03:01", "pos_p": 42, "ter_p": 42, "car": 21, "mtr": 68, "amc": 3.2, "pas": 22, "r2k": 3.6, "ta": 52, "tm": 9, "tp": 82.7, "lb": 0, "def_beaten": 1, "tow": 0, "toc": 1, "pen": 3, "e22": 1, "s22": 1}, "Q4": {"pts": 14, "tries": 2, "pos_t": "04:21", "pos_p": 48, "ter_p": 41, "car": 36, "mtr": 173, "amc": 4.8, "pas": 49, "r2k": 6.0, "ta": 68, "tm": 6, "tp": 91.2, "lb": 3, "def_beaten": 13, "tow": 2, "toc": 3, "pen": 3, "e22": 3, "s22": 2}}};
 
 // 統計定義: [ラベル, キー, %suffix, グループ区切り, 高いほど良い(h)?]
 const ST=[
@@ -279,6 +281,7 @@ const ST=[
   ['Tackles Missed',      'tm',    false,false,false],
   ['Tackle %',            'tp',    true, false,true],
   ['Linebreaks',          'lb',    false,true, true],
+  ['Defenders Beaten',    'def_beaten', false,false, true],
   ['Turnovers Won',       'tow',   false,false,true],
   ['Turnovers Conceded',  'toc',   false,false,false],
   ['Penalties Conceded',  'pen',   false,true, false],
@@ -530,7 +533,9 @@ function pSummary(){
     <div class="sum-card-title">Set Piece</div>
     ${statRow('Lineouts',h.lineouts,a.lineouts,'')}
     ${statRow('Lineout Won %',h.lo_pct,a.lo_pct,'%')}
-    ${statRow('Mauls',mlH.total+' ('+mlH.inside_22m+')',mlA.total+' ('+mlA.inside_22m+')','')}
+    ${statRow('Mauls',mlH.total,mlA.total,'')}
+    <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--mu);padding:0 2px;margin-top:-2px;margin-bottom:4px"><span>(${mlH.inside_22m} inside 22m)</span><span>(${mlA.inside_22m} inside 22m)</span></div>
+    ${statRow('Metres / Maul',mlH.avg,mlA.avg,'')}
     ${statRow('Metres / Maul',mlH.avg,mlA.avg,'')}
     ${statRow('Scrums',h.scrums,a.scrums,'')}
     ${statRow('Scrum Won %',spH.stability,spA.stability,'%')}
