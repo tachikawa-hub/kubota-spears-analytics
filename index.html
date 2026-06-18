@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kubota Spears Analytics</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:#1a1a2e;color:#fff;min-height:100vh}
+.header{background:linear-gradient(135deg,#E65100,#F57C00);padding:32px 24px;text-align:center}
+.header h1{font-size:28px;font-weight:900}
+.header p{font-size:14px;opacity:.85;margin-top:6px}
+.container{max-width:900px;margin:0 auto;padding:24px}
+.section{margin-bottom:32px}
+.section h2{font-size:18px;color:#F57C00;margin-bottom:12px;border-bottom:2px solid #333;padding-bottom:6px}
+a.card{background:#16213e;border-radius:8px;padding:16px 20px;margin-bottom:8px;display:block;text-decoration:none;color:#fff;transition:all .2s}
+a.card:hover{background:#1a3a5c;transform:translateX(4px)}
+.title{font-size:15px;font-weight:700}
+.sub{font-size:12px;color:#aaa;margin-top:3px}
+.badge{display:inline-block;background:#F57C00;color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;margin-left:8px}
+.footer{text-align:center;padding:24px;color:#555;font-size:11px}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>🏉 KUBOTA SPEARS ANALYTICS</h1>
+<p>BI Report Dashboard — 2025-26 Season</p>
+</div>
+<div class="container">
+<div class="section">
+<h2>📊 Season Overview</h2>
+<a class="card" href="season_kpi_v2.html"><div class="title">Season KPI Report<span class="badge">SEASON</span></div><div class="sub">シーズン全体のKPI分析</div></a>
+</div>
+<div class="section">
+<h2>🔍 Scouting Reports</h2>
+<a class="card" href="scout_Spears_vs_Steelers_R22.html"><div class="title">vs Kobelco Kobe Steelers<span class="badge">R22</span></div></a>
+</div>
+<div class="section">
+<h2>📋 Match Reports</h2>
+<div id="m"></div>
+</div>
+</div>
+<div class="footer">Kubota Spears BI Analytics Suite</div>
+<script>
+document.getElementById('m').innerHTML=[
+['2026-06-07','Kobelco_Kobe_Steelers',22],
+['2026-05-23','Saitama_Wild_Knights',20],
+['2026-05-10','Urayasu_D-Rocks',18],
+['2026-05-03','Shizuoka_BlueRevs',17],
+['2026-04-26','Yokohama_Canon_Eagles',16],
+['2026-04-19','Mitsubishi_Sagamihara_Dynaboars',15],
+['2026-04-12','Toshiba_Brave_Lupus_Tokyo',14],
+['2026-04-05','Toyota_Verblitz',13],
+['2026-03-29','Mie_Honda_Heat',12],
+['2026-03-22','Tokyo_Sungoliath',11],
+['2026-03-14','BlackRams_Tokyo',10],
+['2026-03-08','Saitama_Wild_Knights',9],
+['2026-03-01','Kobelco_Kobe_Steelers',8],
+].map(([d,o,r])=>`<a class="card" href="match_report_${d}_${o}.html"><div class="title">vs ${o.replace(/_/g,' ')}<span class="badge">R${r}</span></div><div class="sub">${d}</div></a>`).join('');
+</script>
+</body>
+</html>
