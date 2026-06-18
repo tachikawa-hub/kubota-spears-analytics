@@ -51,21 +51,32 @@ select:focus{outline:none;border-color:#fff}
 </select>
 </div>
 <div class="section">
-<h2>📋 Match Reports</h2>
-<div id="m"></div>
+<h2>📋 Match Report — 試合を選択</h2>
+<select id="matchSelect" onchange="if(this.value)window.location.href=this.value">
+<option value="">試合を選んでください...</option>
+<option value="match_report_2026-06-07_Kobelco_Kobe_Steelers.html">R22 vs Kobelco Kobe Steelers (2026-06-07)</option>
+<option value="match_report_2026-05-31_Saitama_Wild_Knights.html">R20 vs Saitama Wild Knights (2026-05-31)</option>
+<option value="match_report_2026-05-10_Kobelco_Kobe_Steelers.html">R18 vs Kobelco Kobe Steelers (2026-05-10)</option>
+<option value="match_report_2026-05-03_BlackRams_Tokyo.html">R17 vs BlackRams Tokyo (2026-05-03)</option>
+<option value="match_report_2026-04-25_Mie_Honda_Heat.html">R16 vs Mie Honda Heat (2026-04-25)</option>
+<option value="match_report_2026-04-18_Tokyo_Sungoliath.html">R15 vs Tokyo Sungoliath (2026-04-18)</option>
+<option value="match_report_2026-04-04_Toyota_Verblitz.html">R14 vs Toyota Verblitz (2026-04-04)</option>
+<option value="match_report_2026-03-28_Toshiba_Brave_Lupus_Tokyo.html">R13 vs Toshiba Brave Lupus Tokyo (2026-03-28)</option>
+<option value="match_report_2026-03-21_Urayasu_D-Rocks.html">R12 vs Urayasu D-Rocks (2026-03-21)</option>
+<option value="match_report_2026-03-14_Saitama_Wild_Knights.html">R11 vs Saitama Wild Knights (2026-03-14)</option>
+<option value="match_report_2026-03-01_Yokohama_Canon_Eagles.html">R10 vs Yokohama Canon Eagles (2026-03-01)</option>
+<option value="match_report_2026-02-21_Mitsubishi_Sagamihara_Dynaboars.html">R9 vs Mitsubishi Sagamihara Dynaboars (2026-02-21)</option>
+<option value="match_report_2026-02-14_Shizuoka_BlueRevs.html">R8 vs Shizuoka BlueRevs (2026-02-14)</option>
+<option value="match_report_2026-02-07_Urayasu_D-Rocks.html">R7 vs Urayasu D-Rocks (2026-02-07)</option>
+<option value="match_report_2026-01-24_Toshiba_Brave_Lupus_Tokyo.html">R6 vs Toshiba Brave Lupus Tokyo (2026-01-24)</option>
+<option value="match_report_2026-01-17_Toyota_Verblitz.html">R5 vs Toyota Verblitz (2026-01-17)</option>
+<option value="match_report_2026-01-11_Mie_Honda_Heat.html">R4 vs Mie Honda Heat (2026-01-11)</option>
+<option value="match_report_2025-12-27_Tokyo_Sungoliath.html">R3 vs Tokyo Sungoliath (2025-12-27)</option>
+<option value="match_report_2025-12-20_BlackRams_Tokyo.html">R2 vs BlackRams Tokyo (2025-12-20)</option>
+<option value="match_report_2025-12-13_Kobelco_Kobe_Steelers.html">R1 vs Kobelco Kobe Steelers (2025-12-13)</option>
+</select>
 </div>
 </div>
 <div class="footer">Kubota Spears BI Analytics Suite — rugby_bi.py</div>
-<script>
-document.getElementById('m').innerHTML=[
-['2026-06-07','Kobelco_Kobe_Steelers',22],['2026-05-23','Saitama_Wild_Knights',20],
-['2026-05-10','Urayasu_D-Rocks',18],['2026-05-03','Shizuoka_BlueRevs',17],
-['2026-04-26','Yokohama_Canon_Eagles',16],['2026-04-19','Mitsubishi_Sagamihara_Dynaboars',15],
-['2026-04-12','Toshiba_Brave_Lupus_Tokyo',14],['2026-04-05','Toyota_Verblitz',13],
-['2026-03-29','Mie_Honda_Heat',12],['2026-03-22','Tokyo_Sungoliath',11],
-['2026-03-14','BlackRams_Tokyo',10],['2026-03-08','Saitama_Wild_Knights',9],
-['2026-03-01','Kobelco_Kobe_Steelers',8],['2026-02-22','Kobelco_Kobe_Steelers',1],
-].map(([d,o,r])=>`<a class="card" href="match_report_${d}_${o}.html"><div class="title">vs ${o.replace(/_/g,' ')}<span class="badge">R${r}</span></div><div class="sub">${d}</div></a>`).join('');
-</script>
 </body>
 </html>
