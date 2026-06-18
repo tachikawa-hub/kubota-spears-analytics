@@ -19,6 +19,8 @@ a.card:hover{background:#1a3a5c;transform:translateX(4px)}
 .sub{font-size:12px;color:#aaa;margin-top:3px}
 .badge{display:inline-block;background:#F57C00;color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;margin-left:8px}
 .footer{text-align:center;padding:24px;color:#555;font-size:11px}
+select{background:#16213e;color:#fff;border:2px solid #F57C00;border-radius:8px;padding:12px 16px;font-size:16px;font-weight:700;width:100%;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23F57C00'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
+select:focus{outline:none;border-color:#fff}
 </style>
 </head>
 <body>
@@ -32,30 +34,37 @@ a.card:hover{background:#1a3a5c;transform:translateX(4px)}
 <a class="card" href="season_kpi_v2.html"><div class="title">Season KPI Report<span class="badge">SEASON</span></div><div class="sub">シーズン全体のKPI分析</div></a>
 </div>
 <div class="section">
-<h2>🔍 Scouting Reports</h2>
-<a class="card" href="scout_Spears_vs_Steelers_R22.html"><div class="title">vs Kobelco Kobe Steelers<span class="badge">R22</span></div></a>
+<h2>🔍 Scouting Report — 対戦相手を選択</h2>
+<select id="scoutSelect" onchange="if(this.value)window.location.href=this.value">
+<option value="">対戦相手を選んでください...</option>
+<option value="scout_Spears_vs_Steelers_R22.html">Kobelco Kobe Steelers (KOB)</option>
+<option value="scout_Spears_vs_Sungoliath_R22.html">Tokyo Sungoliath (SUN)</option>
+<option value="scout_Spears_vs_WildKnights_R22.html">Saitama Wild Knights (PAN)</option>
+<option value="scout_Spears_vs_Verblitz_R22.html">Toyota Verblitz (TOY)</option>
+<option value="scout_Spears_vs_D-Rocks_R22.html">Urayasu D-Rocks (UDR)</option>
+<option value="scout_Spears_vs_Heat_R22.html">Mie Honda Heat (HND)</option>
+<option value="scout_Spears_vs_Dynaboars_R22.html">Mitsubishi Sagamihara Dynaboars (DYN)</option>
+<option value="scout_Spears_vs_BlackRams_R22.html">BlackRams Tokyo (BRT)</option>
+<option value="scout_Spears_vs_Eagles_R22.html">Yokohama Canon Eagles (YCE)</option>
+<option value="scout_Spears_vs_BlueRevs_R22.html">Shizuoka BlueRevs (SBR)</option>
+<option value="scout_Spears_vs_BraveLupus_R22.html">Toshiba Brave Lupus Tokyo (TOH)</option>
+</select>
 </div>
 <div class="section">
 <h2>📋 Match Reports</h2>
 <div id="m"></div>
 </div>
 </div>
-<div class="footer">Kubota Spears BI Analytics Suite</div>
+<div class="footer">Kubota Spears BI Analytics Suite — rugby_bi.py</div>
 <script>
 document.getElementById('m').innerHTML=[
-['2026-06-07','Kobelco_Kobe_Steelers',22],
-['2026-05-23','Saitama_Wild_Knights',20],
-['2026-05-10','Urayasu_D-Rocks',18],
-['2026-05-03','Shizuoka_BlueRevs',17],
-['2026-04-26','Yokohama_Canon_Eagles',16],
-['2026-04-19','Mitsubishi_Sagamihara_Dynaboars',15],
-['2026-04-12','Toshiba_Brave_Lupus_Tokyo',14],
-['2026-04-05','Toyota_Verblitz',13],
-['2026-03-29','Mie_Honda_Heat',12],
-['2026-03-22','Tokyo_Sungoliath',11],
-['2026-03-14','BlackRams_Tokyo',10],
-['2026-03-08','Saitama_Wild_Knights',9],
-['2026-03-01','Kobelco_Kobe_Steelers',8],
+['2026-06-07','Kobelco_Kobe_Steelers',22],['2026-05-23','Saitama_Wild_Knights',20],
+['2026-05-10','Urayasu_D-Rocks',18],['2026-05-03','Shizuoka_BlueRevs',17],
+['2026-04-26','Yokohama_Canon_Eagles',16],['2026-04-19','Mitsubishi_Sagamihara_Dynaboars',15],
+['2026-04-12','Toshiba_Brave_Lupus_Tokyo',14],['2026-04-05','Toyota_Verblitz',13],
+['2026-03-29','Mie_Honda_Heat',12],['2026-03-22','Tokyo_Sungoliath',11],
+['2026-03-14','BlackRams_Tokyo',10],['2026-03-08','Saitama_Wild_Knights',9],
+['2026-03-01','Kobelco_Kobe_Steelers',8],['2026-02-22','Kobelco_Kobe_Steelers',1],
 ].map(([d,o,r])=>`<a class="card" href="match_report_${d}_${o}.html"><div class="title">vs ${o.replace(/_/g,' ')}<span class="badge">R${r}</span></div><div class="sub">${d}</div></a>`).join('');
 </script>
 </body>
