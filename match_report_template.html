@@ -302,7 +302,8 @@ const ST=[
   ['Turnovers Conceded',  'toc',   false,false,false],
   ['Penalties Conceded',  'pen',   false,true, false],
   ['22m Entries',         'e22',   false,false,true],
-  ['22m Success',         's22',   false,false,true],
+  ['Carried into 22m',    'c22',   false,false,true],
+  ['Started in 22m',      's22',   false,false,true],
 ];
 
 // Momentum page (quarters_v5_retry design) expects {t,m} shaped event arrays
@@ -620,28 +621,30 @@ function pSummary(){
     ${statRow('Penalties Conceded',h.penalties,a.penalties,'')}
   </div>`;
 
+  const e22c_pct_h=h.e22?Math.round(h.c22/h.e22*100):0;
+  const e22c_pct_a=a.e22?Math.round(a.c22/a.e22*100):0;
   const e22Card=`<div class="sum-card">
     <div class="sum-card-title">22m Entries</div>
     <div style="display:flex;justify-content:center;align-items:center;text-align:center;gap:24px;padding:4px 0">
       <div>
         <svg viewBox="0 0 110 110" style="width:72px;height:72px">
           <circle cx="55" cy="55" r="42" fill="none" stroke="#eee" stroke-width="12"/>
-          <circle cx="55" cy="55" r="42" fill="none" style="stroke:var(--ks)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(2*Math.PI*42*h.s22_pct/100).toFixed(1)} ${(2*Math.PI*42).toFixed(1)}" transform="rotate(-90 55 55)"/>
-          <text x="55" y="52" text-anchor="middle" font-size="20" font-weight="900" style="fill:var(--ksd)">${h.s22_pct.toFixed(0)}%</text>
-          <text x="55" y="68" text-anchor="middle" font-size="8" style="fill:var(--mu)">conv</text>
+          <circle cx="55" cy="55" r="42" fill="none" style="stroke:var(--ks)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(2*Math.PI*42*e22c_pct_h/100).toFixed(1)} ${(2*Math.PI*42).toFixed(1)}" transform="rotate(-90 55 55)"/>
+          <text x="55" y="52" text-anchor="middle" font-size="20" font-weight="900" style="fill:var(--ksd)">${e22c_pct_h}%</text>
+          <text x="55" y="68" text-anchor="middle" font-size="8" style="fill:var(--mu)">carried</text>
         </svg>
         <div style="font-size:9px;font-weight:800;color:var(--ksd);margin-top:2px">${HOME}</div>
-        <div style="font-size:8px;color:var(--mu)">${h.s22}/${h.e22} entries → try</div>
+        <div style="font-size:8px;color:var(--mu)">${h.c22} carried / ${h.s22} started</div>
       </div>
       <div>
         <svg viewBox="0 0 110 110" style="width:72px;height:72px">
           <circle cx="55" cy="55" r="42" fill="none" stroke="#eee" stroke-width="12"/>
-          <circle cx="55" cy="55" r="42" fill="none" style="stroke:var(--snm)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(2*Math.PI*42*a.s22_pct/100).toFixed(1)} ${(2*Math.PI*42).toFixed(1)}" transform="rotate(-90 55 55)"/>
-          <text x="55" y="52" text-anchor="middle" font-size="20" font-weight="900" style="fill:var(--snm)">${a.s22_pct.toFixed(0)}%</text>
-          <text x="55" y="68" text-anchor="middle" font-size="8" style="fill:var(--mu)">conv</text>
+          <circle cx="55" cy="55" r="42" fill="none" style="stroke:var(--snm)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(2*Math.PI*42*e22c_pct_a/100).toFixed(1)} ${(2*Math.PI*42).toFixed(1)}" transform="rotate(-90 55 55)"/>
+          <text x="55" y="52" text-anchor="middle" font-size="20" font-weight="900" style="fill:var(--snm)">${e22c_pct_a}%</text>
+          <text x="55" y="68" text-anchor="middle" font-size="8" style="fill:var(--mu)">carried</text>
         </svg>
         <div style="font-size:9px;font-weight:800;color:var(--snm);margin-top:2px">${AWAY}</div>
-        <div style="font-size:8px;color:var(--mu)">${a.s22}/${a.e22} entries → try</div>
+        <div style="font-size:8px;color:var(--mu)">${a.c22} carried / ${a.s22} started</div>
       </div>
     </div>
     ${statRow('22m Entries',h.e22,a.e22,'')}
@@ -849,12 +852,7 @@ function pE22(){
     return`<div class="e22t">
       <div class="e22h ${side}">${team}</div>
       <div class="e22c">
-        <div class="gauge-wrap" style="padding:6px 0 4px">
-          <div class="gauge-lbl" style="font-size:9px;font-weight:700;letter-spacing:.06em">CONVERSION RATE</div>
-          ${gaugeArc(det.success_pct,gcol,55)}
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;text-align:center;padding:6px 0;border-top:1px solid var(--ru);border-bottom:1px solid var(--ru)">
-          <div><div style="font-size:22px;font-weight:900;color:var(--gd)">${det.total_tries}</div><div style="font-size:8px;color:var(--mu);text-transform:uppercase">Tries</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:center;padding:6px 0;border-bottom:1px solid var(--ru)">
           <div><div style="font-size:22px;font-weight:900;color:${col}">${pts}</div><div style="font-size:8px;color:var(--mu);text-transform:uppercase">Points</div></div>
           <div><div style="font-size:22px;font-weight:900">${avgPts}</div><div style="font-size:8px;color:var(--mu);text-transform:uppercase">Pts/Entry</div></div>
         </div>
@@ -862,11 +860,8 @@ function pE22(){
           <div class="n" style="color:${col}">${det.total}</div>
           <div class="s">22M ENTRIES</div>
         </div>
-        <div class="e22st"><span class="l">Started in 22m</span><span style="font-weight:800;font-size:15px">${det.sop}</span></div>
         <div class="e22st"><span class="l">Carried into 22m</span><span style="font-weight:800;font-size:15px">${det.carried}</span></div>
-        <div style="border-top:1px solid var(--ru);margin:4px 0"></div>
-        <div class="e22st"><span class="l">Try from 22m Entry</span><span style="font-weight:800;font-size:15px;color:var(--gd)">${det.tries}</span></div>
-        <div class="e22st"><span class="l">Try from SOP Inside</span><span style="font-weight:800;font-size:15px;color:var(--gd)">${det.try_from_sop}</span></div>
+        <div class="e22st"><span class="l">Started in 22m</span><span style="font-weight:800;font-size:15px">${det.started}</span></div>
       </div>
     </div>`;
   }
