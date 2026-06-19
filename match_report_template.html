@@ -222,6 +222,13 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f0ece4;color:var(
 .pen-bar{width:46%;border-radius:3px 3px 0 0;min-height:3px}
 .pen-bar.h{background:var(--ks)}.pen-bar.a{background:var(--snm)}
 .pen-bar-lbl{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:.04em;margin-top:5px;font-weight:700}
+/* horizontal bar rows (errors / penalty breakdown) */
+.pen-cols{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+.pen-col{flex:1;min-width:220px}
+.pen-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.pen-bar-label{font-size:10px;color:var(--ink);min-width:150px;flex-shrink:0}
+.pen-bar-fill{height:12px;border-radius:6px;background:var(--ks)}
+.pen-bar-num{font-size:11px;font-weight:800;min-width:22px;text-align:right}
 .adbar{display:flex;height:26px;border-radius:4px;overflow:hidden;margin:6px 0 4px}
 .adbar-atk{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;background:var(--ks)}
 .adbar-def{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;background:var(--snm)}
@@ -864,8 +871,9 @@ function pE22(){
           <span class="l" style="font-weight:700">22m Success Rate</span>
           <span style="font-weight:900;font-size:17px;color:${srCol}">${det.success_rate}%</span>
         </div>
-        <div class="e22st"><span class="l" style="font-size:9px">Tries</span><span style="font-weight:700">${det.total_tries}</span></div>
-        <div class="e22st"><span class="l" style="font-size:9px">Pen Won in 22m</span><span style="font-weight:700">${det.opp_pen_22m}</span></div>
+        <div class="e22st"><span class="l" style="font-size:9px;color:var(--mu)">÷ ${det.a22_total} A22 entries</span><span style="font-weight:700;color:var(--gd)">${det.a22_pos}</span></div>
+        <div class="e22st"><span class="l" style="font-size:9px">Tries (in 22m)</span><span style="font-weight:700">${det.a22_tries}</span></div>
+        <div class="e22st"><span class="l" style="font-size:9px">Pen Goals (in 22m)</span><span style="font-weight:700">${det.a22_pg}</span></div>
         <div style="border-top:1px solid var(--ru);padding:6px 12px;font-size:10px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.04em">Try Origin</div>
         <div class="e22st"><span class="l" style="font-size:9px">From 22m Entry</span><span style="font-weight:700;color:${col}">${det.tries_from_22m}</span></div>
         <div class="e22st"><span class="l" style="font-size:9px">Running Entry</span><span style="font-weight:700">${det.tries_running}</span></div>
@@ -891,10 +899,10 @@ function pE22(){
   const hErrMax=hErr.length?hErr[0][1]:1, aErrMax=aErr.length?aErr[0][1]:1;
   function errBars(errs,maxV,side){
     if(!errs.length) return`<div style="color:var(--mu);font-size:11px;padding:8px 0">No errors</div>`;
-    const fill=side==='home'?'var(--ks)':'#c4600f';
+    const fill=side==='home'?'var(--ks)':'var(--snm)';
     return errs.map(([t,n])=>`<div class="pen-bar-row">
-      <span class="pen-bar-label" style="min-width:160px;font-size:10px">${t}</span>
-      <div class="pen-bar-track"><div class="pen-bar-fill" style="width:${Math.round(n/maxV*100)}%;background:${fill}"></div></div>
+      <span class="pen-bar-label">${t}</span>
+      <div class="pen-bar-track" style="flex:1"><div class="pen-bar-fill" style="width:${Math.round(n/maxV*100)}%;background:${fill}"></div></div>
       <span class="pen-bar-num">${n}</span></div>`).join('');
   }
   const errSection=`<div style="padding:10px 16px 12px">
@@ -905,7 +913,7 @@ function pE22(){
         ${errBars(hErr,hErrMax,'home')}
       </div>
       <div class="pen-col">
-        <div style="font-size:10px;font-weight:700;color:#c4600f;text-transform:uppercase;margin-bottom:6px">${AWAY}</div>
+        <div style="font-size:10px;font-weight:700;color:var(--snm);text-transform:uppercase;margin-bottom:6px">${AWAY}</div>
         ${errBars(aErr,aErrMax,'away')}
       </div>
     </div>

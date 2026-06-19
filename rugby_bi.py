@@ -497,16 +497,23 @@ def e22_detail(team, opp):
         idx = min(int(mm // 10), 8)
         bands[idx] += 1
 
-    # 22m Success Rate: (tries + opp penalties conceded in own 22m) / e22
-    opp_pen_22m = cur.execute(
-        "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
-        "AND action_name='Penalty Conceded' AND CAST(x_coord AS REAL) <= 22",
-        (fx, opp)
-    ).fetchone()[0]
-    success_num = total_tries + opp_pen_22m
-    success_rate = round(success_num / total * 100, 1) if total else 0.0
+    # 22m Success Rate: use Attacking 22 Entry action outcomes
+    # Positive = Try or Penalty Goal Attempt outcome; denominator = total A22 Entry count
+    a22_rows = cur.execute(
+        "SELECT COALESCE(action_type_name,'') tp, COUNT(*) n FROM events "
+        "WHERE fxid=? AND team_name=? AND action_name='Attacking 22 Entry' "
+        "GROUP BY action_type_name",
+        (fx, team)
+    ).fetchall()
+    a22_by_type = {r["tp"]: r["n"] for r in a22_rows}
+    a22_tries = a22_by_type.get("22 Entry Outcome - Try", 0)
+    a22_pg = a22_by_type.get("22 Entry Outcome - Penalty Goal Attempt", 0)
+    a22_pos = a22_tries + a22_pg
+    a22_total = sum(a22_by_type.values())
+    success_rate = round(a22_pos / a22_total * 100, 1) if a22_total else 0.0
 
-    # Try origin: classify by whether the try-scoring sequence included a 22m entry Possession
+    # Try origin: classify by field_zone of the starting Possession in each try-scoring sequence
+    # field_zone='Attack 22' means possession started inside opp 22m (x>=78)
     tries_from_22m = cur.execute(
         "SELECT COUNT(*) FROM events e1 "
         "WHERE e1.fxid=? AND e1.team_name=? "
@@ -514,7 +521,7 @@ def e22_detail(team, opp):
         "AND EXISTS ("
         "  SELECT 1 FROM events e2 WHERE e2.fxid=e1.fxid AND e2.team_name=e1.team_name "
         "  AND e2.sequence_id=e1.sequence_id AND e2.action_name='Possession' "
-        "  AND e2.qualifier4_name IN ('Enters into Opposition 22','Starts inside Opposition 22')"
+        "  AND e2.field_zone='Attack 22'"
         ")",
         (fx, team)
     ).fetchone()[0]
@@ -533,7 +540,9 @@ def e22_detail(team, opp):
     return {
         "total": total, "carried": carried, "started": started,
         "total_tries": total_tries, "bands": bands,
-        "opp_pen_22m": opp_pen_22m, "success_num": success_num, "success_rate": success_rate,
+        "a22_tries": a22_tries, "a22_pg": a22_pg,
+        "a22_pos": a22_pos, "a22_total": a22_total,
+        "success_rate": success_rate,
         "tries_from_22m": tries_from_22m, "tries_running": tries_running,
         "errors_in_22m": errors_in_22m,
     }
@@ -1222,25 +1231,29 @@ def cmd_kpi(args=None):
         tries_conceded = CT(fx, ot, action_name="Try")
         opp_e22 = CT(fx, ot, action_name="Possession",
                      qualifier4_name={"Enters into Opposition 22", "Starts inside Opposition 22"})
-        # Kubota's Penalty Conceded with x_coord<=22 = Kubota defending own 22m = opp attacking there
-        kub_pen_in_own_22m = cur.execute(
-            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
-            "AND action_name='Penalty Conceded' AND CAST(x_coord AS REAL) <= 22",
-            (fx, TEAM)
-        ).fetchone()[0]
-        opp_success_num = tries_conceded + kub_pen_in_own_22m
-        opp_success_pct = round(opp_success_num / opp_e22 * 100, 1) if opp_e22 else 0.0
+        # Opponent 22m success rate: Attacking 22 Entry outcomes (Try + Penalty Goal Attempt)
+        opp_a22_rows = cur.execute(
+            "SELECT COALESCE(action_type_name,'') tp, COUNT(*) n FROM events "
+            "WHERE fxid=? AND team_name=? AND action_name='Attacking 22 Entry' "
+            "GROUP BY action_type_name", (fx, ot)
+        ).fetchall()
+        opp_a22_by_type = {r["tp"]: r["n"] for r in opp_a22_rows}
+        opp_a22_pos = (opp_a22_by_type.get("22 Entry Outcome - Try", 0) +
+                       opp_a22_by_type.get("22 Entry Outcome - Penalty Goal Attempt", 0))
+        opp_a22_total = sum(opp_a22_by_type.values())
+        opp_success_pct = round(opp_a22_pos / opp_a22_total * 100, 1) if opp_a22_total else 0.0
 
-        # Kubota 22m success rate: (Kubota tries + opp penalties conceded in opp own 22m) / e22
-        kub_e22 = C(fx, action_name="Possession",
-                    qualifier4_name={"Enters into Opposition 22", "Starts inside Opposition 22"})
-        kub_tries = C(fx, action_name="Try")
-        kub_pen_won_22m = cur.execute(
-            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
-            "AND action_name='Penalty Conceded' AND CAST(x_coord AS REAL) <= 22",
-            (fx, ot)
-        ).fetchone()[0]
-        kub_success_pct = round((kub_tries + kub_pen_won_22m) / kub_e22 * 100, 1) if kub_e22 else 0.0
+        # Kubota 22m success rate: Attacking 22 Entry outcomes (Try + Penalty Goal Attempt)
+        kub_a22_rows = cur.execute(
+            "SELECT COALESCE(action_type_name,'') tp, COUNT(*) n FROM events "
+            "WHERE fxid=? AND team_name=? AND action_name='Attacking 22 Entry' "
+            "GROUP BY action_type_name", (fx, TEAM)
+        ).fetchall()
+        kub_a22_by_type = {r["tp"]: r["n"] for r in kub_a22_rows}
+        kub_a22_pos = (kub_a22_by_type.get("22 Entry Outcome - Try", 0) +
+                       kub_a22_by_type.get("22 Entry Outcome - Penalty Goal Attempt", 0))
+        kub_a22_total = sum(kub_a22_by_type.values())
+        kub_success_pct = round(kub_a22_pos / kub_a22_total * 100, 1) if kub_a22_total else 0.0
 
         # penalty season accumulation (type / attack-defence / half / quarter)
         for r in cur.execute(
@@ -1869,7 +1882,7 @@ def cmd_kpi(args=None):
          ['lb','Linebreaks','Attacking Qualities/Initial Break /match',1,true],
          ['offloads','Offloads','successful (to own player)',1,true],
          ['e22','22m Entries','Enters+Starts into Opposition 22 /match',1,true],
-         ['kub_success','22m Success %','(tries + pen won in 22m) ÷ entries',1,true],
+         ['kub_success','22m Success %','(Try + Pen Goal outcomes) ÷ Attacking 22 Entry',1,true],
          ['c22','Carried into 22m','Enters into Opposition 22 /match',1,true],
          ['s22','Started in 22m','Starts inside Opposition 22 /match',1,true],
          ['to_con','Turnovers Conceded','per match',1,false],
@@ -1892,7 +1905,8 @@ def cmd_kpi(args=None):
          <div class="sec-title">Match-by-match</div>${it}
          <div class="note">Gainline % = carries tagged 'Crossed Gain line' ÷ all carries. LQB % = rucks with ruck-speed ≤3s.
            Defenders Beaten = Attacking Qualities/Defender Beaten. Linebreaks = Attacking Qualities/Initial Break (Line Break + Kick Line Break + Intercepted Break).
-           22m Entries = Possession actions with qualifier4 'Enters into Opposition 22' + 'Starts inside Opposition 22'.</div>`;
+           22m Entries = Possession events with qualifier4 'Enters into Opposition 22' + 'Starts inside Opposition 22'.
+           22m Success % = (Try + Penalty Goal Attempt outcomes from Attacking 22 Entry) ÷ total Attacking 22 Entry count × 100. Note: Attacking 22 Entry count may differ slightly from Possession 22m Entries.</div>`;
      }},
      {id:'defence',title:'Defence',build:()=>{
        const avg=avgTable([
@@ -1908,7 +1922,7 @@ def cmd_kpi(args=None):
          ['opp_lqb','Opponent LQB %','opponent rucks ≤3s',1,false],
          ['tries_con','Tries Conceded','per match',1,false],
          ['opp_e22','Opponent 22m Entries','Enters+Starts into Opposition 22 /match',1,false],
-         ['opp_success','Opponent 22m Success %','(opp tries + Kubota pen in own 22m) ÷ opp entries',1,false],
+         ['opp_success','Opponent 22m Success %','(Try + Pen Goal outcomes) ÷ Attacking 22 Entry',1,false],
        ]);
        const it=itTable(baseCols.concat([
          {h:'Tackles Made',fn:r=>r.tk},
@@ -1930,7 +1944,7 @@ def cmd_kpi(args=None):
            Turnovers Won = Possession 'Turnover Won' + Jackal success (events within 0.5 match-min de-duplicated).
            <span style="color:#c4600f;font-weight:700">Orange columns = opponent stats</span>: Gainline % / LQB % / Tries scored vs Kubota /
            Opponent 22m Entries = Possession qualifier4 'Enters into Opposition 22' + 'Starts inside Opposition 22' by the opposition.
-           Opponent 22m Success % = (opponent tries + Kubota Penalty Conceded in own 22m) ÷ opponent 22m entries × 100.</div>`;
+           Opponent 22m Success % = (Try + Penalty Goal Attempt outcomes from Attacking 22 Entry) ÷ total Attacking 22 Entry count × 100. Note: Attacking 22 Entry count may differ from Possession 22m Entries.</div>`;
      }},
      {id:'setpiece',title:'Set Piece',build:()=>{
        const avg=avgTable([
@@ -4046,6 +4060,7 @@ def cmd_build(args=None):
         "qualifier5","qualifier5_name","qualifier6","qualifier6_name",
         "qualifier7","qualifier7_name","qualifier8","qualifier8_name",
         "qualifier9","qualifier9_name","qualifier10","qualifier10_name",
+        "field_zone",
         "metres","metres2","metres3","metres4",
         "utc_time","play_num","set_num","sequence_id",
         "player_advantage","score_advantage",
@@ -4134,6 +4149,17 @@ def cmd_build(args=None):
                 cur.execute(ev_sql, vals)
                 n_events += 1
 
+    # Derive field_zone from x_coord (not in CSV, computed from coordinate)
+    cur.execute("""
+        UPDATE events SET field_zone =
+            CASE
+                WHEN x_coord IS NULL OR x_coord = '' THEN NULL
+                WHEN CAST(x_coord AS REAL) >= 78 THEN 'Attack 22'
+                WHEN CAST(x_coord AS REAL) >= 50 THEN 'Attack 1/2'
+                WHEN CAST(x_coord AS REAL) > 22 THEN 'Def 1/2'
+                ELSE 'Def 22'
+            END
+    """)
     cur.execute("CREATE INDEX idx_events_fxid ON events(fxid)")
     cur.execute("CREATE INDEX idx_events_team ON events(team_id)")
     cur.execute("CREATE INDEX idx_events_action ON events(action_name)")
