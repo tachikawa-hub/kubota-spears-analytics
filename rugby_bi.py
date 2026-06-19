@@ -482,7 +482,7 @@ def events_for(action, result=None, types=None):
 # ---------------------------------------------------------------------------
 # 22m entry detail (bands by 10-min period)
 # ---------------------------------------------------------------------------
-def e22_detail(team):
+def e22_detail(team, opp):
     carried = C(fx, team, action_name="Possession", qualifier4_name="Enters into Opposition 22")
     started = C(fx, team, action_name="Possession", qualifier4_name="Starts inside Opposition 22")
     total = carried + started
@@ -496,9 +496,46 @@ def e22_detail(team):
         mm = match_min(r["ts"], r["pd"], p2)
         idx = min(int(mm // 10), 8)
         bands[idx] += 1
+
+    # 22m Success Rate: (tries + opp penalties conceded in own 22m) / e22
+    opp_pen_22m = cur.execute(
+        "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
+        "AND action_name='Penalty Conceded' AND CAST(x_coord AS REAL) <= 22",
+        (fx, opp)
+    ).fetchone()[0]
+    success_num = total_tries + opp_pen_22m
+    success_rate = round(success_num / total * 100, 1) if total else 0.0
+
+    # Try origin: classify by whether the try-scoring sequence included a 22m entry Possession
+    tries_from_22m = cur.execute(
+        "SELECT COUNT(*) FROM events e1 "
+        "WHERE e1.fxid=? AND e1.team_name=? "
+        "AND e1.action_name='Sequences' AND e1.action_result_name='Try' "
+        "AND EXISTS ("
+        "  SELECT 1 FROM events e2 WHERE e2.fxid=e1.fxid AND e2.team_name=e1.team_name "
+        "  AND e2.sequence_id=e1.sequence_id AND e2.action_name='Possession' "
+        "  AND e2.qualifier4_name IN ('Enters into Opposition 22','Starts inside Opposition 22')"
+        ")",
+        (fx, team)
+    ).fetchone()[0]
+    tries_running = total_tries - tries_from_22m
+
+    # Errors in 22m: Turnovers by this team while attacking (x_coord >= 78)
+    err_rows = cur.execute(
+        "SELECT COALESCE(action_type_name,'Other') tp, COUNT(*) n FROM events "
+        "WHERE fxid=? AND team_name=? AND action_name='Turnover' "
+        "AND CAST(x_coord AS REAL) >= 78 "
+        "GROUP BY action_type_name ORDER BY n DESC",
+        (fx, team)
+    ).fetchall()
+    errors_in_22m = [[r["tp"], r["n"]] for r in err_rows]
+
     return {
         "total": total, "carried": carried, "started": started,
         "total_tries": total_tries, "bands": bands,
+        "opp_pen_22m": opp_pen_22m, "success_num": success_num, "success_rate": success_rate,
+        "tries_from_22m": tries_from_22m, "tries_running": tries_running,
+        "errors_in_22m": errors_in_22m,
     }
 
 
@@ -918,7 +955,7 @@ def cmd_match(args):
         },
         "score_events": score_events, "pen_events": pen_events, "error_events": error_events,
         "kick_events": kick_events, "miss_kick_events": miss_kick_events,
-        "e22_detail": {HOME_NAME: e22_detail(HOME_T), AWAY_NAME: e22_detail(AWAY_T)},
+        "e22_detail": {HOME_NAME: e22_detail(HOME_T, AWAY_T), AWAY_NAME: e22_detail(AWAY_T, HOME_T)},
         "setpiece": {HOME_NAME: setpiece_detail(HOME_T), AWAY_NAME: setpiece_detail(AWAY_T)},
         "teamsheet": {
             HOME_NAME: teamsheet(HOME_T, pos_map_h, shirt_map_h, play_time_h),
@@ -1185,9 +1222,26 @@ def cmd_kpi(args=None):
         tries_conceded = CT(fx, ot, action_name="Try")
         opp_e22 = CT(fx, ot, action_name="Possession",
                      qualifier4_name={"Enters into Opposition 22", "Starts inside Opposition 22"})
-        opp_c22 = CT(fx, ot, action_name="Possession", qualifier4_name="Enters into Opposition 22")
-        opp_s22 = CT(fx, ot, action_name="Possession", qualifier4_name="Starts inside Opposition 22")
-    
+        # Kubota's Penalty Conceded with x_coord<=22 = Kubota defending own 22m = opp attacking there
+        kub_pen_in_own_22m = cur.execute(
+            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
+            "AND action_name='Penalty Conceded' AND CAST(x_coord AS REAL) <= 22",
+            (fx, TEAM)
+        ).fetchone()[0]
+        opp_success_num = tries_conceded + kub_pen_in_own_22m
+        opp_success_pct = round(opp_success_num / opp_e22 * 100, 1) if opp_e22 else 0.0
+
+        # Kubota 22m success rate: (Kubota tries + opp penalties conceded in opp own 22m) / e22
+        kub_e22 = C(fx, action_name="Possession",
+                    qualifier4_name={"Enters into Opposition 22", "Starts inside Opposition 22"})
+        kub_tries = C(fx, action_name="Try")
+        kub_pen_won_22m = cur.execute(
+            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
+            "AND action_name='Penalty Conceded' AND CAST(x_coord AS REAL) <= 22",
+            (fx, ot)
+        ).fetchone()[0]
+        kub_success_pct = round((kub_tries + kub_pen_won_22m) / kub_e22 * 100, 1) if kub_e22 else 0.0
+
         # penalty season accumulation (type / attack-defence / half / quarter)
         for r in cur.execute(
             "SELECT action_type_name tp, qualifier3_name od, player_position_name pos, period pd, ps_timestamp ts "
@@ -1255,7 +1309,9 @@ def cmd_kpi(args=None):
             # opponent stats
             "opp_carries": opp_carries, "opp_glo": opp_glo,
             "opp_rucks": opp_rucks, "opp_lqb": opp_lqb,
-            "tries_conceded": tries_conceded, "opp_e22": opp_e22, "opp_c22": opp_c22, "opp_s22": opp_s22,
+            "tries_conceded": tries_conceded, "opp_e22": opp_e22,
+            "opp_success_pct": opp_success_pct,
+            "kub_success_pct": kub_success_pct,
         }
         per_match.append(rec)
     
@@ -1335,6 +1391,7 @@ def cmd_kpi(args=None):
         "SELECT player_name nm, "
         "SUM(action_name='Carry') carries, "
         "SUM(CASE WHEN action_name='Carry' THEN CAST(metres AS REAL) ELSE 0 END) metres, "
+        "SUM(CASE WHEN action_name='Carry' THEN CAST(metres3 AS REAL) ELSE 0 END) pcm, "
         "SUM(action_name='Carry' AND qualifier3_name='Crossed Gain line') glo, "
         "SUM(action_name='Attacking Qualities' AND action_type_name='Initial Break') lb, "
         "SUM(action_name='Attacking Qualities' AND action_type_name='Defender Beaten') db, "
@@ -1355,11 +1412,14 @@ def cmd_kpi(args=None):
             continue
         car, pas, kk = r["carries"], r["passes"], r["kicks"]
         ooa_t = r["ooa13"] + r["ooa4"]
+        pcm_val = r["pcm"] or 0
         players_attack.append({
             "name": nm, "pos": pos_map.get(nm, ""), "shirt": shirt_map.get(nm, 99),
             "pt": play_time.get(nm, 0),
             "carries": car, "metres": int(r["metres"]),
             "avg": round(r["metres"] / car, 1) if car else 0,
+            "pcm": int(pcm_val),
+            "pcm_per_carry": round(pcm_val / car, 2) if car else 0,
             "gl": round(r["glo"] / car * 100, 1) if car else 0,
             "lb": r["lb"], "db": r["db"], "ol": r["ol"], "tries": r["tries"], "err": r["err"],
             "passes": pas,
@@ -1514,6 +1574,7 @@ def cmd_kpi(args=None):
             "e22": mn(recs, "e22"), "c22": mn(recs, "c22"), "s22": mn(recs, "s22"),
             "c22_pct": rate(recs, "c22", "e22"),
             "s22_pct": rate(recs, "s22", "e22"),
+            "kub_success": mn(recs, "kub_success_pct"),
             "to_con": mn(recs, "to_con"),
             # defence
             "tk": mn(recs, "tk"), "mt": mn(recs, "mt"),
@@ -1527,7 +1588,7 @@ def cmd_kpi(args=None):
             "opp_gl": rate(recs, "opp_glo", "opp_carries"),
             "opp_lqb": rate(recs, "opp_lqb", "opp_rucks"),
             "opp_e22": mn(recs, "opp_e22"),
-            "opp_c22": mn(recs, "opp_c22"), "opp_s22": mn(recs, "opp_s22"),
+            "opp_success": mn(recs, "opp_success_pct"),
             # set piece
             "lo_won": mn(recs, "lo_won"), "lo_lost": mn(recs, "lo_lost"),
             "lo_steal": mn(recs, "lo_steal"), "lo_pct": rate(recs, "lo_won", "lo_throw"),
@@ -1808,6 +1869,7 @@ def cmd_kpi(args=None):
          ['lb','Linebreaks','Attacking Qualities/Initial Break /match',1,true],
          ['offloads','Offloads','successful (to own player)',1,true],
          ['e22','22m Entries','Enters+Starts into Opposition 22 /match',1,true],
+         ['kub_success','22m Success %','(tries + pen won in 22m) ÷ entries',1,true],
          ['c22','Carried into 22m','Enters into Opposition 22 /match',1,true],
          ['s22','Started in 22m','Starts inside Opposition 22 /match',1,true],
          ['to_con','Turnovers Conceded','per match',1,false],
@@ -1821,6 +1883,7 @@ def cmd_kpi(args=None):
          {h:'Linebreaks',fn:r=>r.lb},
          {h:'Offloads',fn:r=>r.offloads},
          {h:'22m Entries',fn:r=>r.e22},
+         {h:'22m Success %',fn:r=>r.e22?f1(r.kub_success_pct)+'%':'-'},
          {h:'Carried into 22m',fn:r=>r.c22},
          {h:'Started in 22m',fn:r=>r.s22},
          {h:'Turnovers Conceded',fn:r=>r.to_con},
@@ -1844,9 +1907,8 @@ def cmd_kpi(args=None):
          ['opp_gl','Opponent Gainline %','opponent carries crossing gainline',1,false],
          ['opp_lqb','Opponent LQB %','opponent rucks ≤3s',1,false],
          ['tries_con','Tries Conceded','per match',1,false],
-         ['opp_e22','Opponent 22m Entries','per match',1,false],
-         ['opp_c22','Opp Carried into 22m','per match',1,false],
-         ['opp_s22','Opp Started in 22m','per match',1,false],
+         ['opp_e22','Opponent 22m Entries','Enters+Starts into Opposition 22 /match',1,false],
+         ['opp_success','Opponent 22m Success %','(opp tries + Kubota pen in own 22m) ÷ opp entries',1,false],
        ]);
        const it=itTable(baseCols.concat([
          {h:'Tackles Made',fn:r=>r.tk},
@@ -1860,15 +1922,15 @@ def cmd_kpi(args=None):
          {h:'Opponent LQB %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_rucks?f1(r.opp_lqb/r.opp_rucks*100):'-'},
          {h:'Tries Conceded',hcls:'opp',cls:'oppcol',fn:r=>r.tries_conceded},
          {h:'Opponent 22m Entries',hcls:'opp',cls:'oppcol',fn:r=>r.opp_e22},
-         {h:'Opp Carried into 22m',hcls:'opp',cls:'oppcol',fn:r=>r.opp_c22},
-         {h:'Opp Started in 22m',hcls:'opp',cls:'oppcol',fn:r=>r.opp_s22},
+         {h:'Opp 22m Success %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_e22?f1(r.opp_success_pct)+'%':'-'},
        ]));
        return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
          <div class="sec-title">Match-by-match</div>${it}
          <div class="note">Tackle % = tackles made ÷ (made+missed). Dominant Tackle % = qualifier 'Dominant Tackle' ÷ tackles made.
            Turnovers Won = Possession 'Turnover Won' + Jackal success (events within 0.5 match-min de-duplicated).
            <span style="color:#c4600f;font-weight:700">Orange columns = opponent stats</span>: Gainline % / LQB % / Tries scored vs Kubota /
-           Opponent 22m Entries (Carried + Started into Opposition 22) by the opposition.</div>`;
+           Opponent 22m Entries = Possession qualifier4 'Enters into Opposition 22' + 'Starts inside Opposition 22' by the opposition.
+           Opponent 22m Success % = (opponent tries + Kubota Penalty Conceded in own 22m) ÷ opponent 22m entries × 100.</div>`;
      }},
      {id:'setpiece',title:'Set Piece',build:()=>{
        const avg=avgTable([
@@ -1976,14 +2038,15 @@ def cmd_kpi(args=None):
      }},
      {id:'ind-attack',title:'Indiv Attack',build:()=>{
        const R=DATA.players_attack;
-       const tot=R.reduce((a,r)=>{['carries','metres','glo_x','lb','db','ol','tries','err','passes','pass_acc_n','kicks','kick_m','ooa13','ooa4'].forEach(k=>a[k]=(a[k]||0)+(r[k]||0));return a;},{});
-       // recompute weighted totals needing raw: gl% and acc% from components
+       const tot=R.reduce((a,r)=>{['carries','metres','pcm','lb','db','ol','tries','err','passes','kicks','kick_m','ooa13','ooa4'].forEach(k=>a[k]=(a[k]||0)+(r[k]||0));return a;},{});
+       // recompute weighted totals needing raw components
        const totGlo=R.reduce((s,r)=>s+Math.round(r.gl/100*r.carries),0);
-       const totAccN=R.reduce((s,r)=>s+Math.round(r.pass_acc/100*r.passes),0);
+       const totAccN=R.reduce((s,r)=>s+Math.round((r.pass_acc||0)/100*(r.passes||0)),0);
        const totOOA=tot.ooa13+tot.ooa4;
        const rows=R.map(r=>`<tr>
          <td class="shirt">${r.shirt}</td><td class="name">${r.name}</td><td class="pos">${r.pos}</td><td>${r.pt}</td>
          <td>${r.carries}</td><td>${r.metres}</td><td>${r.avg}</td>
+         <td>${r.carries?r.pcm_per_carry:'-'}</td>
          <td class="${r.gl>=60?'cell-good':r.gl&&r.gl<45?'cell-warn':''}">${r.carries?r.gl+'%':'-'}</td>
          <td class="${r.lb?'cell-good':'cell-dim'}">${r.lb||'-'}</td>
          <td>${r.db||'-'}</td><td>${r.ol||'-'}</td>
@@ -1993,26 +2056,27 @@ def cmd_kpi(args=None):
          <td>${r.kicks||'-'}</td><td>${r.kick_m||'-'}</td><td>${r.kicks?r.avg_kick:'-'}</td>
          <td>${r.ooa13||'-'}</td><td>${r.ooa4||'-'}</td>
          <td class="${(r.ooa13+r.ooa4)?(r.ooa_eff>=70?'cell-good':r.ooa_eff<55?'cell-warn':''):'cell-dim'}">${(r.ooa13+r.ooa4)?r.ooa_eff+'%':'-'}</td></tr>`).join('');
-       return `<div class="sec-title">Individual Attack — season totals (ranked by carries)</div>
+       return `<div class="sec-title">Individual Attack — season totals (ranked by position)</div>
          <div class="rank-wrap"><table class="rank-table">
            <thead><tr><th>No.</th><th class="l">Name</th><th class="l">Position</th><th>Play Time (min)</th>
-             <th>Ball Carries</th><th>Carry Metres</th><th>Avg Metres / Carry</th><th>Gainline %</th>
+             <th>Ball Carries</th><th>Carry Metres</th><th>Avg m/Carry</th><th>PC m/Carry</th><th>Gainline %</th>
              <th>Linebreaks</th><th>Defenders Beaten</th><th>Offloads</th><th>Tries</th><th>Errors</th>
              <th>Passes</th><th>Pass Accuracy %</th><th>Kicks In Play</th><th>Kick Metres</th><th>Avg Kick Metres</th>
              <th>OOA 1-3s</th><th>OOA 4+s</th><th>OOA Effectiveness %</th></tr></thead>
            <tbody>${rows}</tbody>
            <tfoot><tr><td></td><td class="l">TOTAL (${R.length} players)</td><td></td><td></td>
-             <td>${tot.carries}</td><td>${tot.metres}</td><td>${(tot.metres/tot.carries).toFixed(1)}</td>
-             <td>${(totGlo/tot.carries*100).toFixed(1)}%</td>
+             <td>${tot.carries}</td><td>${tot.metres}</td><td>${tot.carries?(tot.metres/tot.carries).toFixed(1):'-'}</td>
+             <td>${tot.carries?(tot.pcm/tot.carries).toFixed(2):'-'}</td>
+             <td>${tot.carries?(totGlo/tot.carries*100).toFixed(1)+'%':'-'}</td>
              <td>${tot.lb}</td><td>${tot.db}</td><td>${tot.ol}</td><td>${tot.tries}</td><td>${tot.err}</td>
-             <td>${tot.passes}</td><td>${(totAccN/tot.passes*100).toFixed(1)}%</td>
-             <td>${tot.kicks}</td><td>${tot.kick_m}</td><td>${(tot.kick_m/tot.kicks).toFixed(1)}</td>
-             <td>${tot.ooa13}</td><td>${tot.ooa4}</td><td>${(tot.ooa13/totOOA*100).toFixed(1)}%</td></tr></tfoot>
+             <td>${tot.passes}</td><td>${tot.passes?(totAccN/tot.passes*100).toFixed(1)+'%':'-'}</td>
+             <td>${tot.kicks}</td><td>${tot.kick_m}</td><td>${tot.kicks?(tot.kick_m/tot.kicks).toFixed(1):'-'}</td>
+             <td>${tot.ooa13}</td><td>${tot.ooa4}</td><td>${totOOA?(tot.ooa13/totOOA*100).toFixed(1)+'%':'-'}</td></tr></tfoot>
          </table></div>
-         <div class="note">Avg/C = metres ÷ carries · GL% = carries crossing the gainline ÷ carries · LB = Linebreaks · DB = Defenders Beaten ·
-           OL = Offloads (to own player) · Err = Turnovers conceded · Acc% = passes not Incomplete/Error/Forward/Intercepted/Off-Target ·
-           OOA 1-3 / 4+ = ruck (breakdown) speed ≤3s / &gt;3s from action 'Ruck' speed buckets · OOA Eff% = 1-3 ÷ (1-3 + 4+).
-           <b>Handling Count: データなし</b>（DBに該当フィールドなし）.</div>`;
+         <div class="note">Avg m/Carry = Carry Metres ÷ carries · PC m/Carry = Post-Contact Metres (metres3) ÷ carries · GL% = carries crossing the gainline ÷ carries ·
+           LB = Linebreaks · DB = Defenders Beaten · OL = Offloads (to own player) · Err = Turnovers conceded ·
+           Acc% = passes not Incomplete/Error/Forward/Intercepted/Off-Target ·
+           OOA 1-3 / 4+ = ruck speed ≤3s / &gt;3s · OOA Eff% = 1-3 ÷ (1-3 + 4+).</div>`;
      }},
      {id:'ind-defence',title:'Indiv Defence',build:()=>{
        const R=DATA.players_defence;
