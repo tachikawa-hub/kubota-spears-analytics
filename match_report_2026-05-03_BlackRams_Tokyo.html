@@ -141,7 +141,7 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f0ece4;color:var(
 .tlla{display:flex;justify-content:space-between;font-size:7px;color:var(--mu);margin-top:2px}
 
 /* ── 22M ── */
-.e22wrap{padding:10px 16px;display:grid;grid-template-columns:220px 1fr 220px;gap:16px;height:100%;align-items:center}
+.e22wrap{padding:10px 16px;display:grid;grid-template-columns:238px 1fr 238px;gap:16px;align-items:start}
 .e22t{min-width:0;display:flex;flex-direction:column}
 .e22h{padding:6px 8px;font-size:11px;font-weight:800;text-transform:uppercase;color:white;text-align:center;border-radius:3px 3px 0 0;flex:0 0 auto}
 .e22h.home{background:var(--ks)}.e22h.away{background:var(--snm)}
@@ -149,13 +149,9 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f0ece4;color:var(
 .e22-total{text-align:center;padding:12px 6px;background:#f8f6f2;border-bottom:1px solid var(--ru)}
 .e22-total .n{font-size:40px;font-weight:900;line-height:1}
 .e22-total .s{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);margin-top:4px}
-.e22st{display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--ru);font-size:14px;font-weight:600}
-.e22st .l{color:var(--mu);font-size:10px}
-.gauge-wrap{padding:8px 6px 4px;text-align:center;border-top:1px solid var(--ru);flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;min-height:0}
-.gauge-wrap svg{width:165px;height:120px}
-.gauge-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);margin-bottom:4px}
-.gauge-target{font-size:9px;color:var(--mu);margin-top:2px}
-.e22mid{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.e22st{display:flex;justify-content:space-between;padding:9px 13px;border-bottom:1px solid var(--ru);font-size:15px;font-weight:700}
+.e22st .l{color:var(--mu);font-size:11px}
+.e22mid{width:100%;display:flex;flex-direction:column;align-items:center;gap:4px}
 
 /* ── SET PIECE v2 ── */
 .sp2-wrap{padding:8px 12px;display:grid;grid-template-columns:1fr 1.6fr 1fr;grid-template-rows:auto auto;gap:8px}
@@ -224,11 +220,11 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f0ece4;color:var(
 .pen-bar-lbl{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:.04em;margin-top:5px;font-weight:700}
 /* horizontal bar rows (errors / penalty breakdown) */
 .pen-cols{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
-.pen-col{flex:1;min-width:220px}
-.pen-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
-.pen-bar-label{font-size:10px;color:var(--ink);min-width:150px;flex-shrink:0}
-.pen-bar-fill{height:12px;border-radius:6px;background:var(--ks)}
-.pen-bar-num{font-size:11px;font-weight:800;min-width:22px;text-align:right}
+.pen-col{flex:1;min-width:230px}
+.pen-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.pen-bar-label{font-size:11px;color:var(--ink);min-width:155px;flex-shrink:0}
+.pen-bar-fill{height:14px;border-radius:7px;background:var(--ks)}
+.pen-bar-num{font-size:12px;font-weight:800;min-width:24px;text-align:right}
 .adbar{display:flex;height:26px;border-radius:4px;overflow:hidden;margin:6px 0 4px}
 .adbar-atk{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;background:var(--ks)}
 .adbar-def{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;background:var(--snm)}
@@ -781,20 +777,19 @@ function pE22(){
   const mx=Math.max(...hB,...aB,1);
 
   function gaugeHtml(pct,total,col){
-    const r=80,cx=100,cy=100;
+    const r=70,cx=100,cy=78;
     const gc=pct>=50?'var(--gd)':pct>=35?'#e8a020':'var(--wn)';
     const aRad=(180-pct*1.8)*Math.PI/180;
     const ex=(cx+r*Math.cos(aRad)).toFixed(1);
     const ey=(cy-r*Math.sin(aRad)).toFixed(1);
-    const arc=pct>0?`<path d="M ${cx-r},${cy} A ${r},${r} 0 0,1 ${ex},${ey}" fill="none" stroke="${gc}" stroke-width="12" stroke-linecap="round"/>`:'';
-    return`<svg viewBox="0 0 200 122" style="width:100%;display:block">
-      <path d="M 20,100 A 80,80 0 0,1 180,100" fill="none" stroke="#e5e3de" stroke-width="12" stroke-linecap="round"/>
+    const arc=pct>0?`<path d="M ${cx-r},${cy} A ${r},${r} 0 0,1 ${ex},${ey}" fill="none" stroke="${gc}" stroke-width="11" stroke-linecap="round"/>`:'';
+    return`<svg viewBox="0 0 200 112" style="width:100%;display:block">
+      <path d="M ${cx-r},${cy} A ${r},${r} 0 0,1 ${cx+r},${cy}" fill="none" stroke="#e5e3de" stroke-width="11" stroke-linecap="round"/>
       ${arc}
-      <line x1="100" y1="5" x2="100" y2="23" stroke="#ccc" stroke-width="2.5"/>
-      <text x="100" y="4" text-anchor="middle" font-size="8" fill="#bbb" font-weight="700" dy="8">50%</text>
-      <text x="${cx}" y="76" text-anchor="middle" font-size="30" font-weight="900" fill="${gc}">${pct}%</text>
-      <text x="${cx}" y="93" text-anchor="middle" font-size="8.5" fill="var(--mu)" font-weight="700" letter-spacing=".05em">22M SUCCESS RATE</text>
-      <text x="${cx}" y="110" text-anchor="middle" font-size="7.5" fill="var(--mu)">÷ ${total} A22 entries</text>
+      <text x="${cx}" y="23" text-anchor="middle" font-size="8.5" fill="#bbb" font-weight="700">▲ 50%</text>
+      <text x="${cx}" y="63" text-anchor="middle" font-size="34" font-weight="900" fill="${gc}">${pct}%</text>
+      <text x="${cx}" y="91" text-anchor="middle" font-size="9.5" fill="var(--mu)" font-weight="700" letter-spacing=".05em">22M SUCCESS RATE</text>
+      <text x="${cx}" y="106" text-anchor="middle" font-size="8" fill="var(--mu)">÷ ${total} A22 entries</text>
     </svg>`;
   }
 
@@ -806,78 +801,66 @@ function pE22(){
     return`<div class="e22t">
       <div class="e22h ${side}">${team}</div>
       <div class="e22c">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:center;padding:6px 0;border-bottom:1px solid var(--ru)">
-          <div><div style="font-size:22px;font-weight:900;color:${col}">${pts}</div><div style="font-size:8px;color:var(--mu);text-transform:uppercase">Points</div></div>
-          <div><div style="font-size:22px;font-weight:900">${avgPts}</div><div style="font-size:8px;color:var(--mu);text-transform:uppercase">Pts/Entry</div></div>
-        </div>
-        <div class="e22-total" style="padding:8px 4px">
-          <div class="n" style="color:${col}">${det.total}</div>
-          <div class="s">22M ENTRIES</div>
-        </div>
         ${gaugeHtml(det.success_rate,det.a22_total,col)}
-        <div class="e22st"><span class="l">Started in 22m</span><span style="font-weight:700;color:${col}">${det.started}</span></div>
-        <div class="e22st"><span class="l">Carried into 22m</span><span style="font-weight:700">${det.carried}</span></div>
-        <div class="e22st"><span class="l">Tries — 22m Entry</span><span style="font-weight:700;color:${col}">${det.tries_from_22m}</span></div>
-        <div class="e22st"><span class="l">Tries — Outside 22m</span><span style="font-weight:700">${det.tries_running}</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center;padding:7px 4px;border-bottom:1px solid var(--ru);border-top:1px solid var(--ru);background:#f8f6f2">
+          <div><div style="font-size:20px;font-weight:900;color:${col}">${pts}</div><div style="font-size:8px;color:var(--mu);text-transform:uppercase">Points</div></div>
+          <div><div style="font-size:20px;font-weight:900">${avgPts}</div><div style="font-size:8px;color:var(--mu);text-transform:uppercase">Pts/Entry</div></div>
+          <div><div style="font-size:20px;font-weight:900;color:${col}">${det.total}</div><div style="font-size:8px;color:var(--mu);text-transform:uppercase">22m Entry</div></div>
+        </div>
+        <div class="e22st"><span class="l">Started in 22m</span><span style="font-weight:800;color:${col}">${det.started}</span></div>
+        <div class="e22st"><span class="l">Carried into 22m</span><span style="font-weight:800">${det.carried}</span></div>
+        <div class="e22st"><span class="l">Tries — 22m Entry</span><span style="font-weight:800;color:${col}">${det.tries_from_22m}</span></div>
+        <div class="e22st"><span class="l">Tries — Outside 22m</span><span style="font-weight:800">${det.tries_running}</span></div>
       </div>
     </div>`;
   }
 
   const midBars=periods.map((p,i)=>{
     const hp=Math.round(hB[i]/mx*100),ap=Math.round(aB[i]/mx*100);
-    return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-      <div style="flex:1;display:flex;justify-content:flex-end;align-items:center;height:54px">
-        ${hB[i]?`<span style="font-size:18px;margin-right:8px;font-weight:700;color:var(--ksd)">${hB[i]}</span><div style="width:${hp}%;height:54px;background:var(--ks);border-radius:4px 0 0 4px"></div>`:`<div></div>`}
+    return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <div style="flex:1;display:flex;justify-content:flex-end;align-items:center;height:50px">
+        ${hB[i]?`<span style="font-size:20px;margin-right:8px;font-weight:700;color:var(--ksd)">${hB[i]}</span><div style="width:${hp}%;height:50px;background:var(--ks);border-radius:4px 0 0 4px"></div>`:`<div></div>`}
       </div>
-      <div style="width:70px;text-align:center;font-size:15px;color:var(--mu);font-weight:600">${p}'</div>
-      <div style="flex:1;display:flex;align-items:center;height:54px">
-        ${aB[i]?`<div style="width:${ap}%;height:54px;background:var(--snm);border-radius:0 4px 4px 0"></div><span style="font-size:18px;margin-left:8px;font-weight:700;color:var(--snm)">${aB[i]}</span>`:`<div></div>`}
+      <div style="width:70px;text-align:center;font-size:16px;color:var(--mu);font-weight:600">${p}'</div>
+      <div style="flex:1;display:flex;align-items:center;height:50px">
+        ${aB[i]?`<div style="width:${ap}%;height:50px;background:var(--snm);border-radius:0 4px 4px 0"></div><span style="font-size:20px;margin-left:8px;font-weight:700;color:var(--snm)">${aB[i]}</span>`:`<div></div>`}
       </div>
     </div>`;
   }).join('');
 
-  // Errors in 22m comparison section
+  // Errors in 22m: merge set-piece losses into one flat list per team
   const hErr=ed[HOME].errors_in_22m||[], aErr=ed[AWAY].errors_in_22m||[];
   const hSp=ed[HOME].sp_errors_22m||[], aSp=ed[AWAY].sp_errors_22m||[];
-  const allErrVals=[...hErr,...aErr].map(e=>e[1]);
+  const hErrAll=[...hErr,...hSp], aErrAll=[...aErr,...aSp];
+  const allErrVals=[...hErrAll,...aErrAll].map(e=>e[1]);
   const errMax=allErrVals.length?Math.max(...allErrVals):1;
-  const allSpVals=[...hSp,...aSp].map(e=>e[1]);
-  const spMax=allSpVals.length?Math.max(...allSpVals):1;
   function errBars(errs,maxV,side){
-    if(!errs.length) return`<div style="color:var(--mu);font-size:11px;padding:8px 0">—</div>`;
+    if(!errs.length) return`<div style="color:var(--mu);font-size:12px;padding:8px 0">—</div>`;
     const fill=side==='home'?'var(--ks)':'var(--snm)';
     return errs.map(([t,n])=>`<div class="pen-bar-row">
       <span class="pen-bar-label">${t}</span>
       <div class="pen-bar-track" style="flex:1"><div class="pen-bar-fill" style="width:${Math.round(n/maxV*100)}%;background:${fill}"></div></div>
       <span class="pen-bar-num">${n}</span></div>`).join('');
   }
-  const spSection=(hSp.length||aSp.length)?`<div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--ru)">
-    <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);margin-bottom:6px">Set Piece Losses in 22m</div>
-    <div class="pen-cols">
-      <div class="pen-col">${errBars(hSp,spMax,'home')}</div>
-      <div class="pen-col">${errBars(aSp,spMax,'away')}</div>
-    </div>
-  </div>`:'' ;
-  const errSection=`<div style="padding:10px 16px 12px">
-    <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);border-bottom:2px solid var(--ru);padding-bottom:4px;margin-bottom:10px">Errors in 22m</div>
+  const errSection=`<div style="padding:14px 20px 16px">
+    <div style="font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);border-bottom:2px solid var(--ru);padding-bottom:5px;margin-bottom:12px">Errors in 22m</div>
     <div class="pen-cols">
       <div class="pen-col">
-        <div style="font-size:10px;font-weight:700;color:var(--ksd);text-transform:uppercase;margin-bottom:6px">${HOME}</div>
-        ${errBars(hErr,errMax,'home')}
+        <div style="font-size:11px;font-weight:700;color:var(--ksd);text-transform:uppercase;margin-bottom:8px">${HOME}</div>
+        ${errBars(hErrAll,errMax,'home')}
       </div>
       <div class="pen-col">
-        <div style="font-size:10px;font-weight:700;color:var(--snm);text-transform:uppercase;margin-bottom:6px">${AWAY}</div>
-        ${errBars(aErr,errMax,'away')}
+        <div style="font-size:11px;font-weight:700;color:var(--snm);text-transform:uppercase;margin-bottom:8px">${AWAY}</div>
+        ${errBars(aErrAll,errMax,'away')}
       </div>
     </div>
-    ${spSection}
   </div>`;
 
   return`<div class="page">${hdr('22m Entries')}<div class="e22wrap">
     ${tc(HOME,'home')}
     <div class="e22mid">
-      <div style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mu);margin-bottom:12px;text-align:center">By 10-min Period</div>
-      <div style="display:flex;gap:4px;margin-bottom:12px;font-size:12px">
+      <div style="font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mu);margin-bottom:12px;text-align:center">By 10-min Period</div>
+      <div style="display:flex;gap:4px;margin-bottom:12px;font-size:13px">
         <span style="color:var(--ks);font-weight:700">■</span><span style="color:var(--mu)">KUB</span>
         <span style="color:var(--snm);font-weight:700;margin-left:6px">■</span><span style="color:var(--mu)">BRT</span>
       </div>
