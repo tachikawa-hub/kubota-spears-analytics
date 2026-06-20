@@ -486,7 +486,6 @@ def e22_detail(team, opp):
     carried = C(fx, team, action_name="Possession", qualifier4_name="Enters into Opposition 22")
     started = C(fx, team, action_name="Possession", qualifier4_name="Starts inside Opposition 22")
     total = carried + started
-    total_tries = C(fx, team, action_name="Try")
     bands = [0] * 9
     for r in cur.execute(
         "SELECT ps_timestamp ts, period pd FROM events "
@@ -498,7 +497,6 @@ def e22_detail(team, opp):
         bands[idx] += 1
 
     # 22m Success Rate: use Attacking 22 Entry action outcomes
-    # Positive = Try or Penalty Goal Attempt outcome; denominator = total A22 Entry count
     a22_rows = cur.execute(
         "SELECT COALESCE(action_type_name,'') tp, COUNT(*) n FROM events "
         "WHERE fxid=? AND team_name=? AND action_name='Attacking 22 Entry' "
@@ -506,76 +504,92 @@ def e22_detail(team, opp):
         (fx, team)
     ).fetchall()
     a22_by_type = {r["tp"]: r["n"] for r in a22_rows}
-    a22_tries = a22_by_type.get("22 Entry Outcome - Try", 0)
-    a22_pg = a22_by_type.get("22 Entry Outcome - Penalty Goal Attempt", 0)
-    a22_pos = a22_tries + a22_pg
-    a22_total = sum(a22_by_type.values())
+    a22_tries  = a22_by_type.get("22 Entry Outcome - Try", 0)
+    a22_pg     = a22_by_type.get("22 Entry Outcome - Penalty Goal Attempt", 0)
+    a22_to     = a22_by_type.get("22 Entry Outcome - Turnover", 0)
+    a22_pc     = a22_by_type.get("22 Entry Outcome - Penalty Conceded", 0)
+    a22_kt     = a22_by_type.get("22 Entry Outcome - Kick Turnover", 0)
+    a22_sw     = a22_by_type.get("22 Entry Outcome - Scrum Won", 0)
+    a22_pos    = a22_tries + a22_pg
+    a22_total  = sum(a22_by_type.values())
     success_rate = round(a22_pos / a22_total * 100, 1) if a22_total else 0.0
 
-    # Try origin: classify by field_zone of the starting Possession in each try-scoring sequence
-    # field_zone='Attack 22' means possession started inside opp 22m (x>=78)
-    tries_from_22m = cur.execute(
+    # Try breakdown: Inside 22m = possession "Starts inside Opposition 22"; Outside = entered from outside
+    a22_tries_inside = cur.execute(
         "SELECT COUNT(*) FROM events e1 "
         "WHERE e1.fxid=? AND e1.team_name=? "
-        "AND e1.action_name='Sequences' AND e1.action_result_name='Try' "
+        "AND e1.action_name='Attacking 22 Entry' "
+        "AND e1.action_type_name='22 Entry Outcome - Try' "
+        "AND e1.sequence_id IS NOT NULL "
         "AND EXISTS ("
-        "  SELECT 1 FROM events e2 WHERE e2.fxid=e1.fxid AND e2.team_name=e1.team_name "
-        "  AND e2.sequence_id=e1.sequence_id AND e2.action_name='Possession' "
-        "  AND e2.field_zone='Attack 22'"
+        "  SELECT 1 FROM events e2 "
+        "  WHERE e2.fxid=e1.fxid AND e2.sequence_id=e1.sequence_id "
+        "  AND e2.action_name='Possession' "
+        "  AND e2.qualifier4_name='Starts inside Opposition 22'"
         ")",
         (fx, team)
     ).fetchone()[0]
-    tries_running = total_tries - tries_from_22m
+    a22_tries_outside = a22_tries - a22_tries_inside
 
-    # Errors in 22m: Turnovers by this team while attacking (x_coord >= 78)
-    err_rows = cur.execute(
-        "SELECT COALESCE(action_type_name,'Other') tp, COUNT(*) n FROM events "
-        "WHERE fxid=? AND team_name=? AND action_name='Turnover' "
-        "AND CAST(x_coord AS REAL) >= 78 "
-        "GROUP BY action_type_name ORDER BY n DESC",
+    # Turnover sub-breakdown: find Turnover action_type_name in same sequence as A22 Entry Turnover outcome
+    to_detail_rows = cur.execute(
+        "SELECT COALESCE(e2.action_type_name,'Other') tp, COUNT(*) n "
+        "FROM events e1 "
+        "JOIN events e2 ON e1.fxid=e2.fxid AND e1.sequence_id=e2.sequence_id "
+        "WHERE e1.fxid=? AND e1.team_name=? "
+        "AND e1.action_name='Attacking 22 Entry' "
+        "AND e1.action_type_name='22 Entry Outcome - Turnover' "
+        "AND e2.action_name='Turnover' "
+        "AND e2.action_result_name='Error on Attack' "
+        "AND e1.sequence_id IS NOT NULL "
+        "GROUP BY e2.action_type_name ORDER BY n DESC",
         (fx, team)
     ).fetchall()
-    errors_in_22m = [[r["tp"], r["n"]] for r in err_rows]
+    a22_to_detail = [[r["tp"], r["n"]] for r in to_detail_rows]
 
-    # Set piece losses in Attack 22 not already captured as Turnover events at x>=78
-    # (Lineout steals often trigger a Turnover outside the 22m — avoid double-counting)
+    # Set piece losses (lineout/scrum) in A22 Entry Turnover sequences not already identified above
     lo_lost_22m = cur.execute(
-        "SELECT COUNT(*) FROM events "
-        "WHERE fxid=? AND team_name=? AND action_name='Lineout Throw' "
-        "AND field_zone='Attack 22' AND action_result_name LIKE 'Lost%' "
-        "AND sequence_id IS NOT NULL "
-        "AND sequence_id NOT IN ("
-        "  SELECT sequence_id FROM events WHERE fxid=? AND team_name=? "
-        "  AND action_name='Turnover' AND CAST(x_coord AS REAL) >= 78 "
-        "  AND sequence_id IS NOT NULL"
+        "SELECT COUNT(*) FROM events e_lo "
+        "JOIN events e_a22 ON e_lo.fxid=e_a22.fxid AND e_lo.sequence_id=e_a22.sequence_id "
+        "WHERE e_lo.fxid=? AND e_lo.team_name=? "
+        "AND e_lo.action_name='Lineout Throw' "
+        "AND e_lo.field_zone='Attack 22' AND e_lo.action_result_name LIKE 'Lost%' "
+        "AND e_lo.sequence_id IS NOT NULL "
+        "AND e_a22.action_name='Attacking 22 Entry' "
+        "AND e_a22.action_type_name='22 Entry Outcome - Turnover' "
+        "AND NOT EXISTS ("
+        "  SELECT 1 FROM events e_to "
+        "  WHERE e_to.fxid=e_lo.fxid AND e_to.sequence_id=e_lo.sequence_id "
+        "  AND e_to.action_name='Turnover' AND e_to.action_result_name='Error on Attack'"
         ")",
-        (fx, team, fx, team)
+        (fx, team)
     ).fetchone()[0]
     sc_lost_22m = cur.execute(
-        "SELECT COUNT(*) FROM events "
-        "WHERE fxid=? AND team_name=? AND action_name='Scrum' "
-        "AND field_zone='Attack 22' AND action_result_name LIKE 'Lost%' "
-        "AND sequence_id IS NOT NULL "
-        "AND sequence_id NOT IN ("
-        "  SELECT sequence_id FROM events WHERE fxid=? AND team_name=? "
-        "  AND action_name='Turnover' AND CAST(x_coord AS REAL) >= 78 "
-        "  AND sequence_id IS NOT NULL"
+        "SELECT COUNT(*) FROM events e_sc "
+        "JOIN events e_a22 ON e_sc.fxid=e_a22.fxid AND e_sc.sequence_id=e_a22.sequence_id "
+        "WHERE e_sc.fxid=? AND e_sc.team_name=? "
+        "AND e_sc.action_name='Scrum' "
+        "AND e_sc.field_zone='Attack 22' AND e_sc.action_result_name LIKE 'Lost%' "
+        "AND e_sc.sequence_id IS NOT NULL "
+        "AND e_a22.action_name='Attacking 22 Entry' "
+        "AND e_a22.action_type_name='22 Entry Outcome - Turnover' "
+        "AND NOT EXISTS ("
+        "  SELECT 1 FROM events e_to "
+        "  WHERE e_to.fxid=e_sc.fxid AND e_to.sequence_id=e_sc.sequence_id "
+        "  AND e_to.action_name='Turnover' AND e_to.action_result_name='Error on Attack'"
         ")",
-        (fx, team, fx, team)
+        (fx, team)
     ).fetchone()[0]
-    sp_errors_22m = []
-    if lo_lost_22m: sp_errors_22m.append(["Lost in Lineout", lo_lost_22m])
-    if sc_lost_22m: sp_errors_22m.append(["Lost in Scrum", sc_lost_22m])
+    if lo_lost_22m: a22_to_detail.append(["Lost in Lineout", lo_lost_22m])
+    if sc_lost_22m: a22_to_detail.append(["Lost in Scrum", sc_lost_22m])
 
     return {
-        "total": total, "carried": carried, "started": started,
-        "total_tries": total_tries, "bands": bands,
-        "a22_tries": a22_tries, "a22_pg": a22_pg,
-        "a22_pos": a22_pos, "a22_total": a22_total,
-        "success_rate": success_rate,
-        "tries_from_22m": tries_from_22m, "tries_running": tries_running,
-        "errors_in_22m": errors_in_22m,
-        "sp_errors_22m": sp_errors_22m,
+        "total": total, "carried": carried, "started": started, "bands": bands,
+        "a22_total": a22_total, "a22_tries": a22_tries, "a22_pg": a22_pg,
+        "a22_to": a22_to, "a22_pc": a22_pc, "a22_kt": a22_kt, "a22_sw": a22_sw,
+        "a22_tries_inside": a22_tries_inside, "a22_tries_outside": a22_tries_outside,
+        "a22_to_detail": a22_to_detail,
+        "a22_pos": a22_pos, "success_rate": success_rate,
     }
 
 
