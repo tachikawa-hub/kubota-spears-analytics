@@ -850,12 +850,29 @@ function pE22(){
   const hB=ed[HOME].bands,aB=ed[AWAY].bands;
   const mx=Math.max(...hB,...aB,1);
 
+  function gaugeHtml(pct,total,col){
+    const r=80,cx=100,cy=100;
+    const gc=pct>=50?'var(--gd)':pct>=35?'#e8a020':'var(--wn)';
+    const aRad=(180-pct*1.8)*Math.PI/180;
+    const ex=(cx+r*Math.cos(aRad)).toFixed(1);
+    const ey=(cy-r*Math.sin(aRad)).toFixed(1);
+    const arc=pct>0?`<path d="M ${cx-r},${cy} A ${r},${r} 0 0,1 ${ex},${ey}" fill="none" stroke="${gc}" stroke-width="12" stroke-linecap="round"/>`:'';
+    return`<svg viewBox="0 0 200 122" style="width:100%;display:block">
+      <path d="M 20,100 A 80,80 0 0,1 180,100" fill="none" stroke="#e5e3de" stroke-width="12" stroke-linecap="round"/>
+      ${arc}
+      <line x1="100" y1="5" x2="100" y2="23" stroke="#ccc" stroke-width="2.5"/>
+      <text x="100" y="4" text-anchor="middle" font-size="8" fill="#bbb" font-weight="700" dy="8">50%</text>
+      <text x="${cx}" y="76" text-anchor="middle" font-size="30" font-weight="900" fill="${gc}">${pct}%</text>
+      <text x="${cx}" y="93" text-anchor="middle" font-size="8.5" fill="var(--mu)" font-weight="700" letter-spacing=".05em">22M SUCCESS RATE</text>
+      <text x="${cx}" y="110" text-anchor="middle" font-size="7.5" fill="var(--mu)">÷ ${total} A22 entries</text>
+    </svg>`;
+  }
+
   function tc(team,side){
     const det=ed[team];
     const col=side==='home'?'var(--ks)':'var(--snm)';
     const pts=side==='home'?D.info.home_score:D.info.away_score;
     const avgPts=det.total?+(pts/det.total).toFixed(1):0;
-    const srCol=det.success_rate>=50?'var(--gd)':det.success_rate>=30?'var(--wn)':'var(--wn)';
     return`<div class="e22t">
       <div class="e22h ${side}">${team}</div>
       <div class="e22c">
@@ -867,16 +884,11 @@ function pE22(){
           <div class="n" style="color:${col}">${det.total}</div>
           <div class="s">22M ENTRIES</div>
         </div>
-        <div class="e22st" style="background:#f8f6f2">
-          <span class="l" style="font-weight:700">22m Success Rate</span>
-          <span style="font-weight:900;font-size:17px;color:${srCol}">${det.success_rate}%</span>
-        </div>
-        <div class="e22st"><span class="l" style="font-size:9px;color:var(--mu)">÷ ${det.a22_total} A22 entries</span><span style="font-weight:700;color:var(--gd)">${det.a22_pos}</span></div>
-        <div class="e22st"><span class="l" style="font-size:9px">Tries (in 22m)</span><span style="font-weight:700">${det.a22_tries}</span></div>
-        <div class="e22st"><span class="l" style="font-size:9px">Pen Goals (in 22m)</span><span style="font-weight:700">${det.a22_pg}</span></div>
-        <div style="border-top:1px solid var(--ru);padding:6px 12px;font-size:10px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.04em">Try Origin</div>
-        <div class="e22st"><span class="l" style="font-size:9px">From 22m Entry</span><span style="font-weight:700;color:${col}">${det.tries_from_22m}</span></div>
-        <div class="e22st"><span class="l" style="font-size:9px">Running Entry</span><span style="font-weight:700">${det.tries_running}</span></div>
+        ${gaugeHtml(det.success_rate,det.a22_total,col)}
+        <div class="e22st"><span class="l">Started in 22m</span><span style="font-weight:700;color:${col}">${det.started}</span></div>
+        <div class="e22st"><span class="l">Carried into 22m</span><span style="font-weight:700">${det.carried}</span></div>
+        <div class="e22st"><span class="l">Tries — 22m Entry</span><span style="font-weight:700;color:${col}">${det.tries_from_22m}</span></div>
+        <div class="e22st"><span class="l">Tries — Outside 22m</span><span style="font-weight:700">${det.tries_running}</span></div>
       </div>
     </div>`;
   }
@@ -896,27 +908,39 @@ function pE22(){
 
   // Errors in 22m comparison section
   const hErr=ed[HOME].errors_in_22m||[], aErr=ed[AWAY].errors_in_22m||[];
-  const hErrMax=hErr.length?hErr[0][1]:1, aErrMax=aErr.length?aErr[0][1]:1;
+  const hSp=ed[HOME].sp_errors_22m||[], aSp=ed[AWAY].sp_errors_22m||[];
+  const allErrVals=[...hErr,...aErr].map(e=>e[1]);
+  const errMax=allErrVals.length?Math.max(...allErrVals):1;
+  const allSpVals=[...hSp,...aSp].map(e=>e[1]);
+  const spMax=allSpVals.length?Math.max(...allSpVals):1;
   function errBars(errs,maxV,side){
-    if(!errs.length) return`<div style="color:var(--mu);font-size:11px;padding:8px 0">No errors</div>`;
+    if(!errs.length) return`<div style="color:var(--mu);font-size:11px;padding:8px 0">—</div>`;
     const fill=side==='home'?'var(--ks)':'var(--snm)';
     return errs.map(([t,n])=>`<div class="pen-bar-row">
       <span class="pen-bar-label">${t}</span>
       <div class="pen-bar-track" style="flex:1"><div class="pen-bar-fill" style="width:${Math.round(n/maxV*100)}%;background:${fill}"></div></div>
       <span class="pen-bar-num">${n}</span></div>`).join('');
   }
+  const spSection=(hSp.length||aSp.length)?`<div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--ru)">
+    <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);margin-bottom:6px">Set Piece Losses in 22m</div>
+    <div class="pen-cols">
+      <div class="pen-col">${errBars(hSp,spMax,'home')}</div>
+      <div class="pen-col">${errBars(aSp,spMax,'away')}</div>
+    </div>
+  </div>`:'' ;
   const errSection=`<div style="padding:10px 16px 12px">
-    <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);border-bottom:2px solid var(--ru);padding-bottom:4px;margin-bottom:10px">Errors in 22m (Turnovers while attacking)</div>
+    <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);border-bottom:2px solid var(--ru);padding-bottom:4px;margin-bottom:10px">Errors in 22m</div>
     <div class="pen-cols">
       <div class="pen-col">
         <div style="font-size:10px;font-weight:700;color:var(--ksd);text-transform:uppercase;margin-bottom:6px">${HOME}</div>
-        ${errBars(hErr,hErrMax,'home')}
+        ${errBars(hErr,errMax,'home')}
       </div>
       <div class="pen-col">
         <div style="font-size:10px;font-weight:700;color:var(--snm);text-transform:uppercase;margin-bottom:6px">${AWAY}</div>
-        ${errBars(aErr,aErrMax,'away')}
+        ${errBars(aErr,errMax,'away')}
       </div>
     </div>
+    ${spSection}
   </div>`;
 
   return`<div class="page">${hdr('22m Entries')}<div class="e22wrap">

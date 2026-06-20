@@ -537,6 +537,36 @@ def e22_detail(team, opp):
     ).fetchall()
     errors_in_22m = [[r["tp"], r["n"]] for r in err_rows]
 
+    # Set piece losses in Attack 22 not already captured as Turnover events at x>=78
+    # (Lineout steals often trigger a Turnover outside the 22m — avoid double-counting)
+    lo_lost_22m = cur.execute(
+        "SELECT COUNT(*) FROM events "
+        "WHERE fxid=? AND team_name=? AND action_name='Lineout Throw' "
+        "AND field_zone='Attack 22' AND action_result_name LIKE 'Lost%' "
+        "AND sequence_id IS NOT NULL "
+        "AND sequence_id NOT IN ("
+        "  SELECT sequence_id FROM events WHERE fxid=? AND team_name=? "
+        "  AND action_name='Turnover' AND CAST(x_coord AS REAL) >= 78 "
+        "  AND sequence_id IS NOT NULL"
+        ")",
+        (fx, team, fx, team)
+    ).fetchone()[0]
+    sc_lost_22m = cur.execute(
+        "SELECT COUNT(*) FROM events "
+        "WHERE fxid=? AND team_name=? AND action_name='Scrum' "
+        "AND field_zone='Attack 22' AND action_result_name LIKE 'Lost%' "
+        "AND sequence_id IS NOT NULL "
+        "AND sequence_id NOT IN ("
+        "  SELECT sequence_id FROM events WHERE fxid=? AND team_name=? "
+        "  AND action_name='Turnover' AND CAST(x_coord AS REAL) >= 78 "
+        "  AND sequence_id IS NOT NULL"
+        ")",
+        (fx, team, fx, team)
+    ).fetchone()[0]
+    sp_errors_22m = []
+    if lo_lost_22m: sp_errors_22m.append(["Lost in Lineout", lo_lost_22m])
+    if sc_lost_22m: sp_errors_22m.append(["Lost in Scrum", sc_lost_22m])
+
     return {
         "total": total, "carried": carried, "started": started,
         "total_tries": total_tries, "bands": bands,
@@ -545,6 +575,7 @@ def e22_detail(team, opp):
         "success_rate": success_rate,
         "tries_from_22m": tries_from_22m, "tries_running": tries_running,
         "errors_in_22m": errors_in_22m,
+        "sp_errors_22m": sp_errors_22m,
     }
 
 
