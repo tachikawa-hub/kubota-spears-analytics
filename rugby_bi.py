@@ -2201,6 +2201,7 @@ def compute_stats(df, max_round):
     pen_con  = df[df['actionName']=='Penalty Conceded']
     coll     = df[df['actionName']=='Collection']
     lo_take  = df[df['actionName']=='Lineout Take']
+    atk22_ev = df[df['actionName']=='Attacking 22 Entry']
 
     # Kicks in Play = qualifier3Name が 'Kick in Play' または 'Kick in Play (Own 22)'
     # これがOptaの定義と完全一致（全チームMAE=0.000）
@@ -2331,6 +2332,13 @@ def compute_stats(df, max_round):
     oa22  = a22.groupby('oppTeam').size()
     oa22c = a22_car.groupby('oppTeam').size()
     oa22s = a22_sta.groupby('oppTeam').size()
+
+    # Attacking 22 Entry conversion (Opta standard)
+    _A22_POS    = ['22 Entry Outcome - Try', '22 Entry Outcome - Penalty Goal Attempt']
+    atk22_t     = atk22_ev.groupby('teamName').size()
+    atk22_pos   = atk22_ev[atk22_ev['ActionTypeName'].isin(_A22_POS)].groupby('teamName').size()
+    oatk22_t    = atk22_ev.groupby('oppTeam').size()
+    oatk22_pos  = atk22_ev[atk22_ev['ActionTypeName'].isin(_A22_POS)].groupby('oppTeam').size()
 
     # Points
     ms = df.groupby('FXID').first()[['homeTeamName','awayTeamName','hometeamFTscore','awayteamFTscore']]
@@ -2479,6 +2487,8 @@ def compute_stats(df, max_round):
     # ---- 22m additional ----
     res['TRY_ScorePer22m']       = (pd.Series(pts_s)/a22_t).round(2)
     res['TRY_ScoreConcPer22m']   = (pd.Series(pts_c)/oa22).round(2)
+    res['OV_22mConv_pct']        = (atk22_pos / atk22_t * 100).round(1)
+    res['OV_Opp22mConv_pct']     = (oatk22_pos / oatk22_t * 100).round(1)
 
     # ---- Try Source ----
     res['TRY_PointsScored']     = pd.Series(pts_s)
@@ -2981,10 +2991,12 @@ def build_html(home, opp, master, detail, max_round, df=None):
     ]
     M22_RANK = [
         ('22m Entry / G',           'TRY_22mEntry_PG',       False, 2, ''),
+        ('22m Conversion %',        'OV_22mConv_pct',        False, 1, '%'),
         ('Carried into 22m / G',    'TRY_22mCarried_PG',     False, 2, ''),
         ('Started in 22m / G',      'TRY_22mStarted_PG',     False, 2, ''),
         ('Score / 22m Entry',       'TRY_ScorePer22m',       False, 2, 'pts'),
         ('Opp 22m Entry / G',       'TRY_Opp22mEntry_PG',    True,  2, ''),
+        ('Opp 22m Conv %',          'OV_Opp22mConv_pct',     True,  1, '%'),
         ('Opp Carried into 22m/G',  'TRY_Opp22mCarried_PG',  True,  2, ''),
         ('Opp Started in 22m / G',  'TRY_Opp22mStarted_PG',  True,  2, ''),
         ('Score Conc / 22m Entry',  'TRY_ScoreConcPer22m',   True,  2, 'pts'),
@@ -3387,10 +3399,12 @@ def build_html(home, opp, master, detail, max_round, df=None):
     ]
     M22_RANK = [
         ('22m Entry / G',           'TRY_22mEntry_PG',       False, 2, ''),
+        ('22m Conversion %',        'OV_22mConv_pct',        False, 1, '%'),
         ('Carried into 22m / G',    'TRY_22mCarried_PG',     False, 2, ''),
         ('Started in 22m / G',      'TRY_22mStarted_PG',     False, 2, ''),
         ('Score / 22m Entry',       'TRY_ScorePer22m',       False, 2, 'pts'),
         ('Opp 22m Entry / G',       'TRY_Opp22mEntry_PG',    True,  2, ''),
+        ('Opp 22m Conv %',          'OV_Opp22mConv_pct',     True,  1, '%'),
         ('Opp Carried into 22m/G',  'TRY_Opp22mCarried_PG',  True,  2, ''),
         ('Opp Started in 22m / G',  'TRY_Opp22mStarted_PG',  True,  2, ''),
         ('Score Conc / 22m Entry',  'TRY_ScoreConcPer22m',   True,  2, 'pts'),
@@ -3608,10 +3622,12 @@ function showSub(sid,subId,btn){
     ]
     M22_RANK = [
         ('22m Entry / G',           'TRY_22mEntry_PG',       False, 2, ''),
+        ('22m Conversion %',        'OV_22mConv_pct',        False, 1, '%'),
         ('Carried into 22m / G',    'TRY_22mCarried_PG',     False, 2, ''),
         ('Started in 22m / G',      'TRY_22mStarted_PG',     False, 2, ''),
         ('Score / 22m Entry',       'TRY_ScorePer22m',       False, 2, 'pts'),
         ('Opp 22m Entry / G',       'TRY_Opp22mEntry_PG',    True,  2, ''),
+        ('Opp 22m Conv %',          'OV_Opp22mConv_pct',     True,  1, '%'),
         ('Opp Carried into 22m/G',  'TRY_Opp22mCarried_PG',  True,  2, ''),
         ('Opp Started in 22m / G',  'TRY_Opp22mStarted_PG',  True,  2, ''),
         ('Score Conc / 22m Entry',  'TRY_ScoreConcPer22m',   True,  2, 'pts'),
