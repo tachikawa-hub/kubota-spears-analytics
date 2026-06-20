@@ -624,30 +624,33 @@ function pSummary(){
     ${statRow('Penalties Conceded',h.penalties,a.penalties,'')}
   </div>`;
 
-  const e22c_pct_h=h.e22?Math.round(h.c22/h.e22*100):0;
-  const e22c_pct_a=a.e22?Math.round(a.c22/a.e22*100):0;
+  const edH=D.e22_detail[HOME],edA=D.e22_detail[AWAY];
+  const scH=edH?edH.success_rate:0, scA=edA?edA.success_rate:0;
+  const scHi=Math.round(scH), scAi=Math.round(scA);
+  const scHc=scH>=50?'var(--gd)':scH>=35?'#e8a020':'var(--wn)';
+  const scAc=scA>=50?'var(--gd)':scA>=35?'#e8a020':'var(--wn)';
   const e22Card=`<div class="sum-card">
-    <div class="sum-card-title">22m Entries</div>
+    <div class="sum-card-title">22m Strike Conversion</div>
     <div style="display:flex;justify-content:center;align-items:center;text-align:center;gap:24px;padding:4px 0">
       <div>
         <svg viewBox="0 0 110 110" style="width:72px;height:72px">
           <circle cx="55" cy="55" r="42" fill="none" stroke="#eee" stroke-width="12"/>
-          <circle cx="55" cy="55" r="42" fill="none" style="stroke:var(--ks)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(2*Math.PI*42*e22c_pct_h/100).toFixed(1)} ${(2*Math.PI*42).toFixed(1)}" transform="rotate(-90 55 55)"/>
-          <text x="55" y="52" text-anchor="middle" font-size="20" font-weight="900" style="fill:var(--ksd)">${e22c_pct_h}%</text>
-          <text x="55" y="68" text-anchor="middle" font-size="8" style="fill:var(--mu)">carried</text>
+          <circle cx="55" cy="55" r="42" fill="none" stroke="${scHc}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(2*Math.PI*42*scHi/100).toFixed(1)} ${(2*Math.PI*42).toFixed(1)}" transform="rotate(-90 55 55)"/>
+          <text x="55" y="52" text-anchor="middle" font-size="20" font-weight="900" style="fill:${scHc}">${scH}%</text>
+          <text x="55" y="68" text-anchor="middle" font-size="8" style="fill:var(--mu)">strike conv</text>
         </svg>
         <div style="font-size:9px;font-weight:800;color:var(--ksd);margin-top:2px">${HOME}</div>
-        <div style="font-size:8px;color:var(--mu)">${h.c22} carried / ${h.s22} started</div>
+        <div style="font-size:8px;color:var(--mu)">${edH?edH.a22_pos:'-'} pos / ${edH?edH.a22_total:'-'} entries</div>
       </div>
       <div>
         <svg viewBox="0 0 110 110" style="width:72px;height:72px">
           <circle cx="55" cy="55" r="42" fill="none" stroke="#eee" stroke-width="12"/>
-          <circle cx="55" cy="55" r="42" fill="none" style="stroke:var(--snm)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(2*Math.PI*42*e22c_pct_a/100).toFixed(1)} ${(2*Math.PI*42).toFixed(1)}" transform="rotate(-90 55 55)"/>
-          <text x="55" y="52" text-anchor="middle" font-size="20" font-weight="900" style="fill:var(--snm)">${e22c_pct_a}%</text>
-          <text x="55" y="68" text-anchor="middle" font-size="8" style="fill:var(--mu)">carried</text>
+          <circle cx="55" cy="55" r="42" fill="none" stroke="${scAc}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(2*Math.PI*42*scAi/100).toFixed(1)} ${(2*Math.PI*42).toFixed(1)}" transform="rotate(-90 55 55)"/>
+          <text x="55" y="52" text-anchor="middle" font-size="20" font-weight="900" style="fill:${scAc}">${scA}%</text>
+          <text x="55" y="68" text-anchor="middle" font-size="8" style="fill:var(--mu)">strike conv</text>
         </svg>
         <div style="font-size:9px;font-weight:800;color:var(--snm);margin-top:2px">${AWAY}</div>
-        <div style="font-size:8px;color:var(--mu)">${a.c22} carried / ${a.s22} started</div>
+        <div style="font-size:8px;color:var(--mu)">${edA?edA.a22_pos:'-'} pos / ${edA?edA.a22_total:'-'} entries</div>
       </div>
     </div>
     ${statRow('22m Entries',h.e22,a.e22,'')}

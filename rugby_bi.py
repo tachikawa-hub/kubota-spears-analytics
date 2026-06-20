@@ -3051,12 +3051,10 @@ def build_html(home, opp, master, detail, max_round, df=None):
         ('22m Entry / G',           'TRY_22mEntry_PG',       False, 2, ''),
         ('22m Strike Conv %',        'OV_22mConv_pct',        False, 1, '%'),
         ('Carried into 22m / G',    'TRY_22mCarried_PG',     False, 2, ''),
-        ('Started in 22m / G',      'TRY_22mStarted_PG',     False, 2, ''),
         ('Score / 22m Entry',       'TRY_ScorePer22m',       False, 2, 'pts'),
         ('Opp 22m Entry / G',       'TRY_Opp22mEntry_PG',    True,  2, ''),
         ('Opp 22m Strike Conv %',    'OV_Opp22mConv_pct',     True,  1, '%'),
         ('Opp Carried into 22m/G',  'TRY_Opp22mCarried_PG',  True,  2, ''),
-        ('Opp Started in 22m / G',  'TRY_Opp22mStarted_PG',  True,  2, ''),
         ('Score Conc / 22m Entry',  'TRY_ScoreConcPer22m',   True,  2, 'pts'),
     ]
 
@@ -3459,12 +3457,10 @@ def build_html(home, opp, master, detail, max_round, df=None):
         ('22m Entry / G',           'TRY_22mEntry_PG',       False, 2, ''),
         ('22m Strike Conv %',        'OV_22mConv_pct',        False, 1, '%'),
         ('Carried into 22m / G',    'TRY_22mCarried_PG',     False, 2, ''),
-        ('Started in 22m / G',      'TRY_22mStarted_PG',     False, 2, ''),
         ('Score / 22m Entry',       'TRY_ScorePer22m',       False, 2, 'pts'),
         ('Opp 22m Entry / G',       'TRY_Opp22mEntry_PG',    True,  2, ''),
         ('Opp 22m Strike Conv %',    'OV_Opp22mConv_pct',     True,  1, '%'),
         ('Opp Carried into 22m/G',  'TRY_Opp22mCarried_PG',  True,  2, ''),
-        ('Opp Started in 22m / G',  'TRY_Opp22mStarted_PG',  True,  2, ''),
         ('Score Conc / 22m Entry',  'TRY_ScoreConcPer22m',   True,  2, 'pts'),
     ]
 
@@ -3682,12 +3678,10 @@ function showSub(sid,subId,btn){
         ('22m Entry / G',           'TRY_22mEntry_PG',       False, 2, ''),
         ('22m Strike Conv %',        'OV_22mConv_pct',        False, 1, '%'),
         ('Carried into 22m / G',    'TRY_22mCarried_PG',     False, 2, ''),
-        ('Started in 22m / G',      'TRY_22mStarted_PG',     False, 2, ''),
         ('Score / 22m Entry',       'TRY_ScorePer22m',       False, 2, 'pts'),
         ('Opp 22m Entry / G',       'TRY_Opp22mEntry_PG',    True,  2, ''),
         ('Opp 22m Strike Conv %',    'OV_Opp22mConv_pct',     True,  1, '%'),
         ('Opp Carried into 22m/G',  'TRY_Opp22mCarried_PG',  True,  2, ''),
-        ('Opp Started in 22m / G',  'TRY_Opp22mStarted_PG',  True,  2, ''),
         ('Score Conc / 22m Entry',  'TRY_ScoreConcPer22m',   True,  2, 'pts'),
     ]
 
