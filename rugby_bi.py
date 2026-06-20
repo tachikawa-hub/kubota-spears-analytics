@@ -484,8 +484,6 @@ def events_for(action, result=None, types=None):
 # ---------------------------------------------------------------------------
 def e22_detail(team, opp):
     carried = C(fx, team, action_name="Possession", qualifier4_name="Enters into Opposition 22")
-    started = C(fx, team, action_name="Possession", qualifier4_name="Starts inside Opposition 22")
-    total = carried + started
     bands = [0] * 9
     for r in cur.execute(
         "SELECT ps_timestamp ts, period pd FROM events "
@@ -496,7 +494,7 @@ def e22_detail(team, opp):
         idx = min(int(mm // 10), 8)
         bands[idx] += 1
 
-    # 22m Success Rate: use Attacking 22 Entry action outcomes
+    # 22m Strike Conversion: use Attacking 22 Entry action outcomes
     a22_rows = cur.execute(
         "SELECT COALESCE(action_type_name,'') tp, COUNT(*) n FROM events "
         "WHERE fxid=? AND team_name=? AND action_name='Attacking 22 Entry' "
@@ -513,6 +511,9 @@ def e22_detail(team, opp):
     a22_pos    = a22_tries + a22_pg
     a22_total  = sum(a22_by_type.values())
     success_rate = round(a22_pos / a22_total * 100, 1) if a22_total else 0.0
+
+    # Started = residual: a22_total − carried (guarantees started + carried = entry total)
+    started = max(0, a22_total - carried)
 
     # Try breakdown: Inside 22m = possession "Starts inside Opposition 22"; Outside = entered from outside
     a22_tries_inside = cur.execute(
@@ -531,23 +532,31 @@ def e22_detail(team, opp):
     ).fetchone()[0]
     a22_tries_outside = a22_tries - a22_tries_inside
 
-    # Turnover sub-breakdown: find Turnover action_type_name in same sequence as A22 Entry Turnover outcome
-    to_detail_rows = cur.execute(
-        "SELECT COALESCE(e2.action_type_name,'Other') tp, COUNT(*) n "
-        "FROM events e1 "
-        "JOIN events e2 ON e1.fxid=e2.fxid AND e1.sequence_id=e2.sequence_id "
-        "WHERE e1.fxid=? AND e1.team_name=? "
-        "AND e1.action_name='Attacking 22 Entry' "
-        "AND e1.action_type_name='22 Entry Outcome - Turnover' "
-        "AND e2.action_name='Turnover' "
-        "AND e2.action_result_name='Error on Attack' "
-        "AND e1.sequence_id IS NOT NULL "
-        "GROUP BY e2.action_type_name ORDER BY n DESC",
+    # Turnover sub-breakdown: 1 type per A22 Entry Turnover sequence (correlated subquery avoids
+    # double-counting when a sequence has multiple Turnover events)
+    to_rows = cur.execute(
+        "SELECT COALESCE(tp,'__NONE__') tp, COUNT(*) n FROM ("
+        "  SELECT (SELECT action_type_name FROM events "
+        "          WHERE fxid=e1.fxid AND sequence_id=e1.sequence_id "
+        "          AND action_name='Turnover' AND action_result_name='Error on Attack' "
+        "          ORDER BY event_pk LIMIT 1) AS tp "
+        "  FROM events e1 "
+        "  WHERE e1.fxid=? AND e1.team_name=? "
+        "  AND e1.action_name='Attacking 22 Entry' "
+        "  AND e1.action_type_name='22 Entry Outcome - Turnover' "
+        "  AND e1.sequence_id IS NOT NULL"
+        ") sub GROUP BY COALESCE(tp,'__NONE__') ORDER BY n DESC",
         (fx, team)
     ).fetchall()
-    a22_to_detail = [[r["tp"], r["n"]] for r in to_detail_rows]
+    a22_to_detail = []
+    no_to_count = 0  # sequences with no Turnover event found
+    for r in to_rows:
+        if r["tp"] == "__NONE__":
+            no_to_count = r["n"]
+        else:
+            a22_to_detail.append([r["tp"], r["n"]])
 
-    # Set piece losses (lineout/scrum) in A22 Entry Turnover sequences not already identified above
+    # For no-Turnover sequences: check set piece losses in Attack 22
     lo_lost_22m = cur.execute(
         "SELECT COUNT(*) FROM events e_lo "
         "JOIN events e_a22 ON e_lo.fxid=e_a22.fxid AND e_lo.sequence_id=e_a22.sequence_id "
@@ -582,9 +591,13 @@ def e22_detail(team, opp):
     ).fetchone()[0]
     if lo_lost_22m: a22_to_detail.append(["Lost in Lineout", lo_lost_22m])
     if sc_lost_22m: a22_to_detail.append(["Lost in Scrum", sc_lost_22m])
+    # Remaining unclassified no-Turnover sequences → "Other"
+    other_remaining = no_to_count - lo_lost_22m - sc_lost_22m
+    if other_remaining > 0:
+        a22_to_detail.append(["Other", other_remaining])
 
     return {
-        "total": total, "carried": carried, "started": started, "bands": bands,
+        "carried": carried, "started": started, "bands": bands,
         "a22_total": a22_total, "a22_tries": a22_tries, "a22_pg": a22_pg,
         "a22_to": a22_to, "a22_pc": a22_pc, "a22_kt": a22_kt, "a22_sw": a22_sw,
         "a22_tries_inside": a22_tries_inside, "a22_tries_outside": a22_tries_outside,
@@ -1927,7 +1940,7 @@ def cmd_kpi(args=None):
          ['lb','Linebreaks','Attacking Qualities/Initial Break /match',1,true],
          ['offloads','Offloads','successful (to own player)',1,true],
          ['e22','22m Entries','Enters+Starts into Opposition 22 /match',1,true],
-         ['kub_success','22m Success %','(Try + Pen Goal outcomes) ÷ Attacking 22 Entry',1,true],
+         ['kub_success','22m Strike Conv %','(Try + Pen Goal outcomes) ÷ Attacking 22 Entry',1,true],
          ['c22','Carried into 22m','Enters into Opposition 22 /match',1,true],
          ['s22','Started in 22m','Starts inside Opposition 22 /match',1,true],
          ['to_con','Turnovers Conceded','per match',1,false],
@@ -1941,7 +1954,7 @@ def cmd_kpi(args=None):
          {h:'Linebreaks',fn:r=>r.lb},
          {h:'Offloads',fn:r=>r.offloads},
          {h:'22m Entries',fn:r=>r.e22},
-         {h:'22m Success %',fn:r=>r.e22?f1(r.kub_success_pct)+'%':'-'},
+         {h:'22m Strike Conv %',fn:r=>r.e22?f1(r.kub_success_pct)+'%':'-'},
          {h:'Carried into 22m',fn:r=>r.c22},
          {h:'Started in 22m',fn:r=>r.s22},
          {h:'Turnovers Conceded',fn:r=>r.to_con},
@@ -1951,7 +1964,7 @@ def cmd_kpi(args=None):
          <div class="note">Gainline % = carries tagged 'Crossed Gain line' ÷ all carries. LQB % = rucks with ruck-speed ≤3s.
            Defenders Beaten = Attacking Qualities/Defender Beaten. Linebreaks = Attacking Qualities/Initial Break (Line Break + Kick Line Break + Intercepted Break).
            22m Entries = Possession events with qualifier4 'Enters into Opposition 22' + 'Starts inside Opposition 22'.
-           22m Success % = (Try + Penalty Goal Attempt outcomes from Attacking 22 Entry) ÷ total Attacking 22 Entry count × 100. Note: Attacking 22 Entry count may differ slightly from Possession 22m Entries.</div>`;
+           22m Strike Conv % = (Try + Penalty Goal Attempt outcomes from Attacking 22 Entry) ÷ total Attacking 22 Entry count × 100. Note: Attacking 22 Entry count may differ slightly from Possession 22m Entries.</div>`;
      }},
      {id:'defence',title:'Defence',build:()=>{
        const avg=avgTable([
@@ -1967,7 +1980,7 @@ def cmd_kpi(args=None):
          ['opp_lqb','Opponent LQB %','opponent rucks ≤3s',1,false],
          ['tries_con','Tries Conceded','per match',1,false],
          ['opp_e22','Opponent 22m Entries','Enters+Starts into Opposition 22 /match',1,false],
-         ['opp_success','Opponent 22m Success %','(Try + Pen Goal outcomes) ÷ Attacking 22 Entry',1,false],
+         ['opp_success','Opponent 22m Strike Conv %','(Try + Pen Goal outcomes) ÷ Attacking 22 Entry',1,false],
        ]);
        const it=itTable(baseCols.concat([
          {h:'Tackles Made',fn:r=>r.tk},
@@ -1981,7 +1994,7 @@ def cmd_kpi(args=None):
          {h:'Opponent LQB %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_rucks?f1(r.opp_lqb/r.opp_rucks*100):'-'},
          {h:'Tries Conceded',hcls:'opp',cls:'oppcol',fn:r=>r.tries_conceded},
          {h:'Opponent 22m Entries',hcls:'opp',cls:'oppcol',fn:r=>r.opp_e22},
-         {h:'Opp 22m Success %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_e22?f1(r.opp_success_pct)+'%':'-'},
+         {h:'Opp 22m Strike Conv %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_e22?f1(r.opp_success_pct)+'%':'-'},
        ]));
        return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
          <div class="sec-title">Match-by-match</div>${it}
@@ -1989,7 +2002,7 @@ def cmd_kpi(args=None):
            Turnovers Won = Possession 'Turnover Won' + Jackal success (events within 0.5 match-min de-duplicated).
            <span style="color:#c4600f;font-weight:700">Orange columns = opponent stats</span>: Gainline % / LQB % / Tries scored vs Kubota /
            Opponent 22m Entries = Possession qualifier4 'Enters into Opposition 22' + 'Starts inside Opposition 22' by the opposition.
-           Opponent 22m Success % = (Try + Penalty Goal Attempt outcomes from Attacking 22 Entry) ÷ total Attacking 22 Entry count × 100. Note: Attacking 22 Entry count may differ from Possession 22m Entries.</div>`;
+           Opponent 22m Strike Conv % = (Try + Penalty Goal Attempt outcomes from Attacking 22 Entry) ÷ total Attacking 22 Entry count × 100. Note: Attacking 22 Entry count may differ from Possession 22m Entries.</div>`;
      }},
      {id:'setpiece',title:'Set Piece',build:()=>{
        const avg=avgTable([
@@ -3036,12 +3049,12 @@ def build_html(home, opp, master, detail, max_round, df=None):
     ]
     M22_RANK = [
         ('22m Entry / G',           'TRY_22mEntry_PG',       False, 2, ''),
-        ('22m Conversion %',        'OV_22mConv_pct',        False, 1, '%'),
+        ('22m Strike Conv %',        'OV_22mConv_pct',        False, 1, '%'),
         ('Carried into 22m / G',    'TRY_22mCarried_PG',     False, 2, ''),
         ('Started in 22m / G',      'TRY_22mStarted_PG',     False, 2, ''),
         ('Score / 22m Entry',       'TRY_ScorePer22m',       False, 2, 'pts'),
         ('Opp 22m Entry / G',       'TRY_Opp22mEntry_PG',    True,  2, ''),
-        ('Opp 22m Conv %',          'OV_Opp22mConv_pct',     True,  1, '%'),
+        ('Opp 22m Strike Conv %',    'OV_Opp22mConv_pct',     True,  1, '%'),
         ('Opp Carried into 22m/G',  'TRY_Opp22mCarried_PG',  True,  2, ''),
         ('Opp Started in 22m / G',  'TRY_Opp22mStarted_PG',  True,  2, ''),
         ('Score Conc / 22m Entry',  'TRY_ScoreConcPer22m',   True,  2, 'pts'),
@@ -3444,12 +3457,12 @@ def build_html(home, opp, master, detail, max_round, df=None):
     ]
     M22_RANK = [
         ('22m Entry / G',           'TRY_22mEntry_PG',       False, 2, ''),
-        ('22m Conversion %',        'OV_22mConv_pct',        False, 1, '%'),
+        ('22m Strike Conv %',        'OV_22mConv_pct',        False, 1, '%'),
         ('Carried into 22m / G',    'TRY_22mCarried_PG',     False, 2, ''),
         ('Started in 22m / G',      'TRY_22mStarted_PG',     False, 2, ''),
         ('Score / 22m Entry',       'TRY_ScorePer22m',       False, 2, 'pts'),
         ('Opp 22m Entry / G',       'TRY_Opp22mEntry_PG',    True,  2, ''),
-        ('Opp 22m Conv %',          'OV_Opp22mConv_pct',     True,  1, '%'),
+        ('Opp 22m Strike Conv %',    'OV_Opp22mConv_pct',     True,  1, '%'),
         ('Opp Carried into 22m/G',  'TRY_Opp22mCarried_PG',  True,  2, ''),
         ('Opp Started in 22m / G',  'TRY_Opp22mStarted_PG',  True,  2, ''),
         ('Score Conc / 22m Entry',  'TRY_ScoreConcPer22m',   True,  2, 'pts'),
@@ -3667,12 +3680,12 @@ function showSub(sid,subId,btn){
     ]
     M22_RANK = [
         ('22m Entry / G',           'TRY_22mEntry_PG',       False, 2, ''),
-        ('22m Conversion %',        'OV_22mConv_pct',        False, 1, '%'),
+        ('22m Strike Conv %',        'OV_22mConv_pct',        False, 1, '%'),
         ('Carried into 22m / G',    'TRY_22mCarried_PG',     False, 2, ''),
         ('Started in 22m / G',      'TRY_22mStarted_PG',     False, 2, ''),
         ('Score / 22m Entry',       'TRY_ScorePer22m',       False, 2, 'pts'),
         ('Opp 22m Entry / G',       'TRY_Opp22mEntry_PG',    True,  2, ''),
-        ('Opp 22m Conv %',          'OV_Opp22mConv_pct',     True,  1, '%'),
+        ('Opp 22m Strike Conv %',    'OV_Opp22mConv_pct',     True,  1, '%'),
         ('Opp Carried into 22m/G',  'TRY_Opp22mCarried_PG',  True,  2, ''),
         ('Opp Started in 22m / G',  'TRY_Opp22mStarted_PG',  True,  2, ''),
         ('Score Conc / 22m Entry',  'TRY_ScoreConcPer22m',   True,  2, 'pts'),

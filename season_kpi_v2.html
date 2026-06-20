@@ -243,7 +243,7 @@
          ['lb','Linebreaks','Attacking Qualities/Initial Break /match',1,true],
          ['offloads','Offloads','successful (to own player)',1,true],
          ['e22','22m Entries','Enters+Starts into Opposition 22 /match',1,true],
-         ['kub_success','22m Success %','(Try + Pen Goal outcomes) ÷ Attacking 22 Entry',1,true],
+         ['kub_success','22m Strike Conv %','(Try + Pen Goal outcomes) ÷ Attacking 22 Entry',1,true],
          ['c22','Carried into 22m','Enters into Opposition 22 /match',1,true],
          ['s22','Started in 22m','Starts inside Opposition 22 /match',1,true],
          ['to_con','Turnovers Conceded','per match',1,false],
@@ -257,7 +257,7 @@
          {h:'Linebreaks',fn:r=>r.lb},
          {h:'Offloads',fn:r=>r.offloads},
          {h:'22m Entries',fn:r=>r.e22},
-         {h:'22m Success %',fn:r=>r.e22?f1(r.kub_success_pct)+'%':'-'},
+         {h:'22m Strike Conv %',fn:r=>r.e22?f1(r.kub_success_pct)+'%':'-'},
          {h:'Carried into 22m',fn:r=>r.c22},
          {h:'Started in 22m',fn:r=>r.s22},
          {h:'Turnovers Conceded',fn:r=>r.to_con},
@@ -267,7 +267,7 @@
          <div class="note">Gainline % = carries tagged 'Crossed Gain line' ÷ all carries. LQB % = rucks with ruck-speed ≤3s.
            Defenders Beaten = Attacking Qualities/Defender Beaten. Linebreaks = Attacking Qualities/Initial Break (Line Break + Kick Line Break + Intercepted Break).
            22m Entries = Possession events with qualifier4 'Enters into Opposition 22' + 'Starts inside Opposition 22'.
-           22m Success % = (Try + Penalty Goal Attempt outcomes from Attacking 22 Entry) ÷ total Attacking 22 Entry count × 100. Note: Attacking 22 Entry count may differ slightly from Possession 22m Entries.</div>`;
+           22m Strike Conv % = (Try + Penalty Goal Attempt outcomes from Attacking 22 Entry) ÷ total Attacking 22 Entry count × 100. Note: Attacking 22 Entry count may differ slightly from Possession 22m Entries.</div>`;
      }},
      {id:'defence',title:'Defence',build:()=>{
        const avg=avgTable([
@@ -283,7 +283,7 @@
          ['opp_lqb','Opponent LQB %','opponent rucks ≤3s',1,false],
          ['tries_con','Tries Conceded','per match',1,false],
          ['opp_e22','Opponent 22m Entries','Enters+Starts into Opposition 22 /match',1,false],
-         ['opp_success','Opponent 22m Success %','(Try + Pen Goal outcomes) ÷ Attacking 22 Entry',1,false],
+         ['opp_success','Opponent 22m Strike Conv %','(Try + Pen Goal outcomes) ÷ Attacking 22 Entry',1,false],
        ]);
        const it=itTable(baseCols.concat([
          {h:'Tackles Made',fn:r=>r.tk},
@@ -297,7 +297,7 @@
          {h:'Opponent LQB %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_rucks?f1(r.opp_lqb/r.opp_rucks*100):'-'},
          {h:'Tries Conceded',hcls:'opp',cls:'oppcol',fn:r=>r.tries_conceded},
          {h:'Opponent 22m Entries',hcls:'opp',cls:'oppcol',fn:r=>r.opp_e22},
-         {h:'Opp 22m Success %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_e22?f1(r.opp_success_pct)+'%':'-'},
+         {h:'Opp 22m Strike Conv %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_e22?f1(r.opp_success_pct)+'%':'-'},
        ]));
        return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
          <div class="sec-title">Match-by-match</div>${it}
@@ -305,7 +305,7 @@
            Turnovers Won = Possession 'Turnover Won' + Jackal success (events within 0.5 match-min de-duplicated).
            <span style="color:#c4600f;font-weight:700">Orange columns = opponent stats</span>: Gainline % / LQB % / Tries scored vs Kubota /
            Opponent 22m Entries = Possession qualifier4 'Enters into Opposition 22' + 'Starts inside Opposition 22' by the opposition.
-           Opponent 22m Success % = (Try + Penalty Goal Attempt outcomes from Attacking 22 Entry) ÷ total Attacking 22 Entry count × 100. Note: Attacking 22 Entry count may differ from Possession 22m Entries.</div>`;
+           Opponent 22m Strike Conv % = (Try + Penalty Goal Attempt outcomes from Attacking 22 Entry) ÷ total Attacking 22 Entry count × 100. Note: Attacking 22 Entry count may differ from Possession 22m Entries.</div>`;
      }},
      {id:'setpiece',title:'Set Piece',build:()=>{
        const avg=avgTable([
