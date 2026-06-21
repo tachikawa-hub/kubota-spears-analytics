@@ -2890,16 +2890,33 @@ def build_html(home, opp, master, detail, max_round, df=None):
         af=f"{avg:.{dec}f}{suf}"; rows=""
         for i,(t,v) in enumerate(vals):
             hl=t in HL
-            tc=TEAM_COLORS.get(t,'#888') if hl else '#9CA3AF'
-            bc=TEAM_COLORS.get(t,'#888') if hl else '#CBD5E1'
-            fw='font-weight:700;' if hl else ''
+            # 旧: tc=TEAM_COLORS.get(t,'#888') if hl else '#9CA3AF'
+            # 旧: bc=TEAM_COLORS.get(t,'#888') if hl else '#CBD5E1'
+            # 旧: fw='font-weight:700;' if hl else ''
+            tc=TEAM_COLORS.get(t,'#888') if hl else '#374151'
+            bc=TEAM_COLORS.get(t,'#888') if hl else '#9CA3AF'
+            fw='font-weight:700;' if hl else 'font-weight:500;'
             w=bw(v,mn,mx); vf=f"{v:.{dec}f}{suf}"
             sn=TEAM_SHORT.get(t,t[:10])
-            rows+=f'<div style="display:flex;align-items:center;gap:5px;{"outline:1px solid "+tc+";border-radius:2px;" if hl else ""}padding:1px 2px"><span style="font-size:9px;color:#aaa;width:13px;text-align:right;flex-shrink:0">{i+1}</span><span style="font-size:10px;width:72px;flex-shrink:0;color:{tc};{fw};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{sn}</span><div style="flex:1;height:14px;background:#F1F3F5;border-radius:3px;overflow:hidden"><div style="width:{w}%;height:100%;background:{bc};border-radius:3px;display:flex;align-items:center;padding-left:4px"><span style="font-size:8px;font-weight:600;color:#fff;white-space:nowrap">{vf}</span></div></div></div>'
+            if hl:
+                d=v-avg; ds=(f"+{d:.{dec}f}" if d>=0 else f"{d:.{dec}f}")+suf
+                good=(d>0 and not asc) or (d<0 and asc)
+                dc='#16A34A' if good else '#DC2626'
+                dbadge=f'<span style="font-size:8px;font-weight:700;color:{dc};flex-shrink:0;margin-left:3px;white-space:nowrap">{ds}</span>'
+            else:
+                dbadge=''
+            # 旧: rows+=f'...(color:#aaa for rank num, #9CA3AF/#CBD5E1 for non-HL team/bar)...'
+            rows+=f'<div style="display:flex;align-items:center;gap:5px;{"outline:1px solid "+tc+";border-radius:2px;" if hl else ""}padding:1px 2px"><span style="font-size:9px;color:#6B7280;width:13px;text-align:right;flex-shrink:0">{i+1}</span><span style="font-size:10px;width:72px;flex-shrink:0;color:{tc};{fw};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{sn}</span><div style="flex:1;height:14px;background:#F1F3F5;border-radius:3px;overflow:hidden"><div style="width:{w}%;height:100%;background:{bc};border-radius:3px;display:flex;align-items:center;padding-left:4px"><span style="font-size:8px;font-weight:600;color:#fff;white-space:nowrap">{vf}</span></div></div>{dbadge}</div>'
+            # avg marker >>>
+            if i<len(vals)-1:
+                v_next=vals[i+1][1]
+                if (asc and v<=avg<v_next) or (not asc and v>=avg>v_next):
+                    rows+=f'<div style="display:flex;align-items:center;height:12px;border-left:2px solid #CA8A04;background:#FEF9C3;padding:0 6px"><span style="font-size:8px;color:#92400E;font-weight:600">avg {af}</span></div>'
+            # avg marker <<<
+        # 旧 ヘッダ avg span: <span style="font-size:10px;color:#6C757D">avg {af}</span>  (マーカーに一本化のため削除)
         return f'''<div style="background:#fff;border:1px solid #DEE2E6;border-radius:6px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <span style="font-size:10px;color:#6C757D;text-transform:uppercase;letter-spacing:.06em;font-weight:600">{label}</span>
-            <span style="font-size:10px;color:#6C757D">avg {af}</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:2px">{rows}</div>
         </div>'''
@@ -3782,33 +3799,16 @@ function showSub(sid,subId,btn){
     for cat in OV_CATS:
         OV.extend(cat['metrics'])
 
-    # 4列縦構成HTML
-    ov_cat_cols = ""
-    for cat in OV_CATS:
-        cards = "".join(kpi_dual(l,c,a if a is not None else False,d,s) for l,c,a,d,s in cat['metrics'])
-        ov_cat_cols += f'''<div style="display:flex;flex-direction:column;gap:8px">
-          <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:{cat["color"]}11;border-radius:6px;border-left:3px solid {cat["color"]}">
-            <span style="font-size:13px">{cat["icon"]}</span>
-            <span style="font-family:Oswald,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:{cat["color"]}">{cat["label"]}</span>
-          </div>
-          {cards}
-        </div>'''
-
-    ov_html = f"""
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px">
-{ov_cat_cols}
-</div>
-{legend}
-<div style="background:#fff;border:1px solid #DEE2E6;border-radius:8px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #F1F3F5">
-    <div style="width:26px;height:26px;border-radius:50%;background:#F8F9FA;border:1px solid #DEE2E6;display:flex;align-items:center;justify-content:center;font-size:13px">🏆</div>
-    <div style="font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#495057">League Ranking</div>
-    <div style="font-size:10px;color:#aaa;margin-left:auto">全12チーム · ハイライト: {h_sht} / {o_sht}</div>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px">
-  {"".join(rank_card(l,c,a if a is not None else False,d,s) for l,c,a,d,s in OV)}
-  </div>
-</div>"""
+    # 旧 OV KPIグリッド: 4カラム縦構成の kpi_dual カード列。KPIカード廃止のためコメントアウト。
+    # ov_cat_cols = ""
+    # for cat in OV_CATS:
+    #     cards = "".join(kpi_dual(l,c,a if a is not None else False,d,s) for l,c,a,d,s in cat['metrics'])
+    #     ov_cat_cols += f'''<div style="display:flex;flex-direction:column;gap:8px">
+    #       <div style="...background:{cat["color"]}11...">{cat["icon"]} {cat["label"]}</div>
+    #       {cards}
+    #     </div>'''
+    # 旧 ov_html = f"""<div style="display:grid;grid-template-columns:repeat(4,1fr)...">{ov_cat_cols}</div>{legend}<div ...ranking...>"""
+    # ov_html は rank_section 定義後に代入（下記 rank_section 定義の後）
 
     def cat_section(sid, metrics, title_kpi, title_rank):
         kpi = kpi_grid(metrics)
@@ -3828,6 +3828,21 @@ function showSub(sid,subId,btn){
   </div>
   {rk}
 </div>"""
+
+    def rank_section(sid, metrics, title_rank):
+        """KPIカードなし・ランキングのみのセクション生成（cat_section から①KPI部を除いたもの）"""
+        rk = rank_grid(metrics)
+        return f"""
+{legend}
+<div style="background:#fff;border:1px solid #DEE2E6;border-radius:8px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #F1F3F5">
+    <div style="width:26px;height:26px;border-radius:50%;background:#F8F9FA;border:1px solid #DEE2E6;display:flex;align-items:center;justify-content:center;font-size:13px">🏆</div>
+    <div style="font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#495057">{title_rank}</div>
+  </div>
+  {rk}
+</div>"""
+
+    ov_html = rank_section('ov', OV, 'League Ranking')
 
     # Try Analysis
     try_html = f"""
@@ -4009,6 +4024,11 @@ function showSub(sid,subId,btn){
             + '</div>'
         )
 
+    # 旧: ov セクション → rank_section に変更（OV KPIカード廃止）。ロールバック時は ov_html 変数を上記コメント版に戻す。
+    # 旧: atk セクション = cat_section('atk',ATT,'Attack KPIs','Attack Rankings')
+    # 旧: def セクション = cat_section('def',DEF,'Defence KPIs','Defence Rankings')
+    # → atk/def ともに rank_section に変更（KPIカード廃止）。ロールバック時は下の各 <div id="..."> 行を戻す。
+    # 旧: sp セクション → sp_html 変数を使用（KPIカード廃止）。ロールバック時は sp_html 変数と <div id="sp"> 行を元の f'''...''' 版に戻す。
     return f"""<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Scout Report | {h_sht} vs {o_sht} | 2025-26 R1-R{max_round}</title>
@@ -4044,8 +4064,8 @@ function showSub(sid,subId,btn){
 
 <div class="main">
   <div id="ov"   class="section active">{ov_html}</div>
-  <div id="atk"  class="section">{cat_section('atk',ATT,'Attack KPIs','Attack Rankings')}</div>
-  <div id="def"  class="section">{cat_section('def',DEF,'Defence KPIs','Defence Rankings')}</div>
+  <div id="atk"  class="section">{rank_section('atk',ATT,'Attack Rankings')}</div>
+  <div id="def"  class="section">{rank_section('def',DEF,'Defence Rankings')}</div>
   <div id="kick" class="section">{f'''
     <div style="margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:#0891B211;border-radius:6px;border-left:3px solid #0891B2;margin-bottom:10px">
@@ -4078,54 +4098,28 @@ function showSub(sid,subId,btn){
       </div>
     </div>
   '''}</div>
-  <div id="sp" class="section">{f'''
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px">
-      <div>
-        <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:#7C3AED11;border-radius:6px;border-left:3px solid #7C3AED;margin-bottom:10px">
-          <span style="font-family:Oswald,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7C3AED">🏃 Lineout</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-        {"".join(kpi_dual(l,c,a if a is not None else False,d,s) for l,c,a,d,s in SP_LINEOUT)}
-        </div>
-      </div>
-      <div>
-        <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:#0891B211;border-radius:6px;border-left:3px solid #0891B2;margin-bottom:10px">
-          <span style="font-family:Oswald,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0891B2">💪 Maul</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-        {"".join(kpi_dual(l,c,a if a is not None else False,d,s) for l,c,a,d,s in SP_MAUL)}
-        </div>
-      </div>
-      <div>
-        <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:#D9770611;border-radius:6px;border-left:3px solid #D97706;margin-bottom:10px">
-          <span style="font-family:Oswald,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#D97706">🔄 Scrum</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-        {"".join(kpi_dual(l,c,a if a is not None else False,d,s) for l,c,a,d,s in SP_SCRUM)}
-        </div>
-      </div>
-    </div>
-    {legend}
+  <div id="sp" class="section">{legend}
     <div style="background:#fff;border:1px solid #DEE2E6;border-radius:8px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #F1F3F5">
-        <div style="font-family:Oswald,sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#495057">🏆 League Ranking</div>
+        <div style="width:26px;height:26px;border-radius:50%;background:#F8F9FA;border:1px solid #DEE2E6;display:flex;align-items:center;justify-content:center;font-size:13px">🏆</div>
+        <div style="font-family:Oswald,sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#495057">Set Piece Rankings</div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
         <div>
-          <div style="font-family:Oswald,sans-serif;font-size:11px;font-weight:600;color:#7C3AED;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #7C3AED22">Lineout</div>
+          <div style="font-family:Oswald,sans-serif;font-size:11px;font-weight:600;color:#7C3AED;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #7C3AED22">🏃 Lineout</div>
           <div style="display:flex;flex-direction:column;gap:8px">{"".join(rank_card(l,c,a if a is not None else False,d,s) for l,c,a,d,s in SP_LINEOUT)}</div>
         </div>
         <div>
-          <div style="font-family:Oswald,sans-serif;font-size:11px;font-weight:600;color:#0891B2;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #0891B222">Maul</div>
+          <div style="font-family:Oswald,sans-serif;font-size:11px;font-weight:600;color:#0891B2;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #0891B222">💪 Maul</div>
           <div style="display:flex;flex-direction:column;gap:8px">{"".join(rank_card(l,c,a if a is not None else False,d,s) for l,c,a,d,s in SP_MAUL)}</div>
         </div>
         <div>
-          <div style="font-family:Oswald,sans-serif;font-size:11px;font-weight:600;color:#D97706;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #D9770622">Scrum</div>
+          <div style="font-family:Oswald,sans-serif;font-size:11px;font-weight:600;color:#D97706;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #D9770622">🔄 Scrum</div>
           <div style="display:flex;flex-direction:column;gap:8px">{"".join(rank_card(l,c,a if a is not None else False,d,s) for l,c,a,d,s in SP_SCRUM)}</div>
         </div>
       </div>
     </div>
-  '''}</div>
+  </div>
   <div id="try"  class="section">{try_html}</div>
   <div id="lb"   class="section">{lb_html}
   </div>
