@@ -543,7 +543,7 @@ function pSummary(){
         <div class="score-ht">HT ${D.info.away_ht}</div>
       </div>
     </div>
-    <div class="score-bip"><div><b>${bip.total_fmt}</b>Ball In Play (of 80:00)</div></div>
+    <div class="score-bip"><div><b>${bip.total_v2_fmt}</b>Ball In Play (of 80:00)</div></div>
   </div>`;
 
   const possCard=`<div class="sum-card">
@@ -559,19 +559,19 @@ function pSummary(){
   const terrCard=`<div class="sum-card">
     <div class="sum-card-title">Territory</div>
     <div class="gauge-wrap">
-      ${semiGauge(bip.h_terr,'var(--ks)')}
-      <div class="gauge-val">${bip.h_terr}%</div>
+      ${semiGauge(bip.h_terr_v2,'var(--ks)')}
+      <div class="gauge-val">${bip.h_terr_v2}%</div>
       <div class="gauge-cap">${HOME}</div>
     </div>
-    <div class="gauge-split">${barRow('',bip.h_terr+'%',bip.a_terr+'%',bip.h_terr)}</div>
+    <div class="gauge-split">${barRow('',bip.h_terr_v2+'%',bip.a_terr_v2+'%',bip.h_terr_v2)}</div>
   </div>`;
 
-  const bipPct=Math.round(mmss2sec(bip.total_fmt)/4800*100);
+  const bipPct=Math.round(mmss2sec(bip.total_v2_fmt)/4800*100);
   const bipCard=`<div class="sum-card">
     <div class="sum-card-title">Ball In Play</div>
     <div class="gauge-wrap">
       ${semiGauge(bipPct,'var(--ks)')}
-      <div class="gauge-val">${bip.total_fmt}</div>
+      <div class="gauge-val">${bip.total_v2_fmt}</div>
       <div class="gauge-cap">of 80:00 (${bipPct}%)</div>
     </div>
     <div class="gauge-split">${barRow('Attacking Time',bip.h_fmt,bip.a_fmt,bip.h_pct)}</div>

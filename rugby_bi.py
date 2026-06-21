@@ -220,7 +220,7 @@ def team_stats(team, opp):
             terr_num += dur
         terr_den += dur
 
-    # Territory v2: x_coord_end（終端座標）>50 で判定・BIP_v2 分母
+    # Territory v2: 中点座標 (x_start+x_end)/2 >50 で判定・BIP_v2 分母
     terr_rows_v2 = cur.execute(
         "SELECT x_coord x, x_coord_end xe, ps_timestamp ts, ps_endstamp te FROM events "
         "WHERE fxid=? AND team_name=? "
@@ -233,7 +233,12 @@ def team_stats(team, opp):
         if dur <= 0:
             continue
         xe = r["xe"]; xs = r["x"]
-        coord = _num(xe) if xe else (_num(xs) if xs else None)
+        if xe and xs:
+            coord = (_num(xs) + _num(xe)) / 2
+        elif xs:
+            coord = _num(xs)
+        else:
+            coord = None
         if coord is None:
             continue
         if coord > 50:
