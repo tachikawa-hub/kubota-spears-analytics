@@ -324,10 +324,11 @@ def team_stats(team, opp):
 # ---------------------------------------------------------------------------
 # quarter-by-quarter stats
 # ---------------------------------------------------------------------------
-def quarter_stats(team):
+def quarter_stats(team, opp):
     Q = {q: {"pts": 0, "tries": 0, "pos_dur": 0.0, "tot_dur": 0.0, "terr_num": 0.0, "terr_den": 0.0,
              "car": 0, "mtr": 0.0, "pas": 0, "rucks": 0, "kicks": 0, "ta": 0, "tm": 0, "lb": 0, "db": 0,
-             "tow": 0, "toc": 0, "pen": 0, "e22": 0, "c22": 0, "s22": 0} for q in ["Q1", "Q2", "Q3", "Q4"]}
+             "tow": 0, "toc": 0, "pen": 0, "e22": 0, "c22": 0, "s22": 0,
+             "bip_k": 0.0, "bip_o": 0.0, "atk_k": 0.0, "atk_o": 0.0} for q in ["Q1", "Q2", "Q3", "Q4"]}
 
     for r in cur.execute(
         "SELECT team_name tn, ps_timestamp ts, ps_endstamp te, period pd "
@@ -355,6 +356,36 @@ def quarter_stats(team):
             Q[qq]["terr_den"] += dur
         elif -10 <= x <= 50:
             Q[qq]["terr_den"] += dur
+
+    # Territory v2 + Possession% v2: 中点座標・BIP_v2 分母・ゼロサム（マッチレポート手法B と同一）
+    # 開始時刻 (ps_timestamp) のバケツに丸ごと帰属（按分なし）
+    for r in cur.execute(
+        "SELECT team_name tn, x_coord x, x_coord_end xe, ps_timestamp ts, ps_endstamp te, period pd "
+        "FROM events WHERE fxid=? AND team_name IN (?,?) "
+        "AND action_name IN ('Possession','Scrum','Lineout Throw') "
+        "AND ps_endstamp IS NOT NULL AND ps_endstamp!=''", (fx, team, opp)
+    ).fetchall():
+        dur = _num(r["te"]) - _num(r["ts"])
+        if dur <= 0:
+            continue
+        xe = r["xe"]; xs = r["x"]
+        if xe and xs:
+            coord = (_num(xs) + _num(xe)) / 2
+        elif xs:
+            coord = _num(xs)
+        else:
+            coord = None
+        if coord is None:
+            continue
+        qq = quarter(match_min(r["ts"], r["pd"], p2))
+        if r["tn"] == team:
+            Q[qq]["bip_k"] += dur
+            if coord > 50:
+                Q[qq]["atk_k"] += dur
+        else:
+            Q[qq]["bip_o"] += dur
+            if coord > 50:
+                Q[qq]["atk_o"] += dur
 
     for r in cur.execute(
         "SELECT metres mt, ps_timestamp ts, period pd FROM events "
@@ -412,21 +443,26 @@ def quarter_stats(team):
     ).fetchall():
         Q[quarter(match_min(r["ts"], r["pd"], p2))]["toc"] += 1
 
-    poss_mins, jck_mins = [], []
+    # tow: 6要素（team_stats と同一定義）
     for r in cur.execute(
         "SELECT action_name an, action_type_name tp, action_result_name rs, "
         "ps_timestamp ts, period pd FROM events WHERE fxid=? AND team_name=?", (fx, team)
     ).fetchall():
-        if r["an"] == "Possession" and r["tp"] == "Turnover Won":
-            poss_mins.append(match_min(r["ts"], r["pd"], p2))
-        elif r["an"] == "Collection" and r["tp"] == "Jackal" and r["rs"] == "Success":
-            jck_mins.append(match_min(r["ts"], r["pd"], p2))
-    tow_mins = list(poss_mins)
-    for j in jck_mins:
-        if not any(abs(j - p) < 0.5 for p in poss_mins):
-            tow_mins.append(j)
-    for mm in tow_mins:
-        Q[quarter(mm)]["tow"] += 1
+        an, tp, rs = r["an"], r["tp"] or "", r["rs"] or ""
+        is_tow = False
+        if an == "Ruck OOA" and tp == "Turnover Won": is_tow = True
+        elif an == "Collection" and tp == "Jackal" and rs == "Success": is_tow = True
+        elif an == "Lineout Take" and "Steal" in tp: is_tow = True
+        elif an == "Sequences" and tp == "Scrum Steal": is_tow = True
+        elif an == "Tackle" and rs == "Turnover Won": is_tow = True
+        if is_tow:
+            Q[quarter(match_min(r["ts"], r["pd"], p2))]["tow"] += 1
+    for r in cur.execute(
+        "SELECT ps_timestamp ts, period pd FROM events "
+        "WHERE fxid=? AND action_name='Tackle' AND team_name!=? AND action_result_name='Forced in Touch'",
+        (fx, team)
+    ).fetchall():
+        Q[quarter(match_min(r["ts"], r["pd"], p2))]["tow"] += 1
 
     for r in cur.execute(
         "SELECT ps_timestamp ts, period pd FROM events "
@@ -466,11 +502,18 @@ def quarter_stats(team):
     for qq in ["Q1", "Q2", "Q3", "Q4"]:
         d = Q[qq]
         ta = d["ta"]
+        bip_v2_q = d["bip_k"] + d["bip_o"]
+        ter_num_v2 = d["atk_k"] + (d["bip_o"] - d["atk_o"])
         out[qq] = {
             "pts": d["pts"], "tries": d["tries"],
-            "pos_t": mmss(d["pos_dur"]),
-            "pos_p": round(d["pos_dur"] / d["tot_dur"] * 100) if d["tot_dur"] else 0,
+            "pos_t": mmss(d["bip_k"]),
+            "pos_p": round(d["bip_k"] / bip_v2_q * 100) if bip_v2_q else 0,
             "ter_p": round(d["terr_num"] / d["terr_den"] * 100) if d["terr_den"] else 0,
+            "ter_p_v2": round(ter_num_v2 / bip_v2_q * 100) if bip_v2_q else 0,
+            "bip_v2_q": round(bip_v2_q),
+            "atk_k_q": round(d["atk_k"]),
+            "bip_o_q": round(d["bip_o"]),
+            "atk_o_q": round(d["atk_o"]),
             "car": d["car"], "mtr": int(d["mtr"]),
             "amc": round(d["mtr"] / d["car"], 1) if d["car"] else 0.0,
             "pas": d["pas"],
@@ -1017,8 +1060,8 @@ def cmd_match(args):
         a_terr_v2 = 100 - h_terr_v2
     else:
         h_terr_v2 = a_terr_v2 = 0
-    qd_h = quarter_stats(HOME_T)
-    qd_a = quarter_stats(AWAY_T)
+    qd_h = quarter_stats(HOME_T, AWAY_T)
+    qd_a = quarter_stats(AWAY_T, HOME_T)
     score_events = events_for("Try") + events_for(
         "Goal Kick", result="Goal Kicked", types=("Penalty Goal", "Drop Goal"))
     score_events.sort(key=lambda e: e["min"])
