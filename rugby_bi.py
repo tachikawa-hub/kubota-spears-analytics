@@ -1202,10 +1202,11 @@ def cmd_kpi(args=None):
     
     for m in matches:
         fx = m["fxid"]
+        opp_t = m["opponent_name"]
         p2 = _num(cur.execute(
             "SELECT MIN(ps_timestamp) v FROM events WHERE fxid=? AND period=2", (fx,)
         ).fetchone()["v"])
-    
+
         # durations / possession (both teams)
         poss_rows = cur.execute(
             "SELECT team_name tn, ps_timestamp ts, ps_endstamp te "
@@ -1235,15 +1236,14 @@ def cmd_kpi(args=None):
             return sum(max(0, _num(r["te"]) - _num(r["ts"]))
                        for r in rows if team is None or r[tn_col] == team)
         at_kub = dur(poss_rows, TEAM) + dur(sc_rows, TEAM) + dur(lo_rows, TEAM)
-        # BIP = 全チームのPoss+Scrum+LO + GK + RS
+        # BIP_v2 = Poss+Sc+LO のみ（GK・RS 除外）
         total_atk_all = dur(poss_rows) + dur(sc_rows) + dur(lo_rows)  # 両チーム合計
         at_opp = total_atk_all - at_kub
-        at_tot = total_atk_all + dur(gk_rows) + dur(rs_rows)  # BIP
+        at_tot_old = total_atk_all + dur(gk_rows) + dur(rs_rows)  # 旧BIP（GK/RS込み・ロールバック用）
+        at_tot = total_atk_all  # BIP_v2（GK・RS 除外）
         # Possession% = at_kub / (at_kub + at_opp)（at_totではなくattack timeの比率）
     
-        # territory: Kubota events, action-time (ps_endstamp-ps_timestamp) split by x_coord half
-        #   own = x in [-10,50], opp = x in [51,110]; Territory % = opp time / (own+opp) time
-        # Territory: Possession + Scrum + Lineout Throw のx_coord>50割合（スカウトレポートと同じ定義）
+        # Territory 旧: KUBのPoss+Sc+LOで x_coord(開始)>50 / KUB総時間（ロールバック用）
         terr_rows = cur.execute(
             "SELECT x_coord x, ps_timestamp ts, ps_endstamp te FROM events "
             "WHERE fxid=? AND team_name=? "
@@ -1251,15 +1251,42 @@ def cmd_kpi(args=None):
             "AND x_coord IS NOT NULL AND x_coord!='' "
             "AND ps_endstamp IS NOT NULL AND ps_endstamp!=''", (fx, TEAM)
         ).fetchall()
-        terr_num = terr_den = 0.0  # terr_num = opp-half time, terr_den = total time
+        terr_num = terr_den = 0.0
         for r in terr_rows:
             x = _num(r["x"])
-            dur = _num(r["te"]) - _num(r["ts"])
-            if dur <= 0:
+            d = _num(r["te"]) - _num(r["ts"])
+            if d <= 0:
                 continue
             if x > 50:
-                terr_num += dur
-            terr_den += dur
+                terr_num += d
+            terr_den += d
+
+        # Territory v2: 中点座標・BIP_v2 分母（マッチレポート手法B と同一ロジック）
+        terr_rows_v2 = cur.execute(
+            "SELECT team_name tn, x_coord x, x_coord_end xe, ps_timestamp ts, ps_endstamp te FROM events "
+            "WHERE fxid=? AND team_name IN (?,?) "
+            "AND action_name IN ('Possession','Scrum','Lineout Throw') "
+            "AND ps_endstamp IS NOT NULL AND ps_endstamp!=''", (fx, TEAM, opp_t)
+        ).fetchall()
+        tn_kub = td_kub = tn_opp = td_opp = 0.0
+        for r in terr_rows_v2:
+            d = _num(r["te"]) - _num(r["ts"])
+            if d <= 0:
+                continue
+            xe = r["xe"]; xs = r["x"]
+            if xe and xs: coord = (_num(xs) + _num(xe)) / 2
+            elif xs:      coord = _num(xs)
+            else:         coord = None
+            if coord is None:
+                continue
+            if r["tn"] == TEAM:
+                if coord > 50: tn_kub += d
+                td_kub += d
+            else:
+                if coord > 50: tn_opp += d
+                td_opp += d
+        terr_num_v2 = tn_kub + (td_opp - tn_opp)  # KUB陣取り時間
+        terr_den_v2 = td_kub + td_opp              # BIP_v2
     
             # TO Won: Ruck OOA TO + Jackal + LO Steal + Scrum Steal + Tackle TO + Forced in Touch（6要素）
         tw = 0
@@ -1375,8 +1402,9 @@ def cmd_kpi(args=None):
             "ha": "H" if m["kubota_is_home"] else "A",
             "kub": m["kubota_score"], "opp_score": m["opponent_score"], "result": m["kubota_result"],
             # raw components
-            "at_kub": at_kub, "at_tot": at_tot, "poss_den": at_kub + at_opp,
-            "terr_num": terr_num, "terr_den": terr_den,
+            "at_kub": at_kub, "at_tot": at_tot, "at_tot_old": at_tot_old, "poss_den": at_kub + at_opp,
+            "terr_num": terr_num, "terr_den": terr_den,              # 旧（ロールバック用）
+            "terr_num_v2": terr_num_v2, "terr_den_v2": terr_den_v2,  # v2（中点・BIP_v2）
             "tw": tw,
             "kicks": kicks, "km": int(km), "rucks": rucks,
             "contest_tot": len(cur.execute(
@@ -1661,9 +1689,9 @@ def cmd_kpi(args=None):
     def group_kpis(recs):
         return {
             "pf": mn(recs, "kub"), "pa": mn(recs, "opp_score"),
-            "bip": mn(recs, "at_tot") / 60.0,
-            "poss": rate(recs, "at_kub", "poss_den"),
-            "terr": rate(recs, "terr_num", "terr_den"),
+            "bip": mn(recs, "at_tot") / 60.0,                          # at_tot は BIP_v2（GK/RS 除外済み）
+            "poss": rate(recs, "at_kub", "poss_den"),                  # 変更なし（分母は v2 と同じ）
+            "terr": rate(recs, "terr_num_v2", "terr_den_v2"),          # v2（中点・BIP_v2）
             "tries": mn(recs, "tries"),
             "tries_con": mn(recs, "tries_conceded"),
             "trate": rate(recs, "to_con", "attacks"),
