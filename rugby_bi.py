@@ -2368,15 +2368,13 @@ def compute_stats(df, max_round):
              .add(lo_dur.groupby(['teamName','FXID'])['dur'].sum(), fill_value=0))
     atk_pg = atk_m.groupby('teamName').mean()/60
 
-    # BIP per FXID
+    # BIP_v2 per FXID（GK・RS 除外: Poss+Scrum+LO のみ）
     bip_fxid = {}
     for fxid in df['FXID'].unique():
         bip_fxid[fxid] = (
             poss_dur[poss_dur['FXID']==fxid]['dur'].sum() +
             scrum_dur[scrum_dur['FXID']==fxid]['dur'].sum() +
-            lo_dur[lo_dur['FXID']==fxid]['dur'].sum() +
-            goal_k[goal_k['FXID']==fxid]['dur'].sum() +
-            restart_a[restart_a['FXID']==fxid]['dur'].sum()
+            lo_dur[lo_dur['FXID']==fxid]['dur'].sum()
         )
 
     bip_dict = {}
@@ -2394,11 +2392,33 @@ def compute_stats(df, max_round):
         tot = a[c].sum()+d[c].sum()
         poss_pct[t] = round(a[c].sum()/tot*100,1) if tot else 0
 
-    # Territory: Possessionのps_timestamp/ps_endstampベースで相手陣(x_coord>50)の割合
-    poss_terr = poss_dur.copy()
-    terr_opp_dur = poss_terr[poss_terr['x_coord']>50].groupby(['teamName','FXID'])['dur'].sum()
-    terr_all_dur = poss_terr.groupby(['teamName','FXID'])['dur'].sum()
-    terr_pct = (terr_opp_dur.groupby('teamName').mean()/terr_all_dur.groupby('teamName').mean()*100).round(1)
+    # Territory v2: 中点座標 (x_start+x_end)/2 >50 で判定・BIP_v2 分母・ゼロサム式
+    _bip_acts = ['Possession','Scrum','Lineout Throw']
+    _bip_terr = df[df['actionName'].isin(_bip_acts)].copy()
+    _bip_terr['dur'] = (_bip_terr['ps_endstamp'] - _bip_terr['ps_timestamp']).clip(lower=0)
+    _bip_terr = _bip_terr[_bip_terr['dur'] > 0].copy()
+    _has_xe = _bip_terr['x_coord_end'].notna() & _bip_terr['x_coord'].notna()
+    _bip_terr['mid'] = _bip_terr['x_coord'].copy()
+    _bip_terr.loc[_has_xe, 'mid'] = (_bip_terr.loc[_has_xe, 'x_coord'] + _bip_terr.loc[_has_xe, 'x_coord_end']) / 2
+    _bip_terr = _bip_terr[_bip_terr['mid'].notna()].copy()
+    _opp_map = df.groupby(['teamName','FXID'])['oppTeam'].first()
+    _atk_fxid = _bip_terr[_bip_terr['mid'] > 50].groupby(['teamName','FXID'])['dur'].sum()
+    _tot_fxid = _bip_terr.groupby(['teamName','FXID'])['dur'].sum()
+    terr_v2 = {}
+    for t in teams:
+        fxids = df[df['teamName']==t]['FXID'].unique()
+        vals = []
+        for fxid in fxids:
+            tn_k = _atk_fxid.get((t, fxid), 0)
+            td_k = _tot_fxid.get((t, fxid), 0)
+            opp_t = _opp_map.get((t, fxid))
+            if opp_t is None: continue
+            tn_o = _atk_fxid.get((opp_t, fxid), 0)
+            td_o = _tot_fxid.get((opp_t, fxid), 0)
+            den = td_k + td_o
+            if den > 0: vals.append((tn_k + (td_o - tn_o)) / den * 100)
+        terr_v2[t] = round(sum(vals)/len(vals), 1) if vals else 0
+    terr_pct = pd.Series(terr_v2)
 
     # LQB: Ruckアクション(qualifier4Nameあり)が母数
     QL = ['0-1 Seconds','1-2 Seconds','2-3 Seconds']
@@ -3205,9 +3225,10 @@ def build_html(home, opp, master, detail, max_round, df=None):
         gk_all = dall[dall['actionName']=='Goal Kick'].copy();  gk_all['dur']=(gk_all['ps_endstamp']-gk_all['ps_timestamp']).clip(lower=0)
         rs_all = dall[dall['actionName']=='Restart'].copy();    rs_all['dur']=(rs_all['ps_endstamp']-rs_all['ps_timestamp']).clip(lower=0)
 
-        atk_s = (ps['dur'].sum()+sc['dur'].sum()+lo['dur'].sum())/n/60
-        bip   = (ps_all['dur'].sum()+sc_all['dur'].sum()+lo_all['dur'].sum()+gk_all['dur'].sum()+rs_all['dur'].sum())/n/60
-        def_s = bip - atk_s
+        atk_s   = (ps['dur'].sum()+sc['dur'].sum()+lo['dur'].sum())/n/60
+        bip_old = (ps_all['dur'].sum()+sc_all['dur'].sum()+lo_all['dur'].sum()+gk_all['dur'].sum()+rs_all['dur'].sum())/n/60  # 旧（GK/RS込み・ロールバック用）
+        bip     = (ps_all['dur'].sum()+sc_all['dur'].sum()+lo_all['dur'].sum())/n/60  # BIP_v2（GK・RS 除外）
+        def_s   = bip - atk_s
         opp_atk = (ps_o['dur'].sum()+sc_o['dur'].sum()+lo_o2['dur'].sum())/n/60
         poss_pct = atk_s/(atk_s+opp_atk)*100 if (atk_s+opp_atk)>0 else 0
 
@@ -3238,10 +3259,36 @@ def build_html(home, opp, master, detail, max_round, df=None):
         ts = len(dall[(dall['actionName']=='Try')&(dall['teamName'].eq(team))])
         tc = len(dall[(dall['actionName']=='Try')&(dall['oppTeam'].eq(team))])
 
-        # Territory% (Possession x_coord>50 / 全Possession)
-        ps_terr = ps[ps['x_coord']>50]['dur'].sum()
-        ps_all2 = ps['dur'].sum()
-        terr_pct = round(ps_terr/ps_all2*100,1) if ps_all2 else 0
+        # Territory 旧: KUBのPossessionのみで x_coord>50 / KUB総Possession時間（ロールバック用）
+        ps_terr_old = ps[ps['x_coord']>50]['dur'].sum()
+        ps_all2_old = ps['dur'].sum()
+        terr_pct_old = round(ps_terr_old/ps_all2_old*100,1) if ps_all2_old else 0
+
+        # Territory v2: 中点座標・BIP_v2 分母（マッチレポート手法B と同一ロジック）
+        _bip_acts = ['Possession','Scrum','Lineout Throw']
+        _tk = dall[dall['actionName'].isin(_bip_acts) & dall['teamName'].eq(team)].copy()
+        _tk['dur'] = (_tk['ps_endstamp'] - _tk['ps_timestamp']).clip(lower=0)
+        _tk = _tk[_tk['dur'] > 0].copy()
+        _has_xe_k = _tk['x_coord_end'].notna() & _tk['x_coord'].notna()
+        _tk['mid'] = _tk['x_coord'].copy()
+        _tk.loc[_has_xe_k, 'mid'] = (_tk.loc[_has_xe_k, 'x_coord'] + _tk.loc[_has_xe_k, 'x_coord_end']) / 2
+        _tk = _tk[_tk['mid'].notna()].copy()
+
+        _to = dall[dall['actionName'].isin(_bip_acts) & dall['oppTeam'].eq(team)].copy()
+        _to['dur'] = (_to['ps_endstamp'] - _to['ps_timestamp']).clip(lower=0)
+        _to = _to[_to['dur'] > 0].copy()
+        _has_xe_o = _to['x_coord_end'].notna() & _to['x_coord'].notna()
+        _to['mid'] = _to['x_coord'].copy()
+        _to.loc[_has_xe_o, 'mid'] = (_to.loc[_has_xe_o, 'x_coord'] + _to.loc[_has_xe_o, 'x_coord_end']) / 2
+        _to = _to[_to['mid'].notna()].copy()
+
+        _tn_k = _tk[_tk['mid'] > 50]['dur'].sum()
+        _td_k = _tk['dur'].sum()
+        _tn_o = _to[_to['mid'] > 50]['dur'].sum()
+        _td_o = _to['dur'].sum()
+        _terr_den_v2 = _td_k + _td_o
+        _terr_num_v2 = _tn_k + (_td_o - _tn_o)  # KUB陣取り時間
+        terr_pct = round(_terr_num_v2 / _terr_den_v2 * 100, 1) if _terr_den_v2 else 0
 
         # Ruck to Kick (Ruck action / Kicks in Play)
         ruck_s  = sub[sub['actionName']=='Ruck']
