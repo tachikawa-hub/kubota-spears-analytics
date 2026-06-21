@@ -3480,20 +3480,20 @@ def build_html(home, opp, master, detail, max_round, df=None):
           </div>
         </div>'''
 
-    # 旧: 対戦相手のWin/Loss計算（OPPパネル削除により不要）
-    # opp_fxids = df[df['teamName'].eq(opp)]['FXID'].unique()
-    # win_fxids_o = []; loss_fxids_o = []
-    # for fxid in opp_fxids:
-    #     if fxid not in match_res.index: continue
-    #     r = match_res.loc[fxid]
-    #     if r['homeTeamName']==opp:
-    #         if r['hometeamFTscore']>r['awayteamFTscore']: win_fxids_o.append(fxid)
-    #         elif r['hometeamFTscore']<r['awayteamFTscore']: loss_fxids_o.append(fxid)
-    #     else:
-    #         if r['awayteamFTscore']>r['hometeamFTscore']: win_fxids_o.append(fxid)
-    #         elif r['awayteamFTscore']<r['hometeamFTscore']: loss_fxids_o.append(fxid)
-    # wl_opp_w = calc_wl(opp, win_fxids_o)
-    # wl_opp_l = calc_wl(opp, loss_fxids_o)
+    # スカウト対象チームのWin/Loss計算
+    opp_fxids = df[df['teamName'].eq(opp)]['FXID'].unique()
+    win_fxids_o = []; loss_fxids_o = []
+    for fxid in opp_fxids:
+        if fxid not in match_res.index: continue
+        r = match_res.loc[fxid]
+        if r['homeTeamName']==opp:
+            if r['hometeamFTscore']>r['awayteamFTscore']: win_fxids_o.append(fxid)
+            elif r['hometeamFTscore']<r['awayteamFTscore']: loss_fxids_o.append(fxid)
+        else:
+            if r['awayteamFTscore']>r['hometeamFTscore']: win_fxids_o.append(fxid)
+            elif r['awayteamFTscore']<r['hometeamFTscore']: loss_fxids_o.append(fxid)
+    wl_opp_w = calc_wl(opp, win_fxids_o)
+    wl_opp_l = calc_wl(opp, loss_fxids_o)
 
     def make_wl_panel(team_name, team_col, team_badge, team_sht, w_stats, l_stats, win_n, loss_n):
         rows = f'''<div style="background:#fff;border:1px solid #DEE2E6;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
@@ -3517,12 +3517,10 @@ def build_html(home, opp, master, detail, max_round, df=None):
         rows += '</div>'
         return rows
 
-    # 旧: 2カラム比較レイアウト（OPPパネル削除）
-    # winloss_html = f'''<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-    #   {make_wl_panel(home, h_col, TEAM_BADGE.get(home,"HM"), h_sht, wl_home_w, wl_home_l, len(win_fxids_h), len(loss_fxids_h))}
-    #   {make_wl_panel(opp,  o_col, TEAM_BADGE.get(opp,"OP"),  o_sht, wl_opp_w,  wl_opp_l,  len(win_fxids_o), len(loss_fxids_o))}
-    # </div>'''
-    winloss_html = make_wl_panel(home, h_col, TEAM_BADGE.get(home,"HM"), h_sht, wl_home_w, wl_home_l, len(win_fxids_h), len(loss_fxids_h))
+    winloss_html = f'''<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      {make_wl_panel(home, h_col, TEAM_BADGE.get(home,"HM"), h_sht, wl_home_w, wl_home_l, len(win_fxids_h), len(loss_fxids_h))}
+      {make_wl_panel(opp,  o_col, TEAM_BADGE.get(opp, "OP"),  o_sht, wl_opp_w,  wl_opp_l,  len(win_fxids_o), len(loss_fxids_o))}
+    </div>'''
 
     # ============================================================
     # AI スカウト: データ駆動で強み5点・懸念点5点を自動生成
