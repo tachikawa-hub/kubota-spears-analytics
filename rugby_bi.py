@@ -24,7 +24,8 @@ Confirmed KPI definitions (all reports unified):
   22m Entries     = Possession qualifier4 'Enters into Opposition 22' + 'Starts inside Opposition 22'
   Carried into 22m= Possession qualifier4 'Enters into Opposition 22'
   Started in 22m  = Possession qualifier4 'Starts inside Opposition 22'
-  Contest Ret %   = Contest kicks (Bomb/Low/Chip/Cross Pitch) regained
+  # 旧:  Contest Ret %   = Contest kicks (Bomb/Low/Chip/Cross Pitch) regained
+  Contest Retained = Contest kicks 5種 (Bomb/Low/Chip/Cross Pitch/Box); retain = Own Player - Collected / Pressure Error / Pressure in Touch / Try Kick
   TO Won          = 6 elements
 """
 import argparse, glob, json, os, re, sqlite3, sys
@@ -92,7 +93,8 @@ BK   = ['Scrum Half','Fly Half','Inside Centre','Outside Centre',
 DEAD = ['Kick in Touch (Full)','Kick in Touch (Bounce)','Error - Out of Play',
         'Error - Dead Ball','Pressure in Touch','In Goal','Try Kick']
 GOAL = ['Penalty Goal','Conversion','Drop Goal']
-CONT = ['Bomb','Low','Chip','Cross Pitch']
+# 旧: CONT = ['Bomb','Low','Chip','Cross Pitch']
+CONT = ['Bomb','Low','Chip','Cross Pitch','Box']
 TO_S = ['Turnover Won','Lineout Steal','Scrum Steal']
 REST = ['50m Restart','50m Restart Retained','Goal Line Restart',
         '22m Restart','22m Restart Retained']
@@ -1450,14 +1452,16 @@ def cmd_kpi(args=None):
             "terr_num_v2": terr_num_v2, "terr_den_v2": terr_den_v2,  # v2（中点・BIP_v2）
             "tw": tw,
             "kicks": kicks, "km": int(km), "rucks": rucks,
+            # 旧: contest_tot 4種 (Bomb/Low/Chip/Cross Pitch) → 5種 (+Box)
             "contest_tot": len(cur.execute(
                 "SELECT 1 FROM events WHERE fxid=? AND team_name=? AND action_name='Kick' "
-                "AND action_type_name IN ('Bomb','Low','Chip','Cross Pitch')", (fx, TEAM)
+                "AND action_type_name IN ('Bomb','Low','Chip','Cross Pitch','Box')", (fx, TEAM)
             ).fetchall()),
+            # 旧: regain 分子 Own Player - Collected / Pressure Error / Pressure Carried Over
             "regain": len(cur.execute(
                 "SELECT 1 FROM events WHERE fxid=? AND team_name=? AND action_name='Kick' "
-                "AND action_type_name IN ('Bomb','Low','Chip','Cross Pitch') "
-                "AND action_result_name IN ('Own Player - Collected','Pressure Error','Pressure Carried Over')", (fx, TEAM)
+                "AND action_type_name IN ('Bomb','Low','Chip','Cross Pitch','Box') "
+                "AND action_result_name IN ('Own Player - Collected','Pressure Error','Pressure in Touch','Try Kick')", (fx, TEAM)
             ).fetchall()),
             "hg": C(fx, action_name="Kick", action_result_name="Collected Bounce"),
             "carries": carries, "metres": int(metres),
@@ -2018,7 +2022,8 @@ def cmd_kpi(args=None):
          ['km','Kick Metres','per match',0,null],
          ['avg_kick','Avg m / Kick','metres ÷ kicks',1,null],
          ['r2k','Ruck : Kick Ratio','rucks ÷ kicks',2,null],
-         ['regain','Contest Ret','Own Player – Collected /match',1,true],
+         // 旧: ['regain','Contest Ret','Own Player – Collected /match',1,true],
+         ['regain','Contest Retained','Own Player - Collected / Pressure Error / Pressure in Touch / Try Kick /match',1,true],
          ['hg','Kick Hit Grass','Collected Bounce /match',1,null],
          ['gk_pct','Goal Kicking %','goals ÷ attempts',1,true],
          ['trate','Turnover Rate %','TO conceded ÷ attacks',1,false],
@@ -2032,13 +2037,15 @@ def cmd_kpi(args=None):
          {h:'Kick Metres',fn:r=>r.km},
          {h:'Avg Metres / Kick',fn:r=>r.kicks?f1(r.km/r.kicks):'-'},
          {h:'Ruck : Kick Ratio',fn:r=>r.kicks?f2(r.rucks/r.kicks):'-'},
-         {h:'Contest Ret',fn:r=>r.regain},
+         // 旧: {h:'Contest Ret',fn:r=>r.regain},
+         {h:'Contest Retained',fn:r=>r.regain},
          {h:'Kick Hit Grass',fn:r=>r.hg},
          {h:'Turnover Rate %',fn:r=>f1(r.to_con/r.attacks*100)},
        ]));
        return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
          <div class="sec-title">Match-by-match</div>${it}
-         <div class="note">Contest Ret = contest kicks (Bomb/Low/Chip/Cross Pitch) regained. Kick Hit Grass = Collected Bounce only
+         // 旧: <div class="note">Contest Ret = contest kicks (Bomb/Low/Chip/Cross Pitch) regained. Kick Hit Grass = Collected Bounce only
+         <div class="note">Contest Retained = contest kicks 5種 (Bomb/Low/Chip/Cross Pitch/Box) のうち Own Player - Collected / Pressure Error / Pressure in Touch / Try Kick. Kick Hit Grass = Collected Bounce only
            (kick-in-touch-on-bounce excluded). GK% = (Conv+PG+DG made) ÷ attempts.</div>`;
      }},
      {id:'attack',title:'Attack',build:()=>{
@@ -2378,9 +2385,10 @@ def compute_stats(df, max_round):
     kicks_ng  = kicks[~kicks['ActionResultName'].isin(DEAD) & ~kicks['ActionTypeName'].isin(GOAL)]  # タッチ除く（Opp Half計算用）
     kicks_oh  = kicks_ng[kicks_ng['x_coord'] < 50]
     kicks_4060= kicks_ng[(kicks_ng['x_coord']>=40)&(kicks_ng['x_coord']<=60)]
-    cont_k    = kicks[kicks['ActionTypeName'].isin(CONT)]
+    cont_k    = kicks[kicks['ActionTypeName'].isin(CONT)]  # CONT は5種 (グローバル定数更新済み)
+    # 旧: ret_k = cont_k[cont_k['ActionResultName'].isin(['Own Player - Collected','Pressure Error','Pressure Carried Over'])]
     ret_k     = cont_k[cont_k['ActionResultName'].isin(
-                 ['Own Player - Collected','Pressure Error','Pressure Carried Over'])]
+                 ['Own Player - Collected','Pressure Error','Pressure in Touch','Try Kick'])]
     passes_no = passes[passes['ActionTypeName']!='Offload']
     offload   = passes[passes['ActionTypeName']=='Offload']
 
@@ -2975,7 +2983,8 @@ def build_html(home, opp, master, detail, max_round, df=None):
         ('Metres / Kick',      'KICK_MetresPerKick',   False, 1, 'm'),
         ('Ruck to Kick',       'KICK_RuckToKick',      None,  3, ''),
         ('Ruck to Kick (OH)',  'KICK_RuckToKickOH',    None,  3, ''),
-        ('Contest Retained %', 'KICK_ContestRet_pct',  False, 1, '%'),
+        # 旧: ('Contest Retained %', 'KICK_ContestRet_pct',  False, 1, '%'),
+        ('Contest Retained', 'KICK_ContestRet_pct',  False, 1, '%'),
     ]
     KICK_OPP = [
         ('Opp Kicks in Play / G',  'KICK_OppKicksIP_PG',    True, 1, ''),
@@ -2985,7 +2994,8 @@ def build_html(home, opp, master, detail, max_round, df=None):
         ('Opp Metres / Kick',      'KICK_OppMetresPerKick',  True, 1, 'm'),
         ('Opp Ruck to Kick',       'KICK_OppRuckToKick',     None, 3, ''),
         ('Opp Ruck to Kick (OH)',  'KICK_OppRuckToKickOH',   None, 3, ''),
-        ('Opp Contest Retained %', 'KICK_OppContestRet_pct', True, 1, '%'),
+        # 旧: ('Opp Contest Retained %', 'KICK_OppContestRet_pct', True, 1, '%'),
+        ('Opp Contest Retained', 'KICK_OppContestRet_pct', True, 1, '%'),
     ]
     KICK = KICK_OWN + KICK_OPP
     SP_LINEOUT = [
@@ -3233,7 +3243,8 @@ def build_html(home, opp, master, detail, max_round, df=None):
         DEAD = ['Kick in Touch (Full)','Kick in Touch (Bounce)','Error - Out of Play','Error - Dead Ball','Pressure in Touch','In Goal','Try Kick']
         GOAL = ['Penalty Goal','Conversion','Drop Goal']
         QL   = ['0-1 Seconds','1-2 Seconds','2-3 Seconds']
-        CONT = ['Bomb','Low','Chip','Cross Pitch']
+        # 旧: CONT = ['Bomb','Low','Chip','Cross Pitch']
+        CONT = ['Bomb','Low','Chip','Cross Pitch','Box']
         SW   = ['Won Outright','Won Penalty','Won Free Kick','Won Try']
         SL   = ['Lost Pen Con','Lost Free Kick','Lost Outright']
 
@@ -3250,8 +3261,15 @@ def build_html(home, opp, master, detail, max_round, df=None):
         lo_o    = dall[(dall['actionName']=='Lineout Throw')&(dall['oppTeam'].eq(team))]
         pen_con = sub[sub['actionName']=='Penalty Conceded']
         offload = passes[(passes['ActionTypeName']=='Offload')&(passes['ActionResultName']=='Own Player')]
-        cont_k  = kip[kip['ActionTypeName'].isin(CONT)]
-        ret_k   = cont_k[cont_k['ActionResultName'].isin(['Own Player - Collected','Pressure Error','Pressure Carried Over'])]
+        cont_k    = kip[kip['ActionTypeName'].isin(CONT)]  # CONT は5種
+        # 旧: ret_k = cont_k[cont_k['ActionResultName'].isin(['Own Player - Collected','Pressure Error','Pressure Carried Over'])]
+        ret_k     = cont_k[cont_k['ActionResultName'].isin(['Own Player - Collected','Pressure Error','Pressure in Touch','Try Kick'])]
+        # 相手版キック4指標用
+        opp_kicks  = opp[opp['actionName']=='Kick']
+        opp_kip    = opp_kicks[opp_kicks['qualifier3Name'].isin(['Kick in Play','Kick in Play (Own 22)'])]
+        opp_cont_k = opp_kip[opp_kip['ActionTypeName'].isin(CONT)]
+        opp_ret_k  = opp_cont_k[opp_cont_k['ActionResultName'].isin(['Own Player - Collected','Pressure Error','Pressure in Touch','Try Kick'])]
+        opp_ruck   = opp[opp['actionName']=='Ruck']
         coll    = sub[sub['actionName']=='Collection']
         lo_take = sub[sub['actionName']=='Lineout Take']
         scrum_a = dall[dall['actionName']=='Scrum']
@@ -3376,10 +3394,15 @@ def build_html(home, opp, master, detail, max_round, df=None):
             'Turnover Won / G':    round(to_won/n,2),
             'LB Conceded / G':     round(len(aq_o[aq_o['ActionTypeName']=='Initial Break'])/n,2),
             'Penalties Con / G':   round(len(pen_con)/n,2),
-            'Kicks in Play / G':   round(len(kip)/n,1),
-            'Kick Metres / G':     round(kip['Metres'].sum()/n,0),
-            'Ruck to Kick':        r2k,
-            'Contest Ret %':       round(len(ret_k)/len(cont_k)*100,1) if len(cont_k) else 0,
+            'Kicks in Play / G':      round(len(kip)/n,1),
+            'Kick Metres / G':        round(kip['Metres'].sum()/n,0),
+            'Ruck to Kick':           r2k,
+            # 旧: 'Contest Ret %': round(len(ret_k)/len(cont_k)*100,1) if len(cont_k) else 0,
+            'Contest Retained':       round(len(ret_k)/len(cont_k)*100,1) if len(cont_k) else 0,
+            'Opp Kicks in Play / G':  round(len(opp_kip)/n,1),
+            'Opp Kick Metres / G':    round(opp_kip['Metres'].sum()/n,0),
+            'Opp Ruck to Kick':       round(len(opp_ruck)/len(opp_kip),3) if len(opp_kip) else 0,
+            'Opp Contest Retained':   round(len(opp_ret_k)/len(opp_cont_k)*100,1) if len(opp_cont_k) else 0,
             'Own Lineout %':       round(lo_w2/lo_tot2*100,1) if lo_tot2 else 0,
             'Own Scrum %':         round(sc_w2/sc_d2*100,1) if sc_d2 else 0,
             'Opp Lineout %':       round(olo_w/olo_tot*100,1) if olo_tot else 0,
@@ -3407,7 +3430,11 @@ def build_html(home, opp, master, detail, max_round, df=None):
         ('⏱ Game Control', ['Ball in Play (min)','Territory %','Possession %','Attack Time (min)','Defence Time (min)']),
         ('⚡ Attack',       ['Tries Scored','Gainline %','LQB %','Line Breaks / G','Defender Beaten / G','Offload / G','TO Conceded / G']),
         ('🛡 Defence',      ['Tries Conceded','Tackle Success %','Turnover Won / G','LB Conceded / G','Penalties Con / G']),
-        ('👟 Kicking',      ['Kicks in Play / G','Kick Metres / G','Ruck to Kick','Contest Ret %']),
+        # 旧: ('👟 Kicking', ['Kicks in Play / G','Kick Metres / G','Ruck to Kick','Contest Ret %']),
+        ('👟 Kicking',      ['Kicks in Play / G','Opp Kicks in Play / G',
+                             'Kick Metres / G','Opp Kick Metres / G',
+                             'Ruck to Kick','Opp Ruck to Kick',
+                             'Contest Retained','Opp Contest Retained']),
         ('🏉 Set Piece',    ['Own Lineout %','Own Scrum %','Opp Lineout %','Opp Scrum %']),
     ]
     # 指標ごとに「高い方が良いか」定義
@@ -3418,7 +3445,11 @@ def build_html(home, opp, master, detail, max_round, df=None):
         'Defender Beaten / G':True,'Offload / G':True,'TO Conceded / G':False,
         'Tries Conceded':False,'Tackle Success %':True,'Turnover Won / G':True,
         'LB Conceded / G':False,'Penalties Con / G':False,
-        'Kicks in Play / G':True,'Kick Metres / G':True,'Ruck to Kick':False,'Contest Ret %':True,
+        # 旧: 'Kicks in Play / G':True,'Kick Metres / G':True,'Ruck to Kick':False,'Contest Ret %':True,
+        'Kicks in Play / G':True,'Opp Kicks in Play / G':True,
+        'Kick Metres / G':True,'Opp Kick Metres / G':True,
+        'Ruck to Kick':False,'Opp Ruck to Kick':False,
+        'Contest Retained':True,'Opp Contest Retained':True,
         'Own Lineout %':True,'Own Scrum %':True,
         'Opp Lineout %':False,'Opp Scrum %':False,
     }
@@ -3445,21 +3476,20 @@ def build_html(home, opp, master, detail, max_round, df=None):
           </div>
         </div>'''
 
-    # 対戦相手のWin/Loss計算
-    opp_fxids = df[df['teamName'].eq(opp)]['FXID'].unique()
-    win_fxids_o = []; loss_fxids_o = []
-    for fxid in opp_fxids:
-        if fxid not in match_res.index: continue
-        r = match_res.loc[fxid]
-        if r['homeTeamName']==opp:
-            if r['hometeamFTscore']>r['awayteamFTscore']: win_fxids_o.append(fxid)
-            elif r['hometeamFTscore']<r['awayteamFTscore']: loss_fxids_o.append(fxid)
-        else:
-            if r['awayteamFTscore']>r['hometeamFTscore']: win_fxids_o.append(fxid)
-            elif r['awayteamFTscore']<r['hometeamFTscore']: loss_fxids_o.append(fxid)
-
-    wl_opp_w = calc_wl(opp, win_fxids_o)
-    wl_opp_l = calc_wl(opp, loss_fxids_o)
+    # 旧: 対戦相手のWin/Loss計算（OPPパネル削除により不要）
+    # opp_fxids = df[df['teamName'].eq(opp)]['FXID'].unique()
+    # win_fxids_o = []; loss_fxids_o = []
+    # for fxid in opp_fxids:
+    #     if fxid not in match_res.index: continue
+    #     r = match_res.loc[fxid]
+    #     if r['homeTeamName']==opp:
+    #         if r['hometeamFTscore']>r['awayteamFTscore']: win_fxids_o.append(fxid)
+    #         elif r['hometeamFTscore']<r['awayteamFTscore']: loss_fxids_o.append(fxid)
+    #     else:
+    #         if r['awayteamFTscore']>r['hometeamFTscore']: win_fxids_o.append(fxid)
+    #         elif r['awayteamFTscore']<r['hometeamFTscore']: loss_fxids_o.append(fxid)
+    # wl_opp_w = calc_wl(opp, win_fxids_o)
+    # wl_opp_l = calc_wl(opp, loss_fxids_o)
 
     def make_wl_panel(team_name, team_col, team_badge, team_sht, w_stats, l_stats, win_n, loss_n):
         rows = f'''<div style="background:#fff;border:1px solid #DEE2E6;border-radius:8px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
@@ -3483,10 +3513,12 @@ def build_html(home, opp, master, detail, max_round, df=None):
         rows += '</div>'
         return rows
 
-    winloss_html = f'''<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-      {make_wl_panel(home, h_col, TEAM_BADGE.get(home,"HM"), h_sht, wl_home_w, wl_home_l, len(win_fxids_h), len(loss_fxids_h))}
-      {make_wl_panel(opp,  o_col, TEAM_BADGE.get(opp,"OP"),  o_sht, wl_opp_w,  wl_opp_l,  len(win_fxids_o), len(loss_fxids_o))}
-    </div>'''
+    # 旧: 2カラム比較レイアウト（OPPパネル削除）
+    # winloss_html = f'''<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    #   {make_wl_panel(home, h_col, TEAM_BADGE.get(home,"HM"), h_sht, wl_home_w, wl_home_l, len(win_fxids_h), len(loss_fxids_h))}
+    #   {make_wl_panel(opp,  o_col, TEAM_BADGE.get(opp,"OP"),  o_sht, wl_opp_w,  wl_opp_l,  len(win_fxids_o), len(loss_fxids_o))}
+    # </div>'''
+    winloss_html = make_wl_panel(home, h_col, TEAM_BADGE.get(home,"HM"), h_sht, wl_home_w, wl_home_l, len(win_fxids_h), len(loss_fxids_h))
 
     # ============================================================
     # AI スカウト: データ駆動で強み5点・懸念点5点を自動生成
