@@ -193,14 +193,16 @@ def team_stats(team, opp):
     gk_dur   = sum(max(0,_num(r["te"])-_num(r["ts"])) for r in gk_rows)
     rs_dur   = sum(max(0,_num(r["te"])-_num(r["ts"])) for r in rs_rows)
     at_team  = poss_dur + sc_dur + lo_dur
-    # BIP = 全Possession + 全Scrum + 全LO + GoalKick + Restart
+    # BIP_old = 全Possession + 全Scrum + 全LO + GoalKick + Restart（旧定義・並走用）
     at_tot_poss = sum(max(0,_num(r["te"]) - _num(r["ts"])) for r in poss_rows)
     at_tot_sc   = sum(max(0,_num(r["te"]) - _num(r["ts"])) for r in sc_rows)
     at_tot_lo   = sum(max(0,_num(r["te"]) - _num(r["ts"])) for r in lo_rows)
     bip_total   = at_tot_poss + at_tot_sc + at_tot_lo + gk_dur + rs_dur
     at_tot      = bip_total
+    # BIP_v2 = Poss + Scrum + LO のみ（GK・Restart 除外）
+    bip_v2      = at_tot_poss + at_tot_sc + at_tot_lo
 
-    # Territory: Possession + Scrum + Lineout Throw のx_coord>50割合（スカウトレポートと同じ定義）
+    # Territory 旧: Possession + Scrum + LO の x_coord(開始座標)>50 割合
     terr_rows = cur.execute(
         "SELECT team_name tn, x_coord x, ps_timestamp ts, ps_endstamp te FROM events "
         "WHERE fxid=? AND team_name=? "
@@ -217,6 +219,26 @@ def team_stats(team, opp):
         if x > 50:
             terr_num += dur
         terr_den += dur
+
+    # Territory v2: x_coord_end（終端座標）>50 で判定・BIP_v2 分母
+    terr_rows_v2 = cur.execute(
+        "SELECT x_coord x, x_coord_end xe, ps_timestamp ts, ps_endstamp te FROM events "
+        "WHERE fxid=? AND team_name=? "
+        "AND action_name IN ('Possession','Scrum','Lineout Throw') "
+        "AND ps_endstamp IS NOT NULL AND ps_endstamp!=''", (fx, team)
+    ).fetchall()
+    terr_num_v2 = terr_den_v2 = 0.0
+    for r in terr_rows_v2:
+        dur = _num(r["te"]) - _num(r["ts"])
+        if dur <= 0:
+            continue
+        xe = r["xe"]; xs = r["x"]
+        coord = _num(xe) if xe else (_num(xs) if xs else None)
+        if coord is None:
+            continue
+        if coord > 50:
+            terr_num_v2 += dur
+        terr_den_v2 += dur
 
     # TO Won: Ruck OOA TO + Jackal + LO Steal + Scrum Steal + Tackle TO + Forced in Touch（6要素）
     tw = 0
@@ -290,7 +312,7 @@ def team_stats(team, opp):
         "to_won": tw, "to_con": to_con,
         "e22": e22, "c22": c22, "s22": s22,
     }
-    return stats, at_team, at_tot, terr_num, terr_den
+    return stats, at_team, at_tot, terr_num, terr_den, bip_v2, terr_num_v2, terr_den_v2
 
 
 
@@ -969,11 +991,12 @@ def cmd_match(args):
     AWAY_T = OPP_T
     p2 = _num(cur.execute("SELECT MIN(ps_timestamp) v FROM events WHERE fxid=? AND period=2", (fx,)).fetchone()["v"])
 
-    h_stats, at_h, at_tot, terr_num_h, terr_den_h = team_stats(HOME_T, AWAY_T)
-    a_stats, at_a, _, terr_num_a, terr_den_a = team_stats(AWAY_T, HOME_T)
+    h_stats, at_h, at_tot, terr_num_h, terr_den_h, bip_v2_h, terr_num2_h, terr_den2_h = team_stats(HOME_T, AWAY_T)
+    a_stats, at_a, _,    terr_num_a, terr_den_a, _,       terr_num2_a, terr_den2_a = team_stats(AWAY_T, HOME_T)
     poss_denom = at_h + at_a
     h_pct = round(at_h / poss_denom * 100) if poss_denom else 0
     a_pct = 100 - h_pct
+    # Territory 旧（x_coord 開始座標）
     total_atk_time = terr_den_h + terr_den_a
     if total_atk_time > 0:
         time_in_away_half = terr_num_h + (terr_den_a - terr_num_a)
@@ -981,6 +1004,14 @@ def cmd_match(args):
         a_terr = 100 - h_terr
     else:
         h_terr = a_terr = 0
+    # Territory v2（x_coord_end 終端座標 / BIP_v2 分母）
+    bip_v2_total = terr_den2_h + terr_den2_a  # = BIP_v2 (Poss+Sc+LO)
+    if bip_v2_total > 0:
+        time_kub_atk_v2 = terr_num2_h + (terr_den2_a - terr_num2_a)
+        h_terr_v2 = round(time_kub_atk_v2 / bip_v2_total * 100)
+        a_terr_v2 = 100 - h_terr_v2
+    else:
+        h_terr_v2 = a_terr_v2 = 0
     qd_h = quarter_stats(HOME_T)
     qd_a = quarter_stats(AWAY_T)
     score_events = events_for("Try") + events_for(
@@ -1019,6 +1050,8 @@ def cmd_match(args):
         "ball_in_play": {
             "total_fmt": mmss(at_tot), "h_fmt": mmss(at_h), "h_pct": h_pct,
             "a_fmt": mmss(at_a), "a_pct": a_pct, "h_terr": h_terr, "a_terr": a_terr,
+            # v2: BIP=Poss+Sc+LO, Territory=x_coord_end>50
+            "total_v2_fmt": mmss(bip_v2_total), "h_terr_v2": h_terr_v2, "a_terr_v2": a_terr_v2,
         },
         "score_events": score_events, "pen_events": pen_events, "error_events": error_events,
         "kick_events": kick_events, "miss_kick_events": miss_kick_events,
