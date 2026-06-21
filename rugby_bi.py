@@ -1114,7 +1114,7 @@ def cmd_match(args):
     TOT = {
         "h": {
             "pts": m["kubota_score"],
-            "tries": h_stats["tries"], "pos_t": mmss(at_h), "pos_p": h_pct, "ter_p": h_terr,
+            "tries": h_stats["tries"], "pos_t": mmss(at_h), "pos_p": h_pct, "ter_p": h_terr, "ter_p_v2": h_terr_v2,
             "car": h_stats["carries"], "mtr": h_stats["metres"], "amc": h_stats["avg_carry"],
             "pas": h_stats["passes"],
             "r2k": round(h_stats["rucks"] / h_stats["kicks"], 1) if h_stats["kicks"] else float(h_stats["rucks"]),
@@ -1124,7 +1124,7 @@ def cmd_match(args):
         },
         "a": {
             "pts": m["opponent_score"],
-            "tries": a_stats["tries"], "pos_t": mmss(at_a), "pos_p": a_pct, "ter_p": a_terr,
+            "tries": a_stats["tries"], "pos_t": mmss(at_a), "pos_p": a_pct, "ter_p": a_terr, "ter_p_v2": a_terr_v2,
             "car": a_stats["carries"], "mtr": a_stats["metres"], "amc": a_stats["avg_carry"],
             "pas": a_stats["passes"],
             "r2k": round(a_stats["rucks"] / a_stats["kicks"], 1) if a_stats["kicks"] else float(a_stats["rucks"]),
