@@ -3901,22 +3901,9 @@ function showSub(sid,subId,btn){
     ]
 
     # Try Source
+    # 旧 TS KPIグリッド: ① Team KPIs — Try Source（TS_SCORED/TS_CONC の kpi_grid 2列）を廃止。
+    # ロールバック時は ts_html の冒頭 <div style="margin-bottom:16px">...{legend} ブロックを復元。
     ts_html = f"""
-<div style="margin-bottom:16px">
-  <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#495057;padding-bottom:6px;border-bottom:2px solid #DEE2E6;margin-bottom:12px;display:flex;align-items:center;gap:6px">
-    <span style="display:block;width:3px;height:12px;border-radius:2px;background:#495057;flex-shrink:0"></span>① Team KPIs — Try Source
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-    <div>
-      <div style="font-size:11px;font-weight:600;color:#16A34A;font-family:'Oswald',sans-serif;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #16A34A22">✦ Scored</div>
-      {kpi_grid(TS_SCORED)}
-    </div>
-    <div>
-      <div style="font-size:11px;font-weight:600;color:#DC2626;font-family:'Oswald',sans-serif;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #DC262622">✦ Conceded</div>
-      {kpi_grid(TS_CONC)}
-    </div>
-  </div>
-</div>
 {legend}
 <div style="background:#fff;border:1px solid #DEE2E6;border-radius:8px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #F1F3F5">
@@ -4029,6 +4016,9 @@ function showSub(sid,subId,btn){
     # 旧: def セクション = cat_section('def',DEF,'Defence KPIs','Defence Rankings')
     # → atk/def ともに rank_section に変更（KPIカード廃止）。ロールバック時は下の各 <div id="..."> 行を戻す。
     # 旧: sp セクション → sp_html 変数を使用（KPIカード廃止）。ロールバック時は sp_html 変数と <div id="sp"> 行を元の f'''...''' 版に戻す。
+    # 旧: kick セクション → My Kicks/Opp Kicks kpi_dual ブロック廃止（ランキング部は2グループ維持）。ロールバック時は <div id="kick"> 冒頭の2ブロックを復元。
+    # 旧: ts セクション → ① Team KPIs ブロック廃止（ts_src_html ランキングは維持）。ロールバック時は ts_html 冒頭の kpi_grid ブロックを復元。
+    # 旧: lb22 セクション → Line Break KPIs + 22m KPIs 廃止（両ランキングは維持）。ロールバック時は <!-- 旧 LB/22m KPIs --> コメント以前のブロックを復元。
     return f"""<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Scout Report | {h_sht} vs {o_sht} | 2025-26 R1-R{max_round}</title>
@@ -4067,22 +4057,6 @@ function showSub(sid,subId,btn){
   <div id="atk"  class="section">{rank_section('atk',ATT,'Attack Rankings')}</div>
   <div id="def"  class="section">{rank_section('def',DEF,'Defence Rankings')}</div>
   <div id="kick" class="section">{f'''
-    <div style="margin-bottom:10px">
-      <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:#0891B211;border-radius:6px;border-left:3px solid #0891B2;margin-bottom:10px">
-        <span style="font-family:Oswald,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0891B2">👟 My Kicks</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-      {"".join(kpi_dual(l,c,a if a is not None else False,d,s) for l,c,a,d,s in KICK_OWN)}
-      </div>
-    </div>
-    <div style="margin-bottom:14px">
-      <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:#DC262611;border-radius:6px;border-left:3px solid #DC2626;margin-bottom:10px">
-        <span style="font-family:Oswald,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#DC2626">👟 Opp Kicks</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-      {"".join(kpi_dual(l,c,a if a is not None else False,d,s) for l,c,a,d,s in KICK_OPP)}
-      </div>
-    </div>
     {legend}
     <div style="background:#fff;border:1px solid #DEE2E6;border-radius:8px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #F1F3F5">
@@ -4125,15 +4099,7 @@ function showSub(sid,subId,btn){
   </div>
   <div id="ts"   class="section">{ts_html}</div>
   <div id="lb22" class="section">
-    <!-- LB KPIs -->
-    <div style="margin-bottom:14px">
-      <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:#D9770611;border-radius:6px;border-left:3px solid #D97706;margin-bottom:10px">
-        <span style="font-family:Oswald,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#D97706">⚡ Line Break KPIs</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px">
-      {"".join(kpi_dual(l,c,a if a is not None else False,d,s) for l,c,a,d,s in LB_RANK)}
-      </div>
-    </div>
+    <!-- 旧 LB KPIs: ⚡ Line Break KPIs kpi_dual グリッド廃止。ロールバック時は下記コメントを復元。 -->
     <!-- LB Rankings -->
     <div style="background:#fff;border:1px solid #DEE2E6;border-radius:8px;padding:18px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #F1F3F5">
@@ -4145,15 +4111,7 @@ function showSub(sid,subId,btn){
       {"".join(rank_card(l,c,a if a is not None else False,d,s) for l,c,a,d,s in LB_RANK)}
       </div>
     </div>
-    <!-- 22m KPIs -->
-    <div style="margin-bottom:14px">
-      <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:#0891B211;border-radius:6px;border-left:3px solid #0891B2;margin-bottom:10px">
-        <span style="font-family:Oswald,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0891B2">🎯 22m Strike Conversion KPIs</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px">
-      {"".join(kpi_dual(l,c,a if a is not None else False,d,s) for l,c,a,d,s in M22_RANK)}
-      </div>
-    </div>
+    <!-- 旧 22m KPIs: 🎯 22m Strike Conversion KPIs kpi_dual グリッド廃止。ロールバック時は下記コメントを復元。 -->
     <!-- 22m Rankings -->
     <div style="background:#fff;border:1px solid #DEE2E6;border-radius:8px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #F1F3F5">
