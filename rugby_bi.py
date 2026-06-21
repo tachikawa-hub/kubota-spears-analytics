@@ -3111,9 +3111,11 @@ def build_html(home, opp, master, detail, max_round, df=None):
         rows+=f'<tr style="border-top:2px solid #DEE2E6"><td style="font-size:9px;color:#aaa;padding:4px 6px;border:1px solid #DEE2E6">Total</td>{"".join(f"<td style=color:#aaa;font-size:10px;padding:4px;text-align:center;border:1px solid #DEE2E6>{t}</td>" for t in tots)}<td style="font-weight:700;font-size:10px;padding:4px;text-align:center;border:1px solid #DEE2E6">{total}</td></tr>'
         return f'<table style="width:100%;border-collapse:collapse;margin-top:6px"><tr><th style="font-size:8px;color:#aaa;padding:2px 4px"></th><th style="font-size:8px;color:#aaa;padding:2px 4px;text-align:center">1Ph</th><th style="font-size:8px;color:#aaa;padding:2px 4px;text-align:center">2/3Ph</th><th style="font-size:8px;color:#aaa;padding:2px 4px;text-align:center">4-6Ph</th><th style="font-size:8px;color:#aaa;padding:2px 4px;text-align:center">7+Ph</th><th style="font-size:8px;color:#aaa;padding:2px 4px;text-align:center">Tot</th></tr>{rows}</table>'
 
-    def outcome_bars(oc,total,tc):
+    def outcome_bars(oc,total,tc,water=False):
         order=['Try','Pen Won','Kick','Pen Con','Turnover','Other']
-        colors={'Try':'#16A34A','Pen Won':tc,'Kick':'#3B82F6','Pen Con':'#DC2626','Turnover':'#D97706','Other':'#9CA3AF'}
+        # 旧: colors={'Try':'#16A34A','Pen Won':tc,'Kick':'#3B82F6','Pen Con':'#DC2626','Turnover':'#D97706','Other':'#9CA3AF'}
+        WATER_C={'Try':'#0369A1','Pen Won':'#0EA5E9','Kick':'#38BDF8','Pen Con':'#7DD3FC','Turnover':'#BAE6FD','Other':'#E0F2FE'}
+        colors=WATER_C if water else {'Try':'#16A34A','Pen Won':tc,'Kick':'#3B82F6','Pen Con':'#DC2626','Turnover':'#D97706','Other':'#9CA3AF'}
         vals=[oc.get(k,0) for k in order]; mx=max(vals) if vals else 1; cols=""
         for k,v in zip(order,vals):
             h=round(v/mx*70) if mx else 0; pct=f"{v/total*100:.1f}%" if total else "0%"
@@ -3191,12 +3193,12 @@ def build_html(home, opp, master, detail, max_round, df=None):
           {slbl('Poss Start Area × Phase (Heatmap)')}{ap_heatmap(data["areaphase"],total,tc)}
         </div>'''
 
-    def lb_panel(data,tc,title,rank,avg,pc,nc):
+    def lb_panel(data,tc,title,rank,avg,pc,nc,water=False):
         total=data['total']
         return f'''<div style="background:#fff;border:1px solid #DEE2E6;border-radius:6px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
           {panel_hdr(title,total,rank,int(avg),tc,' LBs')}
           {conv_bar(data.get("outcome",{}),total,pc,nc)}
-          {slbl('Outcome')}{outcome_bars(data.get("outcome",{}),total,tc)}
+          {slbl('Outcome')}{outcome_bars(data.get("outcome",{}),total,tc,water)}
           {slbl('Phase of Break')}{phase_bars(data.get("phase",{}),tc)}
           {slbl('Breach Area')}<div style="display:flex;gap:6px">{ya_row(data.get("y_area",{}),tc)}</div>
           {slbl('Source')}{src_bars(data.get("src2",{}),total,tc)}
@@ -3845,6 +3847,8 @@ function showSub(sid,subId,btn){
     ov_html = rank_section('ov', OV, 'League Ranking')
 
     # Try Analysis
+    # 旧 Try Conceded 色: try_panel(h_tc,'#9CA3AF',...) / try_panel(o_tc,'#9CA3AF',...)
+    # → Spears=#0EA5E9（水色）/ 相手=#4B5563（濃いグレー）に変更
     try_html = f"""
 <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#495057;padding-bottom:6px;border-bottom:2px solid #DEE2E6;margin-bottom:12px;display:flex;align-items:center;gap:6px">
   <span style="display:block;width:3px;height:12px;border-radius:2px;background:#16A34A;flex-shrink:0"></span>Try Scored
@@ -3857,10 +3861,13 @@ function showSub(sid,subId,btn){
   <span style="display:block;width:3px;height:12px;border-radius:2px;background:#DC2626;flex-shrink:0"></span>Try Conceded
 </div>
 <div style="{two}">
-  {try_panel(h_tc,'#9CA3AF',h_sht+' — Try Conceded',tc_rank(home),tc_avg)}
-  {try_panel(o_tc,'#9CA3AF',o_sht+' — Try Conceded',tc_rank(opp),tc_avg)}
+  {try_panel(h_tc,'#0EA5E9',h_sht+' — Try Conceded',tc_rank(home),tc_avg)}
+  {try_panel(o_tc,'#4B5563',o_sht+' — Try Conceded',tc_rank(opp),tc_avg)}
 </div>"""
 
+    # 旧 LB Conceded 色: lb_panel(h_lc,'#9CA3AF',...,'#9CA3AF',h_col) / lb_panel(o_lc,'#9CA3AF',...,'#9CA3AF',o_col)
+    # → Spears: tc=#0EA5E9, pc=#7DD3FC（薄・相手成功）, nc=#0EA5E9（濃・我成功）, water=True
+    # → 相手:   tc=#4B5563, pc=#4B5563, nc=#6B7280
     # Line Break
     lb_html = f"""
 <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#495057;padding-bottom:6px;border-bottom:2px solid #DEE2E6;margin-bottom:12px;display:flex;align-items:center;gap:6px">
@@ -3874,8 +3881,8 @@ function showSub(sid,subId,btn){
   <span style="display:block;width:3px;height:12px;border-radius:2px;background:#DC2626;flex-shrink:0"></span>Line Breaks Conceded
 </div>
 <div style="{two}">
-  {lb_panel(h_lc,'#9CA3AF',h_sht+' — LB Conceded',lbc_rank(home),lbc_avg,'#9CA3AF',h_col)}
-  {lb_panel(o_lc,'#9CA3AF',o_sht+' — LB Conceded',lbc_rank(opp),lbc_avg,'#9CA3AF',o_col)}
+  {lb_panel(h_lc,'#0EA5E9',h_sht+' — LB Conceded',lbc_rank(home),lbc_avg,'#7DD3FC','#0EA5E9',water=True)}
+  {lb_panel(o_lc,'#4B5563',o_sht+' — LB Conceded',lbc_rank(opp),lbc_avg,'#4B5563','#6B7280')}
 </div>"""
 
     # LB Rankings & 22m Rankings
