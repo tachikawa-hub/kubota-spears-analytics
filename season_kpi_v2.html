@@ -193,7 +193,8 @@
        const it=itTable(baseCols.concat([
          {h:'Ball In Play (min)',fn:r=>f1(r.at_tot/60)},
          {h:'Possession %',fn:r=>r.poss_den?f1(r.at_kub/r.poss_den*100):'-'},
-         {h:'Territory %',fn:r=>r.terr_den?f1(r.terr_num/r.terr_den*100):'-'},
+         /* OLD: {h:'Territory %',fn:r=>r.terr_den?f1(r.terr_num/r.terr_den*100):'-'}, */
+         {h:'Territory %',fn:r=>r.terr_den_v2?f1(r.terr_num_v2/r.terr_den_v2*100):'-'},
          {h:'Tries Scored',fn:r=>r.tries},
          {h:'Tries Conceded',fn:r=>r.tries_conceded},
          {h:'Turnover Rate %',fn:r=>f1(r.to_con/r.attacks*100)},
@@ -219,7 +220,8 @@
        const it=itTable(baseCols.concat([
          {h:'Ball In Play (min)',fn:r=>f1(r.at_tot/60)},
          {h:'Possession %',fn:r=>r.poss_den?f1(r.at_kub/r.poss_den*100):'-'},
-         {h:'Territory %',fn:r=>r.terr_den?f1(r.terr_num/r.terr_den*100):'-'},
+         /* OLD: {h:'Territory %',fn:r=>r.terr_den?f1(r.terr_num/r.terr_den*100):'-'}, */
+         {h:'Territory %',fn:r=>r.terr_den_v2?f1(r.terr_num_v2/r.terr_den_v2*100):'-'},
          {h:'Kicks In Play',fn:r=>r.kicks},
          {h:'Kick Metres',fn:r=>r.km},
          {h:'Avg Metres / Kick',fn:r=>r.kicks?f1(r.km/r.kicks):'-'},

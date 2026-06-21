@@ -1999,7 +1999,8 @@ def cmd_kpi(args=None):
        const it=itTable(baseCols.concat([
          {h:'Ball In Play (min)',fn:r=>f1(r.at_tot/60)},
          {h:'Possession %',fn:r=>r.poss_den?f1(r.at_kub/r.poss_den*100):'-'},
-         {h:'Territory %',fn:r=>r.terr_den?f1(r.terr_num/r.terr_den*100):'-'},
+         /* OLD: {h:'Territory %',fn:r=>r.terr_den?f1(r.terr_num/r.terr_den*100):'-'}, */
+         {h:'Territory %',fn:r=>r.terr_den_v2?f1(r.terr_num_v2/r.terr_den_v2*100):'-'},
          {h:'Tries Scored',fn:r=>r.tries},
          {h:'Tries Conceded',fn:r=>r.tries_conceded},
          {h:'Turnover Rate %',fn:r=>f1(r.to_con/r.attacks*100)},
@@ -2025,7 +2026,8 @@ def cmd_kpi(args=None):
        const it=itTable(baseCols.concat([
          {h:'Ball In Play (min)',fn:r=>f1(r.at_tot/60)},
          {h:'Possession %',fn:r=>r.poss_den?f1(r.at_kub/r.poss_den*100):'-'},
-         {h:'Territory %',fn:r=>r.terr_den?f1(r.terr_num/r.terr_den*100):'-'},
+         /* OLD: {h:'Territory %',fn:r=>r.terr_den?f1(r.terr_num/r.terr_den*100):'-'}, */
+         {h:'Territory %',fn:r=>r.terr_den_v2?f1(r.terr_num_v2/r.terr_den_v2*100):'-'},
          {h:'Kicks In Play',fn:r=>r.kicks},
          {h:'Kick Metres',fn:r=>r.km},
          {h:'Avg Metres / Kick',fn:r=>r.kicks?f1(r.km/r.kicks):'-'},
@@ -2427,13 +2429,21 @@ def compute_stats(df, max_round):
     bip_pg = pd.Series(bip_dict)
     def_pg = bip_pg - atk_pg
 
+    # OLD: Poss のみ（ロールバック用）
+    # poss_pct = {}
+    # for t in teams:
+    #     a = poss_dur[poss_dur['teamName']==t].groupby('FXID')['dur'].sum()
+    #     d = poss_dur[poss_dur['oppTeam']==t].groupby('FXID')['dur'].sum()
+    #     c = a.index.intersection(d.index)
+    #     tot = a[c].sum()+d[c].sum()
+    #     poss_pct[t] = round(a[c].sum()/tot*100,1) if tot else 0
+    # v2: Poss+Sc+LO / BIP_v2（マッチレポートと同一定義）
     poss_pct = {}
     for t in teams:
-        a = poss_dur[poss_dur['teamName']==t].groupby('FXID')['dur'].sum()
-        d = poss_dur[poss_dur['oppTeam']==t].groupby('FXID')['dur'].sum()
-        c = a.index.intersection(d.index)
-        tot = a[c].sum()+d[c].sum()
-        poss_pct[t] = round(a[c].sum()/tot*100,1) if tot else 0
+        fxids = df[df['teamName']==t]['FXID'].unique()
+        num = sum(atk_m.get((t, f), 0) for f in fxids)
+        den = sum(bip_fxid.get(f, 0) for f in fxids)
+        poss_pct[t] = round(num / den * 100, 1) if den else 0
 
     # Territory v2: 中点座標 (x_start+x_end)/2 >50 で判定・BIP_v2 分母・ゼロサム式
     _bip_acts = ['Possession','Scrum','Lineout Throw']
