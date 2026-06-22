@@ -2080,9 +2080,11 @@ def cmd_kpi(args=None):
          // 旧: ['regain','Contest Ret','Own Player – Collected /match',1,true],
          ['regain','Contest Retained','Own Player - Collected / Pressure Error / Pressure in Touch / Try Kick /match',1,true],
          ['hg','Kick Hit Grass','Collected Bounce /match',1,null],
-         ['gk_pct','Goal Kicking %','goals ÷ attempts',1,true],
-         ['trate','Turnover Rate %','(PossTO+LOLost+SCLost)÷(Poss+LOLost+SCLost)',1,false],
-         ['opp_h_trate','Opp Half TO Rate %','same formula, x_coord≥50のみ',1,false],
+         // 旧: ['gk_pct','Goal Kicking %','goals ÷ attempts',1,true],
+         // 旧: ['trate','Turnover Rate %','(PossTO+LOLost+SCLost)÷(Poss+LOLost+SCLost)',1,false],
+         // 旧: ['opp_h_trate','Opp Half TO Rate %','same formula, x_coord≥50のみ',1,false],
+         ['e22','22m Entries','Enters+Starts into Opposition 22 /match',1,true],
+         ['kub_success','22m Strike Conv %','(Try+PG)÷Attacking 22 Entry×100 /match avg',1,true],
        ]);
        const it=itTable(baseCols.concat([
          {h:'Ball In Play (min)',fn:r=>f1(r.at_tot/60)},
@@ -2096,9 +2098,11 @@ def cmd_kpi(args=None):
          // 旧: {h:'Contest Ret',fn:r=>r.regain},
          {h:'Contest Retained',fn:r=>r.regain},
          {h:'Kick Hit Grass',fn:r=>r.hg},
-         /* 旧: {h:'Turnover Rate %',fn:r=>f1(r.to_con/r.attacks*100)}, */
-         {h:'Turnover Rate %',fn:r=>(r.attacks+r.lo_lost+r.sc_lost)?f1((r.poss_to+r.lo_lost+r.sc_lost)/(r.attacks+r.lo_lost+r.sc_lost)*100):'-'},
-         {h:'Opp Half TO Rate %',fn:r=>(r.opp_h_poss_n+r.opp_h_lo_lost+r.opp_h_sc_lost)?f1((r.opp_h_poss_to+r.opp_h_lo_lost+r.opp_h_sc_lost)/(r.opp_h_poss_n+r.opp_h_lo_lost+r.opp_h_sc_lost)*100):'-'},
+         // 旧: {h:'Goal Kicking %',fn:r=>r.gk_att?f1(r.gk_made/r.gk_att*100)+'%':'-'},
+         // 旧: {h:'Turnover Rate %',fn:r=>(r.attacks+r.lo_lost+r.sc_lost)?f1((r.poss_to+r.lo_lost+r.sc_lost)/(r.attacks+r.lo_lost+r.sc_lost)*100):'-'},
+         // 旧: {h:'Opp Half TO Rate %',fn:r=>(r.opp_h_poss_n+r.opp_h_lo_lost+r.opp_h_sc_lost)?...},
+         {h:'22m Entries',fn:r=>r.e22},
+         {h:'22m Strike Conv %',fn:r=>r.e22?f1(r.kub_success_pct)+'%':'-'},
        ]));
        return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
          <div class="sec-title">Match-by-match</div>${it}
