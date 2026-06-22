@@ -2600,6 +2600,31 @@ def compute_stats(df, max_round):
     res['OV_DefenceTime_min']  = def_pg.round(1)
     res['OV_PointsScored']     = pd.Series(pts_s)
     res['OV_TriesScored']      = tries_a.groupby('teamName').size()
+    # Turnover Rate = (PossTO + LOlost + SClost) / (Poss + LOlost + SClost) × 100
+    _lo_lost = lo_throw[lo_throw['ActionResultName'].str.startswith('Lost', na=False)]
+    _sc_lost = scrum[scrum['ActionResultName'].isin(SL)]
+    _poss_to = poss[poss['ActionResultName'].isin(['Turnover','Turnover (Scrum)'])]
+    _lo_lost_n = _lo_lost.groupby('teamName').size()
+    _sc_lost_n = _sc_lost.groupby('teamName').size()
+    _poss_to_n = _poss_to.groupby('teamName').size()
+    _poss_n    = poss.groupby('teamName').size()
+    _to_den    = _poss_n.add(_lo_lost_n, fill_value=0).add(_sc_lost_n, fill_value=0)
+    _to_num    = _poss_to_n.add(_lo_lost_n, fill_value=0).add(_sc_lost_n, fill_value=0)
+    res['OV_TORate_pct']       = (_to_num / _to_den * 100).round(1)
+    # Turnover Rate at Opposition Half (x_coord >= 50)
+    poss_xok    = poss[poss['x_coord'].notna()].copy()
+    poss_xok['_x'] = poss_xok['x_coord'].astype(float)
+    lo_lost_xok = _lo_lost[_lo_lost['x_coord'].notna()].copy()
+    lo_lost_xok['_x'] = lo_lost_xok['x_coord'].astype(float)
+    sc_lost_xok = _sc_lost[_sc_lost['x_coord'].notna()].copy()
+    sc_lost_xok['_x'] = sc_lost_xok['x_coord'].astype(float)
+    _opp_poss   = poss_xok[poss_xok['_x'] >= 50]
+    _opp_lo     = lo_lost_xok[lo_lost_xok['_x'] >= 50]
+    _opp_sc     = sc_lost_xok[sc_lost_xok['_x'] >= 50]
+    _opp_pto    = _opp_poss[_opp_poss['ActionResultName'].isin(['Turnover','Turnover (Scrum)'])]
+    _opp_to_den = _opp_poss.groupby('teamName').size().add(_opp_lo.groupby('teamName').size(), fill_value=0).add(_opp_sc.groupby('teamName').size(), fill_value=0)
+    _opp_to_num = _opp_pto.groupby('teamName').size().add(_opp_lo.groupby('teamName').size(), fill_value=0).add(_opp_sc.groupby('teamName').size(), fill_value=0)
+    res['OV_OppTORate_pct']    = (_opp_to_num / _opp_to_den * 100).round(1)
     res['OV_RuckToKick']       = (ki/ro).round(3)
     res['OV_PassToKick']       = (passes_no.groupby('teamName').size()/ki).round(1)
     res['OV_KicksInPlay_PG']   = (ki/m).round(1)
@@ -2982,6 +3007,8 @@ def build_html(home, opp, master, detail, max_round, df=None):
         ('Defence Time','OV_DefenceTime_min',True,1,'min'),
         ('Points Scored','OV_PointsScored',False,0,''),
         ('Tries Scored','OV_TriesScored',False,0,''),
+        ('Turnover Rate %','OV_TORate_pct',True,1,'%'),
+        ('Opp Half TO Rate %','OV_OppTORate_pct',True,1,'%'),
         ('Ruck to Kick','OV_RuckToKick',None,3,''),
         ('Pass to Kick','OV_PassToKick',None,1,''),
         ('Kicks in Play / G','OV_KicksInPlay_PG',False,1,''),
@@ -3839,6 +3866,8 @@ function showSub(sid,subId,btn){
             'label': 'Attack', 'color': h_col, 'icon': '⚡',
             'metrics': [
                 ('Tries Scored',          'OV_TriesScored',       False, 0, ''),
+                ('Turnover Rate %',       'OV_TORate_pct',        True,  1, '%'),
+                ('Opp Half TO Rate %',    'OV_OppTORate_pct',     True,  1, '%'),
                 ('Gainline %',            'ATT_Gainline_pct',     False, 1, '%'),
                 ('Line Breaks / G',       'OV_LineBreaks_PG',     False, 2, ''),
                 ('Kicks in Play / G',     'KICK_KicksIP_PG',      False, 1, ''),
