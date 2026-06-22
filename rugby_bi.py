@@ -1400,6 +1400,7 @@ def cmd_kpi(args=None):
         opp_lqb = CT(fx, ot, action_name="Ruck",
                      qualifier4_name={"0-1 Seconds", "1-2 Seconds", "2-3 Seconds"})
         tries_conceded = CT(fx, ot, action_name="Try")
+        opp_db = CT(fx, ot, action_name="Attacking Qualities", action_type_name="Defender Beaten")
         opp_e22 = CT(fx, ot, action_name="Possession",
                      qualifier4_name={"Enters into Opposition 22", "Starts inside Opposition 22"})
         # Opponent 22m success rate: Attacking 22 Entry outcomes (Try + Penalty Goal Attempt)
@@ -1500,7 +1501,7 @@ def cmd_kpi(args=None):
             "opp_carries": opp_carries, "opp_glo": opp_glo,
             "opp_ruck_gl_d": opp_ruck_gl_d,
             "opp_rucks": opp_rucks, "opp_lqb": opp_lqb,
-            "tries_conceded": tries_conceded, "opp_e22": opp_e22,
+            "tries_conceded": tries_conceded, "opp_db": opp_db, "opp_e22": opp_e22,
             "opp_success_pct": opp_success_pct,
             "kub_success_pct": kub_success_pct,
         }
@@ -1780,6 +1781,7 @@ def cmd_kpi(args=None):
             # 旧: "opp_gl": rate(recs, "opp_glo", "opp_carries"),
             "opp_gl": rate(recs, "opp_glo", "opp_ruck_gl_d"),
             "opp_lqb": rate(recs, "opp_lqb", "opp_rucks"),
+            "opp_db": mn(recs, "opp_db"),
             "opp_e22": mn(recs, "opp_e22"),
             "opp_success": mn(recs, "opp_success_pct"),
             # set piece
@@ -2104,6 +2106,7 @@ def cmd_kpi(args=None):
          ['oa','Offloads Allowed','per match',1,false],
          ['tw','Turnovers Won','Poss TO + Jackal /match',1,true],
          ['pen','Penalties Conceded','per match',1,false],
+         ['opp_db','Opp Defenders Beaten','opponent Attacking Qualities/Defender Beaten /match',1,false],
          ['opp_gl','Opponent Gainline %','Ruck Gainline: opponent Over Previous Gainline ÷ (548+549+550)',1,false],
          ['opp_lqb','Opponent LQB %','opponent rucks ≤3s',1,false],
          ['tries_con','Tries Conceded','per match',1,false],
@@ -2118,6 +2121,7 @@ def cmd_kpi(args=None):
          {h:'Dominant Tackle %',fn:r=>r.tk?f1(r.dom/r.tk*100):'-'},
          {h:'Turnovers Won',fn:r=>r.tw},
          {h:'Infringements',fn:r=>r.pen},
+         {h:'Opp Defenders Beaten',hcls:'opp',cls:'oppcol',fn:r=>r.opp_db},
          // 旧: {h:'Opponent Gainline %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_carries?f1(r.opp_glo/r.opp_carries*100):'-'},
          {h:'Opponent Gainline %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_ruck_gl_d?f1(r.opp_glo/r.opp_ruck_gl_d*100):'-'},
          {h:'Opponent LQB %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_rucks?f1(r.opp_lqb/r.opp_rucks*100):'-'},
@@ -2649,7 +2653,15 @@ def compute_stats(df, max_round):
     res['DEF_TackleAtt_PG']    = (t_att/m).round(1)
     res['DEF_TackleMiss_PG']   = (missed_t.groupby('teamName').size()/m).round(1)
     res['DEF_TackleSuccess_pct']= t_succ
+    _dom_t = tackles[tackles['qualifier4Name']=='Dominant Tackle']
+    _t_made = tackles[tackles['ActionResultName']!='Missed']
+    res['DEF_DomTackle_pct']   = (_dom_t.groupby('teamName').size() / _t_made.groupby('teamName').size() * 100).round(1)
     res['DEF_OffloadAllow_PG'] = (tackles[tackles['ActionResultName']=='Offload Allowed'].groupby('teamName').size()/m).round(2)
+    _passive_t = tackles[tackles['ActionResultName']=='Passive']
+    res['DEF_PassiveTackle_PG']= (_passive_t.groupby('teamName').size()/m).round(1)
+    aq = df[df['actionName']=='Attacking Qualities']
+    _opp_db = aq[aq['ActionTypeName']=='Defender Beaten'].groupby('oppTeam').size()
+    res['DEF_OppDB_PG']        = (_opp_db/m).round(1)
     # 旧: res['DEF_GainlineConc_pct'] = (carries[carries['qualifier3Name']=='Crossed Gain line'].groupby('oppTeam').size()/carries.groupby('oppTeam').size()*100).round(1)
     _orgl_n = ruck[ruck['qualifier3']==548].groupby('oppTeam').size()
     # 旧: _orgl_d = ruck[ruck['qualifier3'].isin([548,549,550,551])].groupby('oppTeam').size()
@@ -3006,7 +3018,10 @@ def build_html(home, opp, master, detail, max_round, df=None):
         ('Tackle Attempts / G','DEF_TackleAtt_PG',True,1,''),
         ('Tackle Miss / G','DEF_TackleMiss_PG',True,1,''),
         ('Tackle Success %','DEF_TackleSuccess_pct',False,1,'%'),
+        ('Dominant Tackle %','DEF_DomTackle_pct',False,1,'%'),
         ('Offload Allowed / G','DEF_OffloadAllow_PG',True,2,''),
+        ('Passive Tackle / G','DEF_PassiveTackle_PG',True,1,''),
+        ('Opp Def Beaten / G','DEF_OppDB_PG',True,1,''),
         ('Def Gainline %','DEF_GainlineConc_pct',True,1,'%'),
         ('Def LQB %','DEF_LQBConc_pct',True,1,'%'),
         ('Turnover Won / G','DEF_TurnoverWon_PG',False,2,''),
