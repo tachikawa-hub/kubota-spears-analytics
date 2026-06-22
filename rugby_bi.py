@@ -4085,19 +4085,9 @@ function showSub(sid,subId,btn){
         <div style="width:26px;height:26px;border-radius:50%;background:#F8F9FA;border:1px solid #DEE2E6;display:flex;align-items:center;justify-content:center;font-size:13px">🏆</div>
         <div style="font-family:Oswald,sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#495057">Set Piece Rankings</div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
-        <div>
-          <div style="font-family:Oswald,sans-serif;font-size:11px;font-weight:600;color:#7C3AED;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #7C3AED22">🏃 Lineout</div>
-          <div style="display:flex;flex-direction:column;gap:8px">{"".join(rank_card(l,c,a if a is not None else False,d,s) for l,c,a,d,s in SP_LINEOUT)}</div>
-        </div>
-        <div>
-          <div style="font-family:Oswald,sans-serif;font-size:11px;font-weight:600;color:#0891B2;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #0891B222">💪 Maul</div>
-          <div style="display:flex;flex-direction:column;gap:8px">{"".join(rank_card(l,c,a if a is not None else False,d,s) for l,c,a,d,s in SP_MAUL)}</div>
-        </div>
-        <div>
-          <div style="font-family:Oswald,sans-serif;font-size:11px;font-weight:600;color:#D97706;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #D9770622">🔄 Scrum</div>
-          <div style="display:flex;flex-direction:column;gap:8px">{"".join(rank_card(l,c,a if a is not None else False,d,s) for l,c,a,d,s in SP_SCRUM)}</div>
-        </div>
+      <!-- 旧 SP: repeat(3,1fr);gap:14px 3カラム、Lineout/Maul/Scrum カテゴリ見出し付き。ロールバック: git show ea9e4f4:rugby_bi.py 参照 -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        {"".join(rank_card(l,c,a if a is not None else False,d,s) for l,c,a,d,s in SP_LINEOUT + SP_SCRUM + SP_MAUL)}
       </div>
     </div>
   </div>
