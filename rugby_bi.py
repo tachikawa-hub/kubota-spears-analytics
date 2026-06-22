@@ -1446,6 +1446,33 @@ def cmd_kpi(args=None):
             if grp:
                 pen_pos[grp] += 1
     
+        # Turnover Rate 確定式: (PossTO + LOLost + SCLost) / (Poss + LOLost + SCLost)
+        poss_to_n = cur.execute(
+            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
+            "AND action_name='Possession' AND action_result_name IN ('Turnover','Turnover (Scrum)')",
+            (fx, TEAM)).fetchone()[0]
+        # Opp Half TO Rate: x_coord >= 50 限定
+        opp_h_poss_n = cur.execute(
+            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
+            "AND action_name='Possession' AND x_coord IS NOT NULL AND x_coord!='' "
+            "AND CAST(x_coord AS REAL) >= 50", (fx, TEAM)).fetchone()[0]
+        opp_h_poss_to = cur.execute(
+            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
+            "AND action_name='Possession' AND action_result_name IN ('Turnover','Turnover (Scrum)') "
+            "AND x_coord IS NOT NULL AND x_coord!='' AND CAST(x_coord AS REAL) >= 50",
+            (fx, TEAM)).fetchone()[0]
+        opp_h_lo_lost = cur.execute(
+            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
+            "AND action_name='Lineout Throw' AND action_result_name LIKE 'Lost%' "
+            "AND x_coord IS NOT NULL AND x_coord!='' AND CAST(x_coord AS REAL) >= 50",
+            (fx, TEAM)).fetchone()[0]
+        opp_h_sc_lost = cur.execute(
+            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
+            "AND action_name='Scrum' "
+            "AND action_result_name NOT LIKE 'Won%' AND action_result_name!='Reset' "
+            "AND x_coord IS NOT NULL AND x_coord!='' AND CAST(x_coord AS REAL) >= 50",
+            (fx, TEAM)).fetchone()[0]
+
         rec = {
             "fxid": fx, "date": m["date_played"], "opp": m["opponent_name"],
             "ha": "H" if m["kubota_is_home"] else "A",
@@ -1485,7 +1512,9 @@ def cmd_kpi(args=None):
             "s22": C(fx, action_name="Possession", qualifier4_name="Starts inside Opposition 22"),
             "tries": C(fx, action_name="Try"),
             "pen": C(fx, action_name="Penalty Conceded"),
+            # 旧: "to_con": C(fx, action_name="Turnover"),  # 全Turnoverイベント (34.69%の旧定義)
             "to_con": C(fx, action_name="Turnover"),
+            "poss_to": poss_to_n,  # Possession WHERE result IN ('Turnover','Turnover (Scrum)')
             "attacks": C(fx, action_name="Possession"),
             "tk": tk, "mt": mt,
             "dom": C(fx, action_name="Tackle", qualifier4_name="Dominant Tackle"),
@@ -1496,6 +1525,7 @@ def cmd_kpi(args=None):
             "lo_throw": lo_throw, "lo_won": lo_won, "lo_lost": lo_throw - lo_won,
             "lo_steal": lo_steal,
             "sc_tot": sc_tot, "sc_won": sc_won, "sc_reset": sc_reset,
+            "sc_lost": sc_tot - sc_reset - sc_won,  # 確定式の分母・分子に使用
             "ma_tot": ma_tot, "ma_won": ma_won, "ma_try": ma_try, "ma_m": int(ma_m),
             # opponent stats
             "opp_carries": opp_carries, "opp_glo": opp_glo,
@@ -1504,6 +1534,9 @@ def cmd_kpi(args=None):
             "tries_conceded": tries_conceded, "opp_db": opp_db, "opp_e22": opp_e22,
             "opp_success_pct": opp_success_pct,
             "kub_success_pct": kub_success_pct,
+            # Opp Half TO Rate components (x_coord >= 50)
+            "opp_h_poss_n": opp_h_poss_n, "opp_h_poss_to": opp_h_poss_to,
+            "opp_h_lo_lost": opp_h_lo_lost, "opp_h_sc_lost": opp_h_sc_lost,
         }
         per_match.append(rec)
     
@@ -1749,7 +1782,15 @@ def cmd_kpi(args=None):
             "terr": rate(recs, "terr_num_v2", "terr_den_v2"),          # v2（中点・BIP_v2）
             "tries": mn(recs, "tries"),
             "tries_con": mn(recs, "tries_conceded"),
-            "trate": rate(recs, "to_con", "attacks"),
+            # 旧: "trate": rate(recs, "to_con", "attacks"),  # Turnover÷Possession (34.69% 旧定義)
+            "trate": (
+                sum(r["poss_to"] + r["lo_lost"] + r["sc_lost"] for r in recs) /
+                max(1, sum(r["attacks"] + r["lo_lost"] + r["sc_lost"] for r in recs)) * 100
+            ),  # 確定式: (PossTO+LOLost+SCLost)/(Poss+LOLost+SCLost)
+            "opp_h_trate": (
+                sum(r["opp_h_poss_to"] + r["opp_h_lo_lost"] + r["opp_h_sc_lost"] for r in recs) /
+                max(1, sum(r["opp_h_poss_n"] + r["opp_h_lo_lost"] + r["opp_h_sc_lost"] for r in recs)) * 100
+            ),  # 敵陣Turnover Rate (x_coord>=50)
             "pen": mn(recs, "pen"),
             # kicking
             "kicks": mn(recs, "kicks"), "km": mn(recs, "km"),
@@ -2008,7 +2049,8 @@ def cmd_kpi(args=None):
          ['terr','Territory %','action-time in opp half (x 51–110)',1,true],
          ['tries','Tries Scored','per match',1,true],
          ['tries_con','Tries Conceded','per match',1,false],
-         ['trate','Turnover Rate %','TO conceded ÷ attacks',1,false],
+         ['trate','Turnover Rate %','(PossTO+LOLost+SCLost)÷(Poss+LOLost+SCLost)',1,false],
+         ['opp_h_trate','Opp Half TO Rate %','same formula, x_coord≥50のみ',1,false],
          ['pen','Penalties Conceded','per match',1,false],
        ]);
        const it=itTable(baseCols.concat([
@@ -2018,7 +2060,9 @@ def cmd_kpi(args=None):
          {h:'Territory %',fn:r=>r.terr_den_v2?f1(r.terr_num_v2/r.terr_den_v2*100):'-'},
          {h:'Tries Scored',fn:r=>r.tries},
          {h:'Tries Conceded',fn:r=>r.tries_conceded},
-         {h:'Turnover Rate %',fn:r=>f1(r.to_con/r.attacks*100)},
+         /* 旧: {h:'Turnover Rate %',fn:r=>f1(r.to_con/r.attacks*100)}, */
+         {h:'Turnover Rate %',fn:r=>(r.attacks+r.lo_lost+r.sc_lost)?f1((r.poss_to+r.lo_lost+r.sc_lost)/(r.attacks+r.lo_lost+r.sc_lost)*100):'-'},
+         {h:'Opp Half TO Rate %',fn:r=>(r.opp_h_poss_n+r.opp_h_lo_lost+r.opp_h_sc_lost)?f1((r.opp_h_poss_to+r.opp_h_lo_lost+r.opp_h_sc_lost)/(r.opp_h_poss_n+r.opp_h_lo_lost+r.opp_h_sc_lost)*100):'-'},
          {h:'Penalties Conceded',fn:r=>r.pen},
        ]));
        return `<div class="cards">${cards}</div>
@@ -2037,7 +2081,8 @@ def cmd_kpi(args=None):
          ['regain','Contest Retained','Own Player - Collected / Pressure Error / Pressure in Touch / Try Kick /match',1,true],
          ['hg','Kick Hit Grass','Collected Bounce /match',1,null],
          ['gk_pct','Goal Kicking %','goals ÷ attempts',1,true],
-         ['trate','Turnover Rate %','TO conceded ÷ attacks',1,false],
+         ['trate','Turnover Rate %','(PossTO+LOLost+SCLost)÷(Poss+LOLost+SCLost)',1,false],
+         ['opp_h_trate','Opp Half TO Rate %','same formula, x_coord≥50のみ',1,false],
        ]);
        const it=itTable(baseCols.concat([
          {h:'Ball In Play (min)',fn:r=>f1(r.at_tot/60)},
@@ -2051,7 +2096,9 @@ def cmd_kpi(args=None):
          // 旧: {h:'Contest Ret',fn:r=>r.regain},
          {h:'Contest Retained',fn:r=>r.regain},
          {h:'Kick Hit Grass',fn:r=>r.hg},
-         {h:'Turnover Rate %',fn:r=>f1(r.to_con/r.attacks*100)},
+         /* 旧: {h:'Turnover Rate %',fn:r=>f1(r.to_con/r.attacks*100)}, */
+         {h:'Turnover Rate %',fn:r=>(r.attacks+r.lo_lost+r.sc_lost)?f1((r.poss_to+r.lo_lost+r.sc_lost)/(r.attacks+r.lo_lost+r.sc_lost)*100):'-'},
+         {h:'Opp Half TO Rate %',fn:r=>(r.opp_h_poss_n+r.opp_h_lo_lost+r.opp_h_sc_lost)?f1((r.opp_h_poss_to+r.opp_h_lo_lost+r.opp_h_sc_lost)/(r.opp_h_poss_n+r.opp_h_lo_lost+r.opp_h_sc_lost)*100):'-'},
        ]));
        return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
          <div class="sec-title">Match-by-match</div>${it}
@@ -3169,10 +3216,11 @@ def build_html(home, opp, master, detail, max_round, df=None):
 
     def time_bars(td,tc):
         bins=['0-10','10-20','20-30','30-40','40-50','50-60','60-70','70-80']
-        vals=[td.get(b,0) for b in bins]; mx=max(vals) if vals else 1; out=""
+        vals=[td.get(b,0) for b in bins]; mx=max(vals) if vals else 1; tot=sum(vals); out=""
         for b,v in zip(bins,vals):
             h=round(v/mx*40) if mx else 0
-            out+=f'<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end"><div style="font-size:8px;font-weight:600;margin-bottom:1px">{v or ""}</div><div style="width:100%;height:{h}px;background:{tc};opacity:.85;border-radius:2px 2px 0 0;min-height:2px"></div><div style="font-size:7px;color:#aaa;margin-top:2px">{b}</div></div>'
+            pct=f'<span style="font-size:6px;font-weight:400;color:#6C757D">{v/tot*100:.0f}%</span>' if v and tot else ''
+            out+=f'<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end"><div style="font-size:8px;font-weight:600;margin-bottom:1px">{v or ""}{pct}</div><div style="width:100%;height:{h}px;background:{tc};opacity:.85;border-radius:2px 2px 0 0;min-height:2px"></div><div style="font-size:7px;color:#aaa;margin-top:2px">{b}</div></div>'
         return f'<div style="display:flex;gap:3px;align-items:flex-end;height:48px">{out}</div>'
 
     def ap_heatmap(ap,total,tc):
@@ -3181,7 +3229,7 @@ def build_html(home, opp, master, detail, max_round, df=None):
         mx=max((apm.get(a,{}).get(p,0) for a in areas for p in phases),default=1)
         rows=""
         for a in areas:
-            row=apm.get(a,{}); rt=sum(row.get(p,0) for p in phases); cells=""
+            row=apm.get(a,{}); rt=sum(row.get(p,0) for p in phases); rt_pct=f'<br><span style="font-size:8px;color:#6C757D">{rt/total*100:.0f}%</span>' if total else ''; cells=""
             for p in phases:
                 v=row.get(p,0)
                 if v>0:
@@ -3190,7 +3238,7 @@ def build_html(home, opp, master, detail, max_round, df=None):
                     cells+=f'<td style="background:{tc}{ah};color:{txt};font-weight:600;padding:4px;text-align:center;font-family:Oswald,sans-serif;font-size:11px;border:1px solid #DEE2E6">{v}</td>'
                 else:
                     cells+=f'<td style="color:#ccc;padding:4px;text-align:center;font-size:11px;border:1px solid #DEE2E6">—</td>'
-            rows+=f'<tr><td style="font-size:9px;color:#6C757D;padding:4px 6px;border:1px solid #DEE2E6">{a}</td>{cells}<td style="color:#6C757D;font-size:10px;padding:4px;text-align:center;border:1px solid #DEE2E6">{rt}</td></tr>'
+            rows+=f'<tr><td style="font-size:9px;color:#6C757D;padding:4px 6px;border:1px solid #DEE2E6">{a}</td>{cells}<td style="color:#6C757D;font-size:10px;padding:4px;text-align:center;border:1px solid #DEE2E6">{rt}{rt_pct}</td></tr>'
         tots=[sum(apm.get(a,{}).get(p,0) for a in areas) for p in phases]
         rows+=f'<tr style="border-top:2px solid #DEE2E6"><td style="font-size:9px;color:#aaa;padding:4px 6px;border:1px solid #DEE2E6">Total</td>{"".join(f"<td style=color:#aaa;font-size:10px;padding:4px;text-align:center;border:1px solid #DEE2E6>{t}</td>" for t in tots)}<td style="font-weight:700;font-size:10px;padding:4px;text-align:center;border:1px solid #DEE2E6">{total}</td></tr>'
         return f'<table style="width:100%;border-collapse:collapse;margin-top:6px"><tr><th style="font-size:8px;color:#aaa;padding:2px 4px"></th><th style="font-size:8px;color:#aaa;padding:2px 4px;text-align:center">1Ph</th><th style="font-size:8px;color:#aaa;padding:2px 4px;text-align:center">2/3Ph</th><th style="font-size:8px;color:#aaa;padding:2px 4px;text-align:center">4-6Ph</th><th style="font-size:8px;color:#aaa;padding:2px 4px;text-align:center">7+Ph</th><th style="font-size:8px;color:#aaa;padding:2px 4px;text-align:center">Tot</th></tr>{rows}</table>'
@@ -3224,14 +3272,21 @@ def build_html(home, opp, master, detail, max_round, df=None):
         </div>'''
 
     def phase_bars(ph,tc):
-        order=['1 Phase','2/3 Phase','4-6 Phase','7+ Phase']; vals=[ph.get(p,0) for p in order]; mx=max(vals) if vals else 1; out=""
+        order=['1 Phase','2/3 Phase','4-6 Phase','7+ Phase']
+        lbl={'1 Phase':'1 Phase','2/3 Phase':'2-3 Phase','4-6 Phase':'4-6 Phase','7+ Phase':'7+ Phase'}
+        vals=[ph.get(p,0) for p in order]; mx=max(vals) if vals else 1; tot=sum(vals); out=""
         for p,v in zip(order,vals):
             h=round(v/mx*48) if mx else 0
-            out+=f'<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end"><div style="font-size:9px;font-weight:600;margin-bottom:1px">{v}</div><div style="width:100%;height:{h}px;background:{tc};opacity:.85;border-radius:2px 2px 0 0;min-height:2px"></div><div style="font-size:8px;color:#aaa;margin-top:2px">{p.replace(" Phase","")}</div></div>'
+            pct=f'<span style="font-size:7px;font-weight:400;color:#6C757D">{v/tot*100:.0f}%</span>' if tot else ''
+            out+=f'<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end"><div style="font-size:9px;font-weight:600;margin-bottom:1px">{v}{pct}</div><div style="width:100%;height:{h}px;background:{tc};opacity:.85;border-radius:2px 2px 0 0;min-height:2px"></div><div style="font-size:8px;color:#aaa;margin-top:2px">{lbl[p]}</div></div>'
         return f'<div style="display:flex;gap:4px;height:56px;align-items:flex-end;margin-bottom:10px">{out}</div>'
 
     def ya_row(ya,tc):
-        return "".join(f'<div style="flex:1;background:#F8F9FA;border:1px solid #DEE2E6;border-radius:4px;padding:8px;text-align:center"><div style="font-family:Oswald,sans-serif;font-size:18px;font-weight:600;color:{tc}">{ya.get(l,0)}</div><div style="font-size:9px;color:#6C757D">{l}</div></div>' for l in ['LHS 15m','Centre Field','RHS 15m'])
+        ytot=sum(ya.values()) if ya else 0; parts=[]
+        for l in ['LHS 15m','Centre Field','RHS 15m']:
+            v=ya.get(l,0); pct=f'{v/ytot*100:.0f}%' if ytot else '—'
+            parts.append(f'<div style="flex:1;background:#F8F9FA;border:1px solid #DEE2E6;border-radius:4px;padding:8px;text-align:center"><div style="font-family:Oswald,sans-serif;font-size:18px;font-weight:600;color:{tc}">{v}</div><div style="font-size:9px;font-weight:600;color:#6C757D;margin-top:2px">{pct}</div><div style="font-size:9px;color:#6C757D">{l}</div></div>')
+        return "".join(parts)
 
     def panel_hdr(title,total,rank,avg,tc,suf=''):
         return f'''<div style="margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #DEE2E6">
