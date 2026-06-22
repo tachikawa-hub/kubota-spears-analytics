@@ -2664,6 +2664,7 @@ def compute_stats(df, max_round):
     res['ATT_Carries_PG']      = (carries.groupby('teamName').size()/m).round(1)
     res['ATT_CarryMetres_PG']  = (carries.groupby('teamName')['Metres'].sum()/m).round(0)
     res['ATT_MetresPerCarry']  = (carries.groupby('teamName')['Metres'].sum()/carries.groupby('teamName').size()).round(2)
+    res['ATT_PostContMetres_PG'] = (pd.to_numeric(carries['Metres3'], errors='coerce').groupby(carries['teamName']).sum()/m).round(1)
     res['ATT_FW_Carry_pct']    = (fw_c/(fw_c+bk_c)*100).round(1)
     res['ATT_BK_Carry_pct']    = (bk_c/(fw_c+bk_c)*100).round(1)
     # 旧: res['ATT_Gainline_pct'] = (carries[carries['qualifier3Name']=='Crossed Gain line'].groupby('teamName').size()/carries.groupby('teamName').size()*100).round(1)
@@ -2956,13 +2957,13 @@ def build_html(home, opp, master, detail, max_round, df=None):
             fw='font-weight:700;' if hl else 'font-weight:500;'
             w=bw(v,mn,mx); vf=f"{v:.{dec}f}{suf}"
             sn=TEAM_SHORT.get(t,t[:10])
-            if hl:
+            if hl and asc is not None:
                 d=v-avg; ds=(f"+{d:.{dec}f}" if d>=0 else f"{d:.{dec}f}")+suf
                 good=(d>0 and not asc) or (d<0 and asc)
                 dc='#16A34A' if good else '#DC2626'
                 dbadge=f'<span style="font-size:8px;font-weight:700;color:{dc};flex-shrink:0;margin-left:3px;white-space:nowrap">{ds}</span>'
             else:
-                dbadge=''
+                dbadge=''  # asc=None（構成比など色なし）の場合もバッジなし
             # 旧: rows+=f'...(color:#aaa for rank num, #9CA3AF/#CBD5E1 for non-HL team/bar)...'
             rows+=f'<div style="display:flex;align-items:center;gap:5px;{"outline:1px solid "+tc+";border-radius:2px;" if hl else ""}padding:1px 2px"><span style="font-size:9px;color:#6B7280;width:13px;text-align:right;flex-shrink:0">{i+1}</span><span style="font-size:10px;width:72px;flex-shrink:0;color:{tc};{fw};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{sn}</span><div style="flex:1;height:14px;background:#F1F3F5;border-radius:3px;overflow:hidden"><div style="width:{w}%;height:100%;background:{bc};border-radius:3px;display:flex;align-items:center;padding-left:4px"><span style="font-size:8px;font-weight:600;color:#fff;white-space:nowrap">{vf}</span></div></div>{dbadge}</div>'
             # avg marker >>>
@@ -2985,7 +2986,7 @@ def build_html(home, opp, master, detail, max_round, df=None):
 
     def rank_grid(metrics):
         return f'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px">' + \
-               "".join(rank_card(l,c,a if a is not None else False,d,s) for l,c,a,d,s in metrics) + '</div>'
+               "".join(rank_card(l,c,a,d,s) for l,c,a,d,s in metrics) + '</div>'
 
     def blk(icon,title,sub,content,mt='0'):
         return f'''<div style="background:#fff;border:1px solid #DEE2E6;border-radius:8px;padding:18px;margin-bottom:14px;margin-top:{mt};box-shadow:0 1px 3px rgba(0,0,0,.04)">
@@ -3038,19 +3039,30 @@ def build_html(home, opp, master, detail, max_round, df=None):
         ('LB Conceded / G',       'OV_LBConceded_PG',       True,  2, ''),
         ('Penalties Con / G',     'OV_PenaltiesCon_PG',     True,  2, ''),
     ]
+    # 旧 ATT（並び替え前）:
+    # ('Carries / G','ATT_Carries_PG',False,1,''), ('Carry Metres / G','ATT_CarryMetres_PG',False,0,'m'),
+    # ('Metres / Carry','ATT_MetresPerCarry',False,2,'m'),
+    # ('FW Carry %','ATT_FW_Carry_pct',None,1,'%'), ('BK Carry %','ATT_BK_Carry_pct',None,1,'%'),
+    # ('Gainline %','ATT_Gainline_pct',False,1,'%'), ('LQB %','ATT_LQB_pct',False,1,'%'),
+    # ('Line Breaks / G','OV_LineBreaks_PG',False,2,''),
+    # ('Offload Success / G','ATT_OffloadSuccess_PG',False,2,''),
+    # ('Passes / G','ATT_Passes_PG',False,0,''),
+    # ('FW Pass %','ATT_FW_Pass_pct',None,1,'%'), ('BK Pass %','ATT_BK_Pass_pct',None,1,'%'),
     ATT = [
-        ('Carries / G','ATT_Carries_PG',False,1,''),
-        ('Carry Metres / G','ATT_CarryMetres_PG',False,0,'m'),
-        ('Metres / Carry','ATT_MetresPerCarry',False,2,'m'),
-        ('FW Carry %','ATT_FW_Carry_pct',None,1,'%'),
-        ('BK Carry %','ATT_BK_Carry_pct',None,1,'%'),
-        ('Gainline %','ATT_Gainline_pct',False,1,'%'),
-        ('LQB %','ATT_LQB_pct',False,1,'%'),
-        ('Line Breaks / G','OV_LineBreaks_PG',False,2,''),
-        ('Offload Success / G','ATT_OffloadSuccess_PG',False,2,''),
-        ('Passes / G','ATT_Passes_PG',False,0,''),
-        ('FW Pass %','ATT_FW_Pass_pct',None,1,'%'),
-        ('BK Pass %','ATT_BK_Pass_pct',None,1,'%'),
+        ('Carries / G',          'ATT_Carries_PG',         False, 1, ''),
+        ('Carry Metres / G',     'ATT_CarryMetres_PG',     False, 0, 'm'),
+        ('Metres / Carry',       'ATT_MetresPerCarry',     False, 2, 'm'),
+        ('Line Breaks / G',      'OV_LineBreaks_PG',       False, 2, ''),
+        ('Defenders Beaten / G', 'OV_DefBeaten_PG',        False, 1, ''),
+        ('Post Cont Metres / G', 'ATT_PostContMetres_PG',  False, 1, 'm'),
+        ('Gainline %',           'ATT_Gainline_pct',       False, 1, '%'),
+        ('LQB %',                'ATT_LQB_pct',            False, 1, '%'),
+        ('Offload Success / G',  'ATT_OffloadSuccess_PG',  False, 2, ''),
+        ('Passes / G',           'ATT_Passes_PG',          False, 0, ''),
+        ('FW Pass %',            'ATT_FW_Pass_pct',        None,  1, '%'),
+        ('BK Pass %',            'ATT_BK_Pass_pct',        None,  1, '%'),
+        ('FW Carry %',           'ATT_FW_Carry_pct',       None,  1, '%'),
+        ('BK Carry %',           'ATT_BK_Carry_pct',       None,  1, '%'),
     ]
     DEF = [
         ('Tackle Attempts / G','DEF_TackleAtt_PG',True,1,''),
