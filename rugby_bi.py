@@ -1392,7 +1392,9 @@ def cmd_kpi(args=None):
         # opponent stats (for Defence match-by-match opponent columns)
         ot = m["opponent_name"]
         opp_carries = CT(fx, ot, action_name="Carry")
-        opp_glo = CT(fx, ot, action_name="Carry", qualifier3_name="Crossed Gain line")
+        # 旧: opp_glo = CT(fx, ot, action_name="Carry", qualifier3_name="Crossed Gain line")
+        opp_glo = CT(fx, ot, action_name="Ruck", qualifier3="548")
+        opp_ruck_gl_d = CT(fx, ot, action_name="Ruck", qualifier3={"548","549","550","551"})
         opp_rucks = CT(fx, ot, action_name="Ruck")
         opp_lqb = CT(fx, ot, action_name="Ruck",
                      qualifier4_name={"0-1 Seconds", "1-2 Seconds", "2-3 Seconds"})
@@ -1465,7 +1467,9 @@ def cmd_kpi(args=None):
             ).fetchall()),
             "hg": C(fx, action_name="Kick", action_result_name="Collected Bounce"),
             "carries": carries, "metres": int(metres),
-            "glo": C(fx, action_name="Carry", qualifier3_name="Crossed Gain line"),
+            # 旧: "glo": C(fx, action_name="Carry", qualifier3_name="Crossed Gain line"),
+            "glo": C(fx, action_name="Ruck", qualifier3="548"),
+            "ruck_gl_d": C(fx, action_name="Ruck", qualifier3={"548","549","550","551"}),
             "lqb_n": C(fx, action_name="Ruck",
                        qualifier4_name={"0-1 Seconds", "1-2 Seconds", "2-3 Seconds"}),
             "offloads": C(fx, action_name="Pass", action_type_name="Offload",
@@ -1492,6 +1496,7 @@ def cmd_kpi(args=None):
             "ma_tot": ma_tot, "ma_won": ma_won, "ma_try": ma_try, "ma_m": int(ma_m),
             # opponent stats
             "opp_carries": opp_carries, "opp_glo": opp_glo,
+            "opp_ruck_gl_d": opp_ruck_gl_d,
             "opp_rucks": opp_rucks, "opp_lqb": opp_lqb,
             "tries_conceded": tries_conceded, "opp_e22": opp_e22,
             "opp_success_pct": opp_success_pct,
@@ -1751,7 +1756,8 @@ def cmd_kpi(args=None):
             "gk_pct": rate(recs, "gk_made", "gk_att"),
             # attack
             "carries": mn(recs, "carries"), "metres": mn(recs, "metres"),
-            "gl": rate(recs, "glo", "carries"),
+            # 旧: "gl": rate(recs, "glo", "carries"),
+            "gl": rate(recs, "glo", "ruck_gl_d"),
             "lqb": rate(recs, "lqb_n", "rucks"),
             "offloads": mn(recs, "offloads"),
             "db": mn(recs, "db"), "lb": mn(recs, "lb"),
@@ -1769,7 +1775,8 @@ def cmd_kpi(args=None):
             "dom": mn(recs, "dom"), "dom_pct": rate(recs, "dom", "tk"),
             "passive": mn(recs, "passive"), "oa": mn(recs, "oa"),
             "tw": mn(recs, "tw"),
-            "opp_gl": rate(recs, "opp_glo", "opp_carries"),
+            # 旧: "opp_gl": rate(recs, "opp_glo", "opp_carries"),
+            "opp_gl": rate(recs, "opp_glo", "opp_ruck_gl_d"),
             "opp_lqb": rate(recs, "opp_lqb", "opp_rucks"),
             "opp_e22": mn(recs, "opp_e22"),
             "opp_success": mn(recs, "opp_success_pct"),
@@ -2050,7 +2057,7 @@ def cmd_kpi(args=None):
      }},
      {id:'attack',title:'Attack',build:()=>{
        const avg=avgTable([
-         ['gl','Gainline %','carries crossing gainline',1,true],
+         ['gl','Gainline %','Ruck Gainline: Over Previous Gainline ÷ (548+549+550+551)',1,true],
          ['lqb','LQB %','rucks ≤3s (Lightning Quick Ball)',1,true],
          ['carries','Ball Carries','per match',1,null],
          ['metres','Carry Metres','per match',0,true],
@@ -2064,7 +2071,8 @@ def cmd_kpi(args=None):
          ['to_con','Turnovers Conceded','per match',1,false],
        ]);
        const it=itTable(baseCols.concat([
-         {h:'Gainline %',fn:r=>r.carries?f1(r.glo/r.carries*100):'-'},
+         // 旧: {h:'Gainline %',fn:r=>r.carries?f1(r.glo/r.carries*100):'-'},
+         {h:'Gainline %',fn:r=>r.ruck_gl_d?f1(r.glo/r.ruck_gl_d*100):'-'},
          {h:'LQB %',fn:r=>r.rucks?f1(r.lqb_n/r.rucks*100):'-'},
          {h:'Ball Carries',fn:r=>r.carries},
          {h:'Carry Metres',fn:r=>r.metres},
@@ -2079,7 +2087,7 @@ def cmd_kpi(args=None):
        ]));
        return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
          <div class="sec-title">Match-by-match</div>${it}
-         <div class="note">Gainline % = carries tagged 'Crossed Gain line' ÷ all carries. LQB % = rucks with ruck-speed ≤3s.
+         <div class="note">Gainline % = Ruck Gainline 'Over Previous Gainline' (Q3=548) ÷ (548+549+550+551 合計). LQB % = rucks with ruck-speed ≤3s.
            Defenders Beaten = Attacking Qualities/Defender Beaten. Linebreaks = Attacking Qualities/Initial Break (Line Break + Kick Line Break + Intercepted Break).
            22m Entries = Possession events with qualifier4 'Enters into Opposition 22' + 'Starts inside Opposition 22'.
            22m Strike Conv % = (Try + Penalty Goal Attempt outcomes from Attacking 22 Entry) ÷ total Attacking 22 Entry count × 100. Note: Attacking 22 Entry count may differ slightly from Possession 22m Entries.</div>`;
@@ -2094,7 +2102,7 @@ def cmd_kpi(args=None):
          ['oa','Offloads Allowed','per match',1,false],
          ['tw','Turnovers Won','Poss TO + Jackal /match',1,true],
          ['pen','Penalties Conceded','per match',1,false],
-         ['opp_gl','Opponent Gainline %','opponent carries crossing gainline',1,false],
+         ['opp_gl','Opponent Gainline %','Ruck Gainline: opponent Over Previous Gainline ÷ (548+549+550+551)',1,false],
          ['opp_lqb','Opponent LQB %','opponent rucks ≤3s',1,false],
          ['tries_con','Tries Conceded','per match',1,false],
          ['opp_e22','Opponent 22m Entries','Enters+Starts into Opposition 22 /match',1,false],
@@ -2108,7 +2116,8 @@ def cmd_kpi(args=None):
          {h:'Dominant Tackle %',fn:r=>r.tk?f1(r.dom/r.tk*100):'-'},
          {h:'Turnovers Won',fn:r=>r.tw},
          {h:'Infringements',fn:r=>r.pen},
-         {h:'Opponent Gainline %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_carries?f1(r.opp_glo/r.opp_carries*100):'-'},
+         // 旧: {h:'Opponent Gainline %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_carries?f1(r.opp_glo/r.opp_carries*100):'-'},
+         {h:'Opponent Gainline %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_ruck_gl_d?f1(r.opp_glo/r.opp_ruck_gl_d*100):'-'},
          {h:'Opponent LQB %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_rucks?f1(r.opp_lqb/r.opp_rucks*100):'-'},
          {h:'Tries Conceded',hcls:'opp',cls:'oppcol',fn:r=>r.tries_conceded},
          {h:'Opponent 22m Entries',hcls:'opp',cls:'oppcol',fn:r=>r.opp_e22},
@@ -2624,7 +2633,10 @@ def compute_stats(df, max_round):
     res['ATT_MetresPerCarry']  = (carries.groupby('teamName')['Metres'].sum()/carries.groupby('teamName').size()).round(2)
     res['ATT_FW_Carry_pct']    = (fw_c/(fw_c+bk_c)*100).round(1)
     res['ATT_BK_Carry_pct']    = (bk_c/(fw_c+bk_c)*100).round(1)
-    res['ATT_Gainline_pct']    = (carries[carries['qualifier3Name']=='Crossed Gain line'].groupby('teamName').size()/carries.groupby('teamName').size()*100).round(1)
+    # 旧: res['ATT_Gainline_pct'] = (carries[carries['qualifier3Name']=='Crossed Gain line'].groupby('teamName').size()/carries.groupby('teamName').size()*100).round(1)
+    _rgl_n = ruck[ruck['qualifier3']==548].groupby('teamName').size()
+    _rgl_d = ruck[ruck['qualifier3'].isin([548,549,550,551])].groupby('teamName').size()
+    res['ATT_Gainline_pct']    = (_rgl_n / _rgl_d * 100).round(1)
     res['ATT_LQB_pct']         = lqb_pct
     res['ATT_Passes_PG']       = (passes_no.groupby('teamName').size()/m).round(0)
     res['ATT_FW_Pass_pct']     = (fw_p/(fw_p+bk_p)*100).round(1)
@@ -2635,7 +2647,10 @@ def compute_stats(df, max_round):
     res['DEF_TackleMiss_PG']   = (missed_t.groupby('teamName').size()/m).round(1)
     res['DEF_TackleSuccess_pct']= t_succ
     res['DEF_OffloadAllow_PG'] = (tackles[tackles['ActionResultName']=='Offload Allowed'].groupby('teamName').size()/m).round(2)
-    res['DEF_GainlineConc_pct']= (carries[carries['qualifier3Name']=='Crossed Gain line'].groupby('oppTeam').size()/carries.groupby('oppTeam').size()*100).round(1)
+    # 旧: res['DEF_GainlineConc_pct'] = (carries[carries['qualifier3Name']=='Crossed Gain line'].groupby('oppTeam').size()/carries.groupby('oppTeam').size()*100).round(1)
+    _orgl_n = ruck[ruck['qualifier3']==548].groupby('oppTeam').size()
+    _orgl_d = ruck[ruck['qualifier3'].isin([548,549,550,551])].groupby('oppTeam').size()
+    res['DEF_GainlineConc_pct']= (_orgl_n / _orgl_d * 100).round(1)
     res['DEF_LQBConc_pct']     = olqb_pct
     res['DEF_TurnoverWon_PG']  = (to_total/m).round(2)
 
@@ -3353,8 +3368,10 @@ def build_html(home, opp, master, detail, max_round, df=None):
 
         t_made = tackles[tackles['ActionResultName']!='Missed']
         t_att  = len(t_made)+len(miss_t)
-        gl_ok  = len(carries[carries['qualifier3Name']=='Crossed Gain line'])
-        c_tot  = len(carries)
+        # 旧: gl_ok = len(carries[carries['qualifier3Name']=='Crossed Gain line'])
+        # 旧: c_tot = len(carries)
+        gl_ok  = len(ruck[ruck['qualifier3']==548])
+        c_tot  = len(ruck[ruck['qualifier3'].isin([548,549,550,551])])
         km     = kip['Metres'].sum(); ki = len(kip)
         lo_w   = len(lo_t[lo_t['ActionResultName'].str.startswith('Won',na=False)])
         lo_tot = len(lo_t)
