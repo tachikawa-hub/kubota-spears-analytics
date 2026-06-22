@@ -1446,6 +1446,11 @@ def cmd_kpi(args=None):
             if grp:
                 pen_pos[grp] += 1
     
+        # Post Contact Metres チーム版（metres3 on Carry rows）
+        pcm_team_n = int(cur.execute(
+            "SELECT COALESCE(SUM(CAST(metres3 AS REAL)),0) FROM events "
+            "WHERE fxid=? AND team_name=? AND action_name='Carry'",
+            (fx, TEAM)).fetchone()[0])
         # Turnover Rate 確定式: (PossTO + LOLost + SCLost) / (Poss + LOLost + SCLost)
         poss_to_n = cur.execute(
             "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
@@ -1495,7 +1500,7 @@ def cmd_kpi(args=None):
                 "AND action_result_name IN ('Own Player - Collected','Pressure Error','Pressure in Touch','Try Kick')", (fx, TEAM)
             ).fetchall()),
             "hg": C(fx, action_name="Kick", action_result_name="Collected Bounce"),
-            "carries": carries, "metres": int(metres),
+            "carries": carries, "metres": int(metres), "pcm_team": pcm_team_n,
             # 旧: "glo": C(fx, action_name="Carry", qualifier3_name="Crossed Gain line"),
             "glo": C(fx, action_name="Ruck", qualifier3="548"),
             # 旧: "ruck_gl_d": C(fx, action_name="Ruck", qualifier3={"548","549","550","551"}),
@@ -1800,6 +1805,7 @@ def cmd_kpi(args=None):
             "gk_pct": rate(recs, "gk_made", "gk_att"),
             # attack
             "carries": mn(recs, "carries"), "metres": mn(recs, "metres"),
+            "pcm": mn(recs, "pcm_team"),  # Post Contact Metres /match
             # 旧: "gl": rate(recs, "glo", "carries"),
             "gl": rate(recs, "glo", "ruck_gl_d"),
             "lqb": rate(recs, "lqb_n", "rucks"),
@@ -2111,33 +2117,39 @@ def cmd_kpi(args=None):
            (kick-in-touch-on-bounce excluded). GK% = (Conv+PG+DG made) ÷ attempts.</div>`;
      }},
      {id:'attack',title:'Attack',build:()=>{
+       // 旧 avgTable順: gl,lqb,carries,metres,db,lb,offloads,e22,kub_success,c22,s22,to_con
        const avg=avgTable([
+         ['tries','Tries Scored','per match',1,true],
          ['gl','Gainline %','Ruck Gainline: Over Previous Gainline ÷ (548+549+550)',1,true],
          ['lqb','LQB %','rucks ≤3s (Lightning Quick Ball)',1,true],
          ['carries','Ball Carries','per match',1,null],
          ['metres','Carry Metres','per match',0,true],
+         ['pcm','Post Contact Metres','Carry metres3 /match',0,true],
          ['db','Defenders Beaten','per match',1,true],
          ['lb','Linebreaks','Attacking Qualities/Initial Break /match',1,true],
          ['offloads','Offloads','successful (to own player)',1,true],
          ['e22','22m Entries','Enters+Starts into Opposition 22 /match',1,true],
-         ['kub_success','22m Strike Conv %','(Try + Pen Goal outcomes) ÷ Attacking 22 Entry',1,true],
          ['c22','Carried into 22m','Enters into Opposition 22 /match',1,true],
-         ['s22','Started in 22m','Starts inside Opposition 22 /match',1,true],
+         ['kub_success','22m Strike Conv %','(Try + Pen Goal outcomes) ÷ Attacking 22 Entry',1,true],
+         // 旧: ['s22','Started in 22m','Starts inside Opposition 22 /match',1,true],
          ['to_con','Turnovers Conceded','per match',1,false],
        ]);
+       // 旧 itTable順: Gainline%,LQB%,Carries,Metres,DB,LB,Offloads,22mEntries,22mConv,C22,S22(deleted),TOCon
        const it=itTable(baseCols.concat([
+         {h:'Tries Scored',fn:r=>r.tries},
          // 旧: {h:'Gainline %',fn:r=>r.carries?f1(r.glo/r.carries*100):'-'},
          {h:'Gainline %',fn:r=>r.ruck_gl_d?f1(r.glo/r.ruck_gl_d*100):'-'},
          {h:'LQB %',fn:r=>r.rucks?f1(r.lqb_n/r.rucks*100):'-'},
          {h:'Ball Carries',fn:r=>r.carries},
          {h:'Carry Metres',fn:r=>r.metres},
+         {h:'Post Contact Metres',fn:r=>r.pcm_team},
          {h:'Defenders Beaten',fn:r=>r.db},
          {h:'Linebreaks',fn:r=>r.lb},
          {h:'Offloads',fn:r=>r.offloads},
          {h:'22m Entries',fn:r=>r.e22},
-         {h:'22m Strike Conv %',fn:r=>r.e22?f1(r.kub_success_pct)+'%':'-'},
          {h:'Carried into 22m',fn:r=>r.c22},
-         {h:'Started in 22m',fn:r=>r.s22},
+         {h:'22m Strike Conv %',fn:r=>r.e22?f1(r.kub_success_pct)+'%':'-'},
+         // 旧: {h:'Started in 22m',fn:r=>r.s22},
          {h:'Turnovers Conceded',fn:r=>r.to_con},
        ]));
        return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
