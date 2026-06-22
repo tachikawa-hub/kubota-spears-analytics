@@ -1966,7 +1966,7 @@ def cmd_kpi(args=None):
     .rank-table tbody td.name{text-align:left;font-weight:700;min-width:140px;}
     .rank-table tbody td.pos{text-align:left;color:var(--muted);font-size:10px;min-width:96px;}
     .rank-table tbody tr:hover td{background:rgba(0,0,0,.025);}
-    .rank-table tbody tr:nth-child(-n+3) td.name{color:var(--kub-red);}
+    /* 旧: .rank-table tbody tr:nth-child(-n+3) td.name{color:var(--kub-red);} */
     .rank-table tfoot td{padding:6px;background:var(--kub-dark);color:white;font-weight:800;text-align:center;}
     .rank-table tfoot td.l{text-align:left;}
     .cell-good{color:var(--good);font-weight:800;} .cell-warn{color:var(--warn);font-weight:800;} .cell-dim{color:#bbb;}
