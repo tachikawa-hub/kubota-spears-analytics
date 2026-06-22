@@ -3227,24 +3227,42 @@ def build_html(home, opp, master, detail, max_round, df=None):
     ]
 
     # Try Source ranking card
+    # 旧スタイル: tc=#9CA3AF/bc=#CBD5E1/fw='' for non-HL; rank#=color:#aaa; avgマーカーなし; 差分バッジなし; ヘッダにavg span表示
     def try_src_card(label,col,asc=False):
         avg,_,__,mn,mx,vals=lg(col,asc)
-        rows=""
+        af=f"{avg:.1f}"; rows=""
         for i,(t,v) in enumerate(vals):
             hl=t in HL
-            tc=TEAM_COLORS.get(t,'#888') if hl else '#9CA3AF'
-            bc=TEAM_COLORS.get(t,'#888') if hl else '#CBD5E1'
-            fw='font-weight:700;' if hl else ''
+            # 旧: tc=TEAM_COLORS.get(t,'#888') if hl else '#9CA3AF'
+            # 旧: bc=TEAM_COLORS.get(t,'#888') if hl else '#CBD5E1'
+            # 旧: fw='font-weight:700;' if hl else ''
+            tc=TEAM_COLORS.get(t,'#888') if hl else '#374151'
+            bc=TEAM_COLORS.get(t,'#888') if hl else '#9CA3AF'
+            fw='font-weight:700;' if hl else 'font-weight:500;'
             w=bw(v,mn,mx)
             ts_c='TRY_TriesConceded' if 'Conc' in col else 'TRY_TriesScored'
             tot2=float(master.loc[t,ts_c]) if ts_c in master.columns else 1
             pct=round(v/tot2*100,1) if tot2 else 0
             sn=TEAM_SHORT.get(t,t[:10])
-            rows+=f'<div style="display:flex;align-items:center;gap:5px;{"outline:1px solid "+tc+";border-radius:2px;" if hl else ""}padding:1px 2px"><span style="font-size:9px;color:#aaa;width:13px;text-align:right;flex-shrink:0">{i+1}</span><span style="font-size:10px;width:72px;flex-shrink:0;color:{tc};{fw};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{sn}</span><div style="flex:1;height:14px;background:#F1F3F5;border-radius:3px;overflow:hidden"><div style="width:{w}%;height:100%;background:{bc};border-radius:3px;display:flex;align-items:center;padding-left:4px"><span style="font-size:8px;font-weight:600;color:#fff;white-space:nowrap">{int(v)} ({pct}%)</span></div></div></div>'
+            if hl:
+                d=v-avg; ds=(f"+{d:.0f}" if d>=0 else f"{d:.0f}")
+                good=(d>0 and not asc) or (d<0 and asc)
+                dc='#16A34A' if good else '#DC2626'
+                dbadge=f'<span style="font-size:8px;font-weight:700;color:{dc};flex-shrink:0;margin-left:3px;white-space:nowrap">{ds}</span>'
+            else:
+                dbadge=''
+            # 旧: rank# color=#aaa → #6B7280
+            rows+=f'<div style="display:flex;align-items:center;gap:5px;{"outline:1px solid "+tc+";border-radius:2px;" if hl else ""}padding:1px 2px"><span style="font-size:9px;color:#6B7280;width:13px;text-align:right;flex-shrink:0">{i+1}</span><span style="font-size:10px;width:72px;flex-shrink:0;color:{tc};{fw};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{sn}</span><div style="flex:1;height:14px;background:#F1F3F5;border-radius:3px;overflow:hidden"><div style="width:{w}%;height:100%;background:{bc};border-radius:3px;display:flex;align-items:center;padding-left:4px"><span style="font-size:8px;font-weight:600;color:#fff;white-space:nowrap">{int(v)} ({pct}%)</span></div></div>{dbadge}</div>'
+            # avg marker >>>
+            if i<len(vals)-1:
+                v_next=vals[i+1][1]
+                if (asc and v<=avg<v_next) or (not asc and v>=avg>v_next):
+                    rows+=f'<div style="display:flex;align-items:center;height:12px;border-left:2px solid #CA8A04;background:#FEF9C3;padding:0 6px"><span style="font-size:8px;color:#92400E;font-weight:600">avg {af}</span></div>'
+            # avg marker <<<
+        # 旧: ヘッダに <span style="font-size:10px;color:#6C757D">avg {avg:.1f}</span> → avgマーカーに一本化のため削除
         return f'''<div style="background:#fff;border:1px solid #DEE2E6;border-radius:6px;padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <span style="font-size:10px;color:#6C757D;text-transform:uppercase;letter-spacing:.06em;font-weight:600">{label}</span>
-            <span style="font-size:10px;color:#6C757D">avg {avg:.1f}</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:2px">{rows}</div>
         </div>'''
@@ -3684,19 +3702,34 @@ def build_html(home, opp, master, detail, max_round, df=None):
     ]
 
     # Try Source section
+    # 旧: 2カラム左右分割 (Scored|Conceded 縦スタック、TS_SCORED[2:]/TS_CONC[2:] のみ、try_src_card 旧スタイル)
+    # 旧: ts_src_html = f'''
+    #   <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    #     <div>
+    #       <div style="...color:#16A34A...">✦ Tries Scored by Source</div>
+    #       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px">
+    #         {join(try_src_card for TS_SCORED[2:])}
+    #       </div>
+    #     </div>
+    #     <div>
+    #       <div style="...color:#DC2626...">✦ Tries Conceded by Source</div>
+    #       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px">
+    #         {join(try_src_card for TS_CONC[2:])}
+    #       </div>
+    #     </div>
+    #   </div>'''
     ts_src_html = f'''
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-        <div>
-          <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#16A34A;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid #16A34A22">✦ Tries Scored by Source</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px">
-            {"".join(try_src_card(l,c,a if a is not None else False) for l,c,a,_,__ in TS_SCORED[2:])}
-          </div>
+      <div>
+        <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#16A34A;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid #16A34A22">✦ Tries Scored by Source</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          {"".join(rank_card(l,c,a if a is not None else False,d,s) for l,c,a,d,s in TS_SCORED[:2])}{"".join(try_src_card(l,c,a if a is not None else False) for l,c,a,_,__ in TS_SCORED[2:])}
         </div>
-        <div>
-          <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#DC2626;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid #DC262622">✦ Tries Conceded by Source</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px">
-            {"".join(try_src_card(l,c,a if a is not None else False) for l,c,a,_,__ in TS_CONC[2:])}
-          </div>
+      </div>
+      <div style="height:16px"></div>
+      <div>
+        <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#DC2626;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid #DC262622">✦ Tries Conceded by Source</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          {"".join(rank_card(l,c,a if a is not None else False,d,s) for l,c,a,d,s in TS_CONC[:2])}{"".join(try_src_card(l,c,a if a is not None else False) for l,c,a,_,__ in TS_CONC[2:])}
         </div>
       </div>'''
 
