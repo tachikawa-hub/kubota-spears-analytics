@@ -2161,6 +2161,8 @@ def cmd_kpi(args=None):
      }},
      {id:'defence',title:'Defence',build:()=>{
        const avg=avgTable([
+         // 旧: tries_con は12番目（opp_lqb の直後）
+         ['tries_con','Tries Conceded','per match',1,false],
          ['tack_att','Tackle Attempts','per match',1,null],
          ['tack_pct','Tackle %','made ÷ attempted',1,true],
          ['dom','Dominant Tackles','per match',1,true],
@@ -2172,11 +2174,12 @@ def cmd_kpi(args=None):
          ['opp_db','Opp Defenders Beaten','opponent Attacking Qualities/Defender Beaten /match',1,false],
          ['opp_gl','Opponent Gainline %','Ruck Gainline: opponent Over Previous Gainline ÷ (548+549+550)',1,false],
          ['opp_lqb','Opponent LQB %','opponent rucks ≤3s',1,false],
-         ['tries_con','Tries Conceded','per match',1,false],
          ['opp_e22','Opponent 22m Entries','Enters+Starts into Opposition 22 /match',1,false],
          ['opp_success','Opponent 22m Strike Conv %','(Try + Pen Goal outcomes) ÷ Attacking 22 Entry',1,false],
        ]);
        const it=itTable(baseCols.concat([
+         // 旧: Tries Conceded は11番目（Opponent LQB % の直後）
+         {h:'Tries Conceded',hcls:'opp',cls:'oppcol',fn:r=>r.tries_conceded},
          {h:'Tackles Made',fn:r=>r.tk},
          {h:'Tackles Missed',fn:r=>r.mt},
          {h:'Tackle Attempts',fn:r=>r.tk+r.mt},
@@ -2188,7 +2191,6 @@ def cmd_kpi(args=None):
          // 旧: {h:'Opponent Gainline %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_carries?f1(r.opp_glo/r.opp_carries*100):'-'},
          {h:'Opponent Gainline %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_ruck_gl_d?f1(r.opp_glo/r.opp_ruck_gl_d*100):'-'},
          {h:'Opponent LQB %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_rucks?f1(r.opp_lqb/r.opp_rucks*100):'-'},
-         {h:'Tries Conceded',hcls:'opp',cls:'oppcol',fn:r=>r.tries_conceded},
          {h:'Opponent 22m Entries',hcls:'opp',cls:'oppcol',fn:r=>r.opp_e22},
          {h:'Opp 22m Strike Conv %',hcls:'opp',cls:'oppcol',fn:r=>r.opp_e22?f1(r.opp_success_pct)+'%':'-'},
        ]));
