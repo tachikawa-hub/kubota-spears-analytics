@@ -2599,6 +2599,7 @@ def compute_stats(df, max_round):
     res['OV_AttackTime_min']   = atk_pg.round(1)
     res['OV_DefenceTime_min']  = def_pg.round(1)
     res['OV_PointsScored']     = pd.Series(pts_s)
+    res['OV_PointsFor_PG']     = (pd.Series(pts_s) / m).round(1)
     res['OV_TriesScored']      = tries_a.groupby('teamName').size()
     # Turnover Rate = (PossTO + LOlost + SClost) / (Poss + LOlost + SClost) × 100
     _lo_lost = lo_throw[lo_throw['ActionResultName'].str.startswith('Lost', na=False)]
@@ -2635,6 +2636,7 @@ def compute_stats(df, max_round):
     res['OV_LineBreaks_PG']    = (lb_c/m).round(2)
     res['OV_DefBeaten_PG']     = (db_c/m).round(1)
     res['OV_PointsConceded']   = pd.Series(pts_c)
+    res['OV_PointsAgainst_PG'] = (pd.Series(pts_c) / m).round(1)
     res['OV_TriesConceded']    = tries_a.groupby('oppTeam').size()
     res['OV_TackleSuccess_pct']= t_succ
     res['OV_TurnoverWon_PG']   = (to_total/m).round(2)
@@ -2999,33 +3001,42 @@ def build_html(home, opp, master, detail, max_round, df=None):
         return f'<div style="font-family:Oswald,sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:{c};padding-bottom:6px;border-bottom:2px solid #DEE2E6;margin-bottom:14px;margin-top:20px;display:flex;align-items:center;gap:6px"><span style="display:block;width:3px;height:12px;border-radius:2px;background:{c};flex-shrink:0"></span>{txt}</div>'
 
     # 指標定義
+    # 旧 OV（2025-06実装順）:
+    # ('Possession %','OV_Possession_pct',False,1,'%'), ('Territory %','OV_Territory_pct',False,1,'%'),
+    # ('Ball in Play','OV_BallInPlay_min',False,1,'min'), ('Attack Time','OV_AttackTime_min',False,1,'min'),
+    # ('Defence Time','OV_DefenceTime_min',True,1,'min'), ('Points Scored','OV_PointsScored',False,0,''),
+    # ('Tries Scored','OV_TriesScored',False,0,''),
+    # ('Turnover Rate %','OV_TORate_pct',True,1,'%'), ('Opp Half TO Rate %','OV_OppTORate_pct',True,1,'%'),
+    # ('Ruck to Kick','OV_RuckToKick',None,3,''), ('Pass to Kick','OV_PassToKick',None,1,''),
+    # ('Kicks in Play / G','OV_KicksInPlay_PG',False,1,''), ('Offload / G','OV_Offload_PG',False,2,''),
+    # ('Line Breaks / G','OV_LineBreaks_PG',False,2,''), ('Defender Beaten / G','OV_DefBeaten_PG',False,1,''),
+    # ('Points Conceded','OV_PointsConceded',True,0,''), ('Tries Conceded','OV_TriesConceded',True,0,''),
+    # ('Tackle Success %','OV_TackleSuccess_pct',False,1,'%'), ('Turnover Won / G','OV_TurnoverWon_PG',False,2,''),
+    # ('LB Conceded / G','OV_LBConceded_PG',True,2,''), ('Def Beaten Conc / G','OV_DefBeatenConc_PG',True,1,''),
+    # ('Penalties Con / G','OV_PenaltiesCon_PG',True,2,''),
+    # 旧: ('Own Lineout %','OV_OwnLineout_pct',False,1,'%'), ('Opp Lineout %','OV_OppLineout_pct',True,1,'%'),
+    # 旧: ('Own Scrum %','OV_OwnScrum_pct',False,1,'%'), ('Opp Scrum %','OV_OppScrum_pct',True,1,'%'),
     OV = [
-        ('Possession %','OV_Possession_pct',False,1,'%'),
-        ('Territory %','OV_Territory_pct',False,1,'%'),
-        ('Ball in Play','OV_BallInPlay_min',False,1,'min'),
-        ('Attack Time','OV_AttackTime_min',False,1,'min'),
-        ('Defence Time','OV_DefenceTime_min',True,1,'min'),
-        ('Points Scored','OV_PointsScored',False,0,''),
-        ('Tries Scored','OV_TriesScored',False,0,''),
-        ('Turnover Rate %','OV_TORate_pct',True,1,'%'),
-        ('Opp Half TO Rate %','OV_OppTORate_pct',True,1,'%'),
-        ('Ruck to Kick','OV_RuckToKick',None,3,''),
-        ('Pass to Kick','OV_PassToKick',None,1,''),
-        ('Kicks in Play / G','OV_KicksInPlay_PG',False,1,''),
-        ('Offload / G','OV_Offload_PG',False,2,''),
-        ('Line Breaks / G','OV_LineBreaks_PG',False,2,''),
-        ('Defender Beaten / G','OV_DefBeaten_PG',False,1,''),
-        ('Points Conceded','OV_PointsConceded',True,0,''),
-        ('Tries Conceded','OV_TriesConceded',True,0,''),
-        ('Tackle Success %','OV_TackleSuccess_pct',False,1,'%'),
-        ('Turnover Won / G','OV_TurnoverWon_PG',False,2,''),
-        ('LB Conceded / G','OV_LBConceded_PG',True,2,''),
-        ('Def Beaten Conc / G','OV_DefBeatenConc_PG',True,1,''),
-        ('Penalties Con / G','OV_PenaltiesCon_PG',True,2,''),
-        # 旧: ('Own Lineout %','OV_OwnLineout_pct',False,1,'%'),  # OV から削除（Set Piece セクションに残存）
-        # 旧: ('Opp Lineout %','OV_OppLineout_pct',True,1,'%'),
-        # 旧: ('Own Scrum %','OV_OwnScrum_pct',False,1,'%'),
-        # 旧: ('Opp Scrum %','OV_OppScrum_pct',True,1,'%'),
+        # Game Flow
+        ('Ball in Play',          'OV_BallInPlay_min',      False, 1, 'min'),
+        ('Possession %',          'OV_Possession_pct',      False, 1, '%'),
+        ('Territory %',           'OV_Territory_pct',       False, 1, '%'),
+        # Attack
+        ('Points For / G',        'OV_PointsFor_PG',        False, 1, ''),
+        ('Tries Scored',          'OV_TriesScored',         False, 0, ''),
+        ('Gainline %',            'ATT_Gainline_pct',       False, 1, '%'),
+        ('Line Breaks / G',       'OV_LineBreaks_PG',       False, 2, ''),
+        ('Kicks in Play / G',     'KICK_KicksIP_PG',        False, 1, ''),
+        ('Turnover Conceded / G', 'OV_TurnoverConc_PG',     True,  1, ''),
+        ('Turnover Rate %',       'OV_TORate_pct',          True,  1, '%'),
+        ('Opp Half TO Rate %',    'OV_OppTORate_pct',       True,  1, '%'),
+        # Defence
+        ('Points Against / G',    'OV_PointsAgainst_PG',   True,  1, ''),
+        ('Tries Conceded',        'OV_TriesConceded',       True,  0, ''),
+        ('Tackle Success %',      'OV_TackleSuccess_pct',   False, 1, '%'),
+        ('Turnover Won / G',      'OV_TurnoverWon_PG',      False, 2, ''),
+        ('LB Conceded / G',       'OV_LBConceded_PG',       True,  2, ''),
+        ('Penalties Con / G',     'OV_PenaltiesCon_PG',     True,  2, ''),
     ]
     ATT = [
         ('Carries / G','ATT_Carries_PG',False,1,''),
@@ -3853,46 +3864,64 @@ function showSub(sid,subId,btn){
     # ===== セクション HTML =====
 
     # Overview - 4列縦構成（Game Flow / Attack / Defence / Set Piece）
+    # 旧 OV_CATS（2025-06実装順）:
+    # { 'label': 'Game Flow', 'color': '#0891B2', 'icon': '⏱',
+    #   'metrics': [('Ball in Play','OV_BallInPlay_min',False,1,'min'),
+    #               ('Possession %','OV_Possession_pct',False,1,'%'),
+    #               ('Territory %','OV_Territory_pct',False,1,'%')] },
+    # { 'label': 'Attack', 'color': h_col, 'icon': '⚡',
+    #   'metrics': [('Tries Scored','OV_TriesScored',False,0,''),
+    #               ('Turnover Rate %','OV_TORate_pct',True,1,'%'),
+    #               ('Opp Half TO Rate %','OV_OppTORate_pct',True,1,'%'),
+    #               ('Gainline %','ATT_Gainline_pct',False,1,'%'),
+    #               ('Line Breaks / G','OV_LineBreaks_PG',False,2,''),
+    #               ('Kicks in Play / G','KICK_KicksIP_PG',False,1,''),
+    #               ('Turnover Conceded / G','OV_TurnoverConc_PG',True,2,'')] },
+    # { 'label': 'Defence', 'color': '#2563EB', 'icon': '🛡',
+    #   'metrics': [('Tries Conceded','OV_TriesConceded',True,0,''),
+    #               ('Tackle Success %','OV_TackleSuccess_pct',False,1,'%'),
+    #               ('Turnover Won / G','OV_TurnoverWon_PG',False,2,''),
+    #               ('Line Break Conceded / G','OV_LBConceded_PG',True,2,''),
+    #               ('Penalties Con / G','OV_PenaltiesCon_PG',True,2,'')] },
+    # 旧: Set Piece カテゴリ（OV ランキングから削除、Set Piece セクションに残存）
+    # { 'label': 'Set Piece', 'color': '#7C3AED', 'icon': '🏉',
+    #   'metrics': [('Own Lineout %','OV_OwnLineout_pct',False,1,'%'),
+    #               ('Opp Lineout %','OV_OppLineout_pct',True,1,'%'),
+    #               ('Own Scrum %','OV_OwnScrum_pct',False,1,'%'),
+    #               ('Opp Scrum %','OV_OppScrum_pct',True,1,'')] },
     OV_CATS = [
         {
             'label': 'Game Flow', 'color': '#0891B2', 'icon': '⏱',
             'metrics': [
-                ('Ball in Play',   'OV_BallInPlay_min',   False, 1, 'min'),
-                ('Possession %',   'OV_Possession_pct',   False, 1, '%'),
-                ('Territory %',    'OV_Territory_pct',    False, 1, '%'),
+                ('Ball in Play',   'OV_BallInPlay_min',  False, 1, 'min'),
+                ('Possession %',   'OV_Possession_pct',  False, 1, '%'),
+                ('Territory %',    'OV_Territory_pct',   False, 1, '%'),
             ]
         },
         {
             'label': 'Attack', 'color': h_col, 'icon': '⚡',
             'metrics': [
-                ('Tries Scored',          'OV_TriesScored',       False, 0, ''),
-                ('Turnover Rate %',       'OV_TORate_pct',        True,  1, '%'),
-                ('Opp Half TO Rate %',    'OV_OppTORate_pct',     True,  1, '%'),
-                ('Gainline %',            'ATT_Gainline_pct',     False, 1, '%'),
-                ('Line Breaks / G',       'OV_LineBreaks_PG',     False, 2, ''),
-                ('Kicks in Play / G',     'KICK_KicksIP_PG',      False, 1, ''),
-                ('Turnover Conceded / G', 'OV_TurnoverConc_PG',   True,  2, ''),
+                ('Points For / G',        'OV_PointsFor_PG',    False, 1, ''),
+                ('Tries Scored',          'OV_TriesScored',     False, 0, ''),
+                ('Gainline %',            'ATT_Gainline_pct',   False, 1, '%'),
+                ('Line Breaks / G',       'OV_LineBreaks_PG',   False, 2, ''),
+                ('Kicks in Play / G',     'KICK_KicksIP_PG',    False, 1, ''),
+                ('Turnover Conceded / G', 'OV_TurnoverConc_PG', True,  1, ''),
+                ('Turnover Rate %',       'OV_TORate_pct',      True,  1, '%'),
+                ('Opp Half TO Rate %',    'OV_OppTORate_pct',   True,  1, '%'),
             ]
         },
         {
             'label': 'Defence', 'color': '#2563EB', 'icon': '🛡',
             'metrics': [
-                ('Tries Conceded',          'OV_TriesConceded',     True,  0, ''),
-                ('Tackle Success %',        'OV_TackleSuccess_pct', False, 1, '%'),
-                ('Turnover Won / G',        'OV_TurnoverWon_PG',    False, 2, ''),
-                ('Line Break Conceded / G', 'OV_LBConceded_PG',     True,  2, ''),
-                ('Penalties Con / G',       'OV_PenaltiesCon_PG',   True,  2, ''),
+                ('Points Against / G',      'OV_PointsAgainst_PG',  True,  1, ''),
+                ('Tries Conceded',          'OV_TriesConceded',      True,  0, ''),
+                ('Tackle Success %',        'OV_TackleSuccess_pct',  False, 1, '%'),
+                ('Turnover Won / G',        'OV_TurnoverWon_PG',     False, 2, ''),
+                ('Line Break Conceded / G', 'OV_LBConceded_PG',      True,  2, ''),
+                ('Penalties Con / G',       'OV_PenaltiesCon_PG',    True,  2, ''),
             ]
         },
-        # 旧: Set Piece カテゴリ（OV ランキングから削除、Set Piece セクションに残存）
-        # { 'label': 'Set Piece', 'color': '#7C3AED', 'icon': '🏉',
-        #   'metrics': [
-        #     ('Own Lineout %', 'OV_OwnLineout_pct', False, 1, '%'),
-        #     ('Opp Lineout %', 'OV_OppLineout_pct', True,  1, '%'),
-        #     ('Own Scrum %',   'OV_OwnScrum_pct',   False, 1, '%'),
-        #     ('Opp Scrum %',   'OV_OppScrum_pct',   True,  1, '%'),
-        #   ]
-        # },
     ]
 
     # 全指標をフラットに（ランキング用）
