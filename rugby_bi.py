@@ -3022,10 +3022,10 @@ def build_html(home, opp, master, detail, max_round, df=None):
         ('LB Conceded / G','OV_LBConceded_PG',True,2,''),
         ('Def Beaten Conc / G','OV_DefBeatenConc_PG',True,1,''),
         ('Penalties Con / G','OV_PenaltiesCon_PG',True,2,''),
-        ('Own Lineout %','OV_OwnLineout_pct',False,1,'%'),
-        ('Opp Lineout %','OV_OppLineout_pct',True,1,'%'),
-        ('Own Scrum %','OV_OwnScrum_pct',False,1,'%'),
-        ('Opp Scrum %','OV_OppScrum_pct',True,1,'%'),
+        # 旧: ('Own Lineout %','OV_OwnLineout_pct',False,1,'%'),  # OV から削除（Set Piece セクションに残存）
+        # 旧: ('Opp Lineout %','OV_OppLineout_pct',True,1,'%'),
+        # 旧: ('Own Scrum %','OV_OwnScrum_pct',False,1,'%'),
+        # 旧: ('Opp Scrum %','OV_OppScrum_pct',True,1,'%'),
     ]
     ATT = [
         ('Carries / G','ATT_Carries_PG',False,1,''),
@@ -3884,15 +3884,15 @@ function showSub(sid,subId,btn){
                 ('Penalties Con / G',       'OV_PenaltiesCon_PG',   True,  2, ''),
             ]
         },
-        {
-            'label': 'Set Piece', 'color': '#7C3AED', 'icon': '🏉',
-            'metrics': [
-                ('Own Lineout %', 'OV_OwnLineout_pct', False, 1, '%'),
-                ('Opp Lineout %', 'OV_OppLineout_pct', True,  1, '%'),
-                ('Own Scrum %',   'OV_OwnScrum_pct',   False, 1, '%'),
-                ('Opp Scrum %',   'OV_OppScrum_pct',   True,  1, '%'),
-            ]
-        },
+        # 旧: Set Piece カテゴリ（OV ランキングから削除、Set Piece セクションに残存）
+        # { 'label': 'Set Piece', 'color': '#7C3AED', 'icon': '🏉',
+        #   'metrics': [
+        #     ('Own Lineout %', 'OV_OwnLineout_pct', False, 1, '%'),
+        #     ('Opp Lineout %', 'OV_OppLineout_pct', True,  1, '%'),
+        #     ('Own Scrum %',   'OV_OwnScrum_pct',   False, 1, '%'),
+        #     ('Opp Scrum %',   'OV_OppScrum_pct',   True,  1, '%'),
+        #   ]
+        # },
     ]
 
     # 全指標をフラットに（ランキング用）
