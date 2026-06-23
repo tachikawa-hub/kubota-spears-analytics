@@ -3175,8 +3175,8 @@ def build_html(home, opp, master, detail, max_round, df=None):
 
     # KPI Dual Card (H/O左右)
     def kpi_dual(label,col,asc=False,dec=1,suf=''):
-        hv=float(master.loc[home,col]) if col in master.columns else 0
-        ov=float(master.loc[opp,col])  if col in master.columns else 0
+        hv=float(master.loc[home,col]) if col in master.columns and home in master.index else 0
+        ov=float(master.loc[opp,col])  if col in master.columns and opp  in master.index else 0
         avg,hr,or_,mn,mx,_=lg(col,asc)
         hw=bw(hv,mn,mx); ow=bw(ov,mn,mx); ap=bw(avg,mn,mx)
         hg=(hv>=avg) if not asc else (hv<=avg)
@@ -3550,16 +3550,16 @@ def build_html(home, opp, master, detail, max_round, df=None):
 
     def ts_rank(t):
         v=[(x,float(master.loc[x,'TRY_TriesScored'])) for x in teams]; v.sort(key=lambda x:-x[1])
-        return next(i+1 for i,(x,_) in enumerate(v) if x==t)
+        return next((i+1 for i,(x,_) in enumerate(v) if x==t), len(v))
     def tc_rank(t):
         v=[(x,float(master.loc[x,'TRY_TriesConceded'])) for x in teams]; v.sort(key=lambda x:x[1])
-        return next(i+1 for i,(x,_) in enumerate(v) if x==t)
+        return next((i+1 for i,(x,_) in enumerate(v) if x==t), len(v))
     def lb_rank(t):
         v=[(x,float(master.loc[x,'OV_LineBreaks_PG'])) for x in teams]; v.sort(key=lambda x:-x[1])
-        return next(i+1 for i,(x,_) in enumerate(v) if x==t)
+        return next((i+1 for i,(x,_) in enumerate(v) if x==t), len(v))
     def lbc_rank(t):
         v=[(x,float(master.loc[x,'OV_LBConceded_PG'])) for x in teams]; v.sort(key=lambda x:x[1])
-        return next(i+1 for i,(x,_) in enumerate(v) if x==t)
+        return next((i+1 for i,(x,_) in enumerate(v) if x==t), len(v))
 
     def try_panel(data,tc,title,rank,avg):
         total=data['total']
@@ -4579,6 +4579,10 @@ def cmd_scout(args):
 
     home = args.home
     opp = args.opp
+    # 短縮名→フル名の解決（"BlackRams" → "BlackRams Tokyo" など）
+    _team_full = {v: k for k, v in TEAM_SHORT.items()}
+    home = _team_full.get(home, home)
+    opp  = _team_full.get(opp,  opp)
     max_round = args.round
     data_dir = args.data
     out_dir = args.out
