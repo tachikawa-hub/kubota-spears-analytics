@@ -2418,9 +2418,227 @@ def cmd_kpi(args=None):
     print(f"Season: BIP {g['bip']:.1f}min  Poss {g['poss']:.1f}%  Terr {g['terr']:.1f}%  "
           f"Tackle {g['tack_pct']:.1f}%  Dom {g['dom_pct']:.1f}%")
     print(f"Win Terr {groups['win']['terr']:.1f}% vs Loss Terr {groups['loss']['terr']:.1f}%")
-    
+
 
     con.close()
+
+
+# ============================================================
+#  cmd_kpi_a4 — A4 portrait KPI report
+#  P2: Overview with full content; pages 2-10 still stubs
+# ============================================================
+def cmd_kpi_a4(args=None):
+    import re as _re
+    OUT = "season_kpi_a4.html"
+
+    # ── 1. Reuse DATA from cmd_kpi() ──────────────────────
+    cmd_kpi(args)
+    with open("season_kpi_v2.html", encoding="utf-8") as _f:
+        _v2 = _f.read()
+    _dm = _re.search(r'const DATA\s*=\s*(\{.+?\});(?:\s*\n)', _v2, _re.DOTALL)
+    DATA_JSON = _dm.group(1)
+
+    # ── 2. Pages / nav ────────────────────────────────────
+    PAGES = [
+        ("overview",  "Overview"),
+        ("kicking",   "Kicking Game"),
+        ("attack",    "Attack"),
+        ("defence",   "Defence"),
+        ("setpiece",  "Set Piece"),
+        ("penalty",   "Penalty"),
+        ("ind-atk-1", "Individual Attack — Attack Stats"),
+        ("ind-atk-2", "Individual Attack — Kicking / Passing"),
+        ("ind-def-1", "Individual Defence — Tackles"),
+        ("ind-def-2", "Individual Defence — Breakdown / Penalty"),
+    ]
+
+    nav_items = " &nbsp;•&nbsp; ".join(
+        f'<a href="#{pid}">{title}</a>' for pid, title in PAGES
+    )
+
+    def _page(pid, title, body):
+        return (
+            f'<div class="page" id="{pid}">'
+            f'<div class="page-hd">'
+            f'<div class="page-hd-sub">Japan Rugby League One D1 · Season 2026</div>'
+            f'<div class="page-hd-title">Kubota Spears — {title}</div>'
+            f'</div>'
+            f'<div class="page-body">{body}</div>'
+            f'</div>'
+        )
+
+    pages_html = "\n".join(
+        _page(pid, title,
+              '<div id="overview-body"></div>' if pid == "overview"
+              else "<!-- P3+: content -->")
+        for pid, title in PAGES
+    )
+
+    # ── 3. CSS (raw string — no f-string brace escaping needed) ──
+    CSS = r"""
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --kub-dark:#14213d;--kub-mid:#1d3055;--kub-red:#d6202b;--kub-gold:#e8a13c;
+  --neutral:#f5f4f0;--ink:#1a1a1a;--muted:#6b6b6b;--rule:#d8d4cc;
+  --good:#1a7a3c;--warn:#b85c00;--win:#1a7a3c;--loss:#c0202b;--radius:4px;
+}
+body{font-family:'Helvetica Neue',Arial,sans-serif;background:#b0aca4;color:var(--ink);padding:20px 0;}
+.nav{width:210mm;margin:0 auto 12px;background:var(--kub-dark);padding:7px 14px;border-radius:4px;font-size:9.5px;line-height:2;}
+.nav b{color:white;}
+.nav a{color:var(--kub-gold);text-decoration:none;font-weight:700;}
+.nav a:hover{text-decoration:underline;}
+.page{width:210mm;min-height:297mm;margin:0 auto 16px;background:white;box-shadow:0 2px 18px rgba(0,0,0,.30);page-break-after:always;break-after:page;}
+.page:last-of-type{page-break-after:avoid;break-after:avoid;}
+.page-hd{background:var(--kub-dark);color:white;padding:10mm 12mm 7mm;}
+.page-hd-sub{font-size:7.5px;color:var(--kub-gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px;}
+.page-hd-title{font-size:13px;font-weight:800;letter-spacing:.03em;}
+.page-body{padding:8mm 12mm 10mm;}
+.cards{display:flex;gap:7px;margin-bottom:8px;}
+.card{flex:1;border:1px solid var(--rule);border-radius:var(--radius);background:white;padding:6px 4px;text-align:center;}
+.card .big{font-size:17px;font-weight:900;color:var(--kub-dark);line-height:1;}
+.card .sub{font-size:7px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:3px;}
+.sec-title{font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--rule);padding-bottom:3px;margin:8px 0 5px;}
+.avg-table{width:100%;border-collapse:collapse;margin-bottom:5px;}
+.avg-table th{padding:5px 6px;background:var(--kub-dark);color:white;font-size:8.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;text-align:center;}
+.avg-table th.k{text-align:left;}
+.avg-table th.win{background:#13532b;}.avg-table th.loss{background:#7d1820;}
+.avg-table td{padding:5px 7px;text-align:center;border-bottom:1px solid var(--rule);font-weight:700;font-size:10.5px;}
+.avg-table td.k{text-align:left;font-weight:600;font-size:9.5px;color:var(--ink);}
+.avg-table td.k small{display:block;color:var(--muted);font-size:7px;font-weight:500;}
+.avg-table td.win{background:rgba(26,122,60,.08);color:var(--win);}
+.avg-table td.loss{background:rgba(192,32,43,.08);color:var(--loss);}
+.avg-table td.delta.pos{color:var(--good);}.avg-table td.delta.neg{color:var(--loss);}
+.avg-table tr:hover td{filter:brightness(.985);}
+.it-wrap{overflow-x:auto;}
+.it-table{width:100%;border-collapse:collapse;}
+.it-table th,.it-table td{min-width:30px;}
+.it-table th.l,.it-table td.l{min-width:auto;}
+.it-table thead th{padding:4px 4px;background:var(--kub-mid);color:white;font-size:7.5px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;white-space:normal;line-height:1.2;vertical-align:bottom;text-align:center;}
+.it-table thead th.l{text-align:left;}
+.it-table thead th.opp{background:#c4600f;}
+.it-table tbody td.oppcol{background:rgba(196,96,15,.06);}
+.it-table tbody td{padding:3px 4px;text-align:center;border-bottom:1px solid var(--rule);font-weight:600;white-space:nowrap;font-size:9px;}
+.it-table tbody td.l{text-align:left;}
+.it-table tbody td.date{color:var(--muted);font-size:8px;}
+.it-table tbody tr.win td.res{color:var(--win);font-weight:800;}
+.it-table tbody tr.loss td.res{color:var(--loss);font-weight:800;}
+.it-table tbody tr.win td.score{background:rgba(26,122,60,.06);}
+.it-table tbody tr.loss td.score{background:rgba(192,32,43,.06);}
+.it-table tbody tr:hover td{background:rgba(0,0,0,.025);}
+.note{font-size:7.5px;color:var(--muted);margin-top:4px;line-height:1.4;}
+@media print{body{background:white;padding:0;}.nav{display:none;}.page{margin:0;box-shadow:none;}}
+@page{size:A4 portrait;margin:0;}
+"""
+
+    # ── 4. JavaScript (raw string — ${ } safe in JS template literals) ──
+    JS_RAW = r"""
+const DATA=%%DATA%%;
+const G=DATA.groups,M=DATA.matches;
+const f1=x=>(Math.round(x*10)/10).toFixed(1);
+const f0=x=>Math.round(x).toString();
+const f2=x=>(Math.round(x*100)/100).toFixed(2);
+const fmtDate=d=>{const[y,m,da]=d.split('-');return da+'/'+m;};
+
+function avgTable(rows){
+  const head=`<thead><tr><th class="k">KPI</th>
+    <th class="win">Win avg (${DATA.nw})</th>
+    <th class="loss">Loss avg (${DATA.nl})</th>
+    <th>Season avg (${DATA.n})</th>
+    <th>&#916; Win&#8211;Loss</th></tr></thead>`;
+  const body=rows.map(([k,lbl,note,fmt,gh])=>{
+    const w=G.win[k],l=G.loss[k],s=G.season[k];
+    const d=w-l;
+    const dcls=(gh?d>=0:d<=0)?'pos':'neg';
+    const F=fmt===2?f2:fmt===0?f0:f1;
+    const suf=(''+lbl).includes('%')?'%':'';
+    return `<tr><td class="k">${lbl}<small>${note}</small></td>
+      <td class="win">${F(w)}${suf}</td><td class="loss">${F(l)}${suf}</td>
+      <td>${F(s)}${suf}</td>
+      <td class="delta ${dcls}">${d>=0?'+':''}${F(d)}${suf}</td></tr>`;
+  }).join('');
+  return `<table class="avg-table">${head}<tbody>${body}</tbody></table>`;
+}
+
+const baseCols=[
+  {h:'Date',l:1,cls:'l date',fn:r=>fmtDate(r.date)},
+  {h:'H/A',fn:r=>r.ha},
+  {h:'Opponent',l:1,cls:'l',fn:r=>r.opp},
+  {h:'Score',cls:'score',fn:r=>`${r.kub}&#8211;${r.opp_score}`},
+  {h:'Res',cls:'res',fn:r=>r.result},
+];
+
+function itTable(cols){
+  const head=`<thead><tr>${cols.map(c=>`<th class="${c.l?'l':''} ${c.hcls||''}">${c.h}</th>`).join('')}</tr></thead>`;
+  const body=M.map(r=>`<tr class="${r.result==='W'?'win':r.result==='L'?'loss':''}">
+    ${cols.map(c=>`<td class="${c.cls||''}">${c.fn(r)}</td>`).join('')}</tr>`).join('');
+  return `<div class="it-wrap"><table class="it-table">${head}<tbody>${body}</tbody></table></div>`;
+}
+
+(function buildOverview(){
+  const cards=[
+    [DATA.nw+'&#8211;'+DATA.nl,'Record'],
+    [f1(G.season.pf),'Pts For / G'],
+    [f1(G.season.pa),'Pts Against / G'],
+    [f1(G.season.bip)+'&#8242;','Ball In Play / G'],
+    [f1(G.season.poss)+'%','Possession'],
+    [f1(G.season.terr)+'%','Territory'],
+  ].map(([b,s])=>`<div class="card"><div class="big">${b}</div><div class="sub">${s}</div></div>`).join('');
+
+  const avg=avgTable([
+    ['pf','Points For','per match',1,true],
+    ['pa','Points Against','per match',1,false],
+    ['bip','Ball In Play','min / match',1,true],
+    ['poss','Possession %','Kubota attack time &#247; total',1,true],
+    ['terr','Territory %','action-time in opp half (x 51&#8211;110)',1,true],
+    ['tries','Tries Scored','per match',1,true],
+    ['tries_con','Tries Conceded','per match',1,false],
+    ['trate','Turnover Rate %','(PossTO+LOLost+SCLost)&#247;(Poss+LOLost+SCLost)',1,false],
+    ['opp_h_trate','Opp Half TO Rate %','same formula, x&#8201;&#8805;&#8201;50 only',1,false],
+    ['pen','Penalties Conceded','per match',1,false],
+  ]);
+
+  const it=itTable(baseCols.concat([
+    {h:'BIP (min)',fn:r=>f1(r.at_tot/60)},
+    {h:'Poss %',fn:r=>r.poss_den?f1(r.at_kub/r.poss_den*100):'-'},
+    {h:'Terr %',fn:r=>r.terr_den_v2?f1(r.terr_num_v2/r.terr_den_v2*100):'-'},
+    {h:'Tries',fn:r=>r.tries},
+    {h:'Con',fn:r=>r.tries_conceded},
+    {h:'TO Rate %',fn:r=>(r.attacks+r.lo_lost+r.sc_lost)?f1((r.poss_to+r.lo_lost+r.sc_lost)/(r.attacks+r.lo_lost+r.sc_lost)*100):'-'},
+    {h:'Opp&#189;TO%',fn:r=>(r.opp_h_poss_n+r.opp_h_lo_lost+r.opp_h_sc_lost)?f1((r.opp_h_poss_to+r.opp_h_lo_lost+r.opp_h_sc_lost)/(r.opp_h_poss_n+r.opp_h_lo_lost+r.opp_h_sc_lost)*100):'-'},
+    {h:'Pen',fn:r=>r.pen},
+  ]));
+
+  document.getElementById('overview-body').innerHTML=
+    '<div class="cards">'+cards+'</div>'
+    +'<div class="sec-title">Win / Loss / Season &#8212; averages</div>'+avg
+    +'<div class="sec-title">Match-by-match</div>'+it
+    +'<div class="note">Territory % = Kubota action-time in opp half (x&#8201;51&#8211;110) &#247; total action-time. '
+    +'Turnover Rate = (PossTO+LOLost+SCLost)&#247;(Poss+LOLost+SCLost)&#215;100.</div>';
+})();
+"""
+    JS = JS_RAW.replace("%%DATA%%", DATA_JSON)
+
+    # ── 5. Assemble & write ────────────────────────────────
+    nav_html = (
+        '<b style="color:white">Kubota Spears &#8212; Season KPI 2026</b>'
+        ' &nbsp;&nbsp; ' + nav_items
+    )
+    html = (
+        '<!DOCTYPE html>\n<html lang="en"><head>\n'
+        '<meta charset="UTF-8">\n'
+        '<meta name="viewport" content="width=device-width,initial-scale=1.0">\n'
+        '<title>Season KPI Report &#8212; Kubota Spears (A4)</title>\n'
+        '<style>' + CSS + '</style>\n'
+        '</head>\n<body>\n'
+        '<div class="nav">' + nav_html + '</div>\n'
+        + pages_html + '\n'
+        '<script>' + JS + '</script>\n'
+        '</body></html>'
+    )
+
+    with open(OUT, "w", encoding="utf-8") as fh:
+        fh.write(html)
+    print(f"Wrote {OUT}  (P2: Overview with data; pages 2–10 stubs)")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -2870,6 +3088,7 @@ def compute_try_lb_detail(df):
     def get_outcome(sr):
         if sr=='Try': return 'Try'
         elif sr in ['Pen Won','Penalty Goal Scored']: return 'Pen Won'
+        elif sr=='Penalty Try': return 'Pen Try'  # 旧: なし（将来データ備え；現データでは Sequences に出現しないため数値影響ゼロ）
         elif 'Kick' in str(sr): return 'Kick'
         elif sr=='Pen Con': return 'Pen Con'
         elif 'Turnover' in str(sr): return 'Turnover'
@@ -3273,7 +3492,8 @@ def build_html(home, opp, master, detail, max_round, df=None):
         return f'<div style="display:flex;gap:5px;align-items:flex-end;height:100px;margin-bottom:6px">{cols}</div>'
 
     def conv_bar(oc,total,pc,nc):
-        pos=oc.get('Try',0)+oc.get('Pen Won',0)+oc.get('Kick',0); neg=total-pos
+        # 旧: pos=oc.get('Try',0)+oc.get('Pen Won',0)+oc.get('Kick',0)
+        pos=oc.get('Try',0)+oc.get('Pen Won',0)+oc.get('Pen Try',0); neg=total-pos
         pp=round(pos/total*100,1) if total else 0; np_=round(neg/total*100,1) if total else 0
         return f'''<div style="margin:8px 0">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:10px;font-weight:600">
@@ -3284,8 +3504,8 @@ def build_html(home, opp, master, detail, max_round, df=None):
             <div style="flex:1;background:{nc};opacity:.8;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff">{np_}%</div>
           </div>
           <div style="display:flex;justify-content:space-between;margin-top:2px;font-size:9px;color:#aaa">
-            <span>Try({oc.get('Try',0)}) PenWon({oc.get('Pen Won',0)}) Kick({oc.get('Kick',0)}) = {pos}</span>
-            <span>PenCon({oc.get('Pen Con',0)}) TO({oc.get('Turnover',0)}) Other({oc.get('Other',0)}) = {neg}</span>
+            <span>Try({oc.get('Try',0)}) PenWon({oc.get('Pen Won',0)}) PenTry({oc.get('Pen Try',0)}) = {pos}</span>
+            <span>Kick({oc.get('Kick',0)}) PenCon({oc.get('Pen Con',0)}) TO({oc.get('Turnover',0)}) Other({oc.get('Other',0)}) = {neg}</span>
           </div>
         </div>'''
 
@@ -4385,9 +4605,11 @@ def cmd_scout(args):
     for t in list(master.index):
         sub_s = lb_s_d[lb_s_d['team']==t]
         sub_c = lb_c_d[lb_c_d['team']==t]
-        pos_s = len(sub_s[sub_s['outcome'].isin(['Try','Pen Won','Kick'])])
+        # 旧: pos_s = len(sub_s[sub_s['outcome'].isin(['Try','Pen Won','Kick'])])
+        pos_s = len(sub_s[sub_s['outcome'].isin(['Try','Pen Won','Pen Try'])])
         tot_s = len(sub_s)
-        pos_c = len(sub_c[sub_c['outcome'].isin(['Try','Pen Won','Kick'])])
+        # 旧: pos_c = len(sub_c[sub_c['outcome'].isin(['Try','Pen Won','Kick'])])
+        pos_c = len(sub_c[sub_c['outcome'].isin(['Try','Pen Won','Pen Try'])])
         tot_c = len(sub_c)
         master.loc[t,'LB_BreachConv_pct']    = round(pos_s/tot_s*100,1) if tot_s else 0
         master.loc[t,'LB_OppBreachConv_pct'] = round(pos_c/tot_c*100,1) if tot_c else 0
@@ -4627,6 +4849,8 @@ def main():
 
     p_kpi = sub.add_parser("kpi", help="Generate season KPI report")
 
+    sub.add_parser("kpi-a4", help="Generate season KPI report (A4 portrait layout)")
+
     p_all = sub.add_parser("all", help="Run build + kpi")
     p_all.add_argument("--data", default="../BI Scouting", help="CSV data directory")
 
@@ -4643,6 +4867,8 @@ def main():
         cmd_scout(args)
     elif args.command == "kpi":
         cmd_kpi(args)
+    elif args.command == "kpi-a4":
+        cmd_kpi_a4(args)
     elif args.command == "all":
         cmd_build(args)
         cmd_kpi(args)
