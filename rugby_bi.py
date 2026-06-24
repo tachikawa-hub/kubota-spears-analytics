@@ -3124,7 +3124,8 @@ def compute_try_lb_detail(df):
             fxid=lb['FXID']; seq=lb['sequence_id']; lbp=lb['PlayNum']
             lbx=lb['x_coord']; lby=lb['y_coord']
             ss=df[(df['FXID']==fxid)&(df['sequence_id']==seq)]
-            pr=ss[ss['actionName']=='Possession']
+            # 旧: pr=ss[ss['actionName']=='Possession']
+            pr=ss[(ss['actionName']=='Possession')&(ss['teamName']==team)]
             px=pr['x_coord'].values[0] if len(pr)>0 else lbx
             src=get_source(pr['ActionTypeName'].values[0]) if len(pr)>0 else 'Other'
             rn=ss[(ss['actionName']=='Ruck')&(ss['PlayNum']<lbp)].shape[0]
@@ -3137,7 +3138,8 @@ def compute_try_lb_detail(df):
             fxid=lb['FXID']; seq=lb['sequence_id']; lbp=lb['PlayNum']
             lbx=lb['x_coord']; lby=lb['y_coord']
             ss=df[(df['FXID']==fxid)&(df['sequence_id']==seq)]
-            pr=ss[ss['actionName']=='Possession']
+            # 旧: pr=ss[ss['actionName']=='Possession']
+            pr=ss[(ss['actionName']=='Possession')&(ss['teamName']==lb['teamName'])]
             px=pr['x_coord'].values[0] if len(pr)>0 else lbx
             src=get_source(pr['ActionTypeName'].values[0]) if len(pr)>0 else 'Other'
             rn=ss[(ss['actionName']=='Ruck')&(ss['PlayNum']<lbp)].shape[0]
@@ -3965,7 +3967,8 @@ def build_html(home, opp, master, detail, max_round, df=None):
             ('DEF_TurnoverWon_PG', False,
              lambda r,v: f'<strong>ターンオーバー獲得（#{r} {v:.2f}/試合）</strong>：ブレイクダウンでのボール奪取がリーグ{"最上位" if r<=2 else "上位"}。カウンターアタックの起点として機能する。',
              lambda r,v: f'<strong>ターンオーバー獲得（#{r} {v:.2f}/試合）</strong>：ボール奪取力がリーグ{"最下位" if r>=11 else "下位"}。相手の継続アタックを止める力に課題がある。'),
-            ('BREACH_LineBreaks_PG', False,
+            # 旧: ('BREACH_LineBreaks_PG', False,
+            ('OV_LineBreaks_PG', False,
              lambda r,v: f'<strong>ラインブレイク（#{r} {v:.2f}/試合）</strong>：突破力がリーグ{"最高" if r<=2 else "上位"}。ディフェンスラインを崩す能力が得点機会を創出する。',
              lambda r,v: f'<strong>ラインブレイク（#{r} {v:.2f}/試合）</strong>：突破力がリーグ{"最低" if r>=11 else "下位"}。攻撃がブロックされやすく得点機会の創出に課題がある。'),
             ('TRY_TriesScored', False,
