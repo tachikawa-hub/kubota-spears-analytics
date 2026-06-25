@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kubota Spears 2025-26 Season Review</title>
+<style>
+:root {
+  --kub-dark: #14213d;
+  --kub-mid:  #1d3055;
+  --kub-red:  #d6202b;
+  --kub-gold: #e8a13c;
+  --neutral:  #f5f4f0;
+  --ink:      #1a1a1a;
+  --muted:    #6b6b6b;
+  --rule:     #d8d4cc;
+  --good:     #1a7a3c;
+  --warn:     #b85c00;
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #0c1524; color: var(--ink); }
+
+/* ── Slideshow ── */
+.deck { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+.slide {
+  position: absolute; inset: 0;
+  display: flex; align-items: stretch; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .22s ease;
+}
+.slide.active { opacity: 1; pointer-events: all; }
+.shell {
+  width: 100%; max-width: 1440px;
+  display: flex; flex-direction: column;
+  background: var(--neutral);
+  box-shadow: 0 0 80px rgba(0,0,0,.55);
+}
+
+/* ── Slide header ── */
+.ph {
+  background: var(--kub-dark); color: white;
+  padding: 12px 28px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 3px solid var(--kub-gold);
+  flex-shrink: 0;
+}
+.ph-left .sub  { font-size: 10px; color: var(--kub-gold); letter-spacing: .14em; text-transform: uppercase; margin-bottom: 4px; }
+.ph-left h1    { font-size: 21px; font-weight: 900; letter-spacing: .02em; }
+.ph-left .tagline { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 3px; }
+.record-pill {
+  background: var(--kub-red); padding: 7px 22px;
+  border-radius: 28px; text-align: center;
+}
+.record-pill .big  { font-size: 22px; font-weight: 900; letter-spacing: .05em; line-height: 1.1; }
+.record-pill .tiny { font-size: 9px; font-weight: 600; opacity: .75; letter-spacing: .1em; text-transform: uppercase; }
+
+/* ── Slide content ── */
+.slide-body {
+  flex: 1; overflow: hidden;
+  padding: 14px 28px 48px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+/* ── Stats row ── */
+.stat-row { display: flex; gap: 10px; flex-shrink: 0; }
+.scard {
+  flex: 1; background: white;
+  border: 1px solid var(--rule); border-radius: 5px;
+  padding: 11px 10px; text-align: center;
+}
+.scard .big   { font-size: 28px; font-weight: 900; color: var(--kub-dark); line-height: 1; }
+.scard .label { font-size: 9px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-top: 5px; }
+.scard .note  { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.scard.c-win  .big { color: var(--good); }
+.scard.c-loss .big { color: var(--kub-red); }
+.scard.c-gold .big { color: var(--warn); }
+
+/* ── Divider ── */
+.divider {
+  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+  font-size: 10px; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted);
+}
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
+
+/* ── Assessment grid (S1) ── */
+.assess-grid {
+  flex: 1; display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr 1fr 1fr 1fr;
+  column-gap: 18px; row-gap: 8px;
+  min-height: 0;
+}
+.assess-head { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding-bottom: 6px; border-bottom: 2px solid; }
+.assess-head.s { color: var(--good); border-color: var(--good); }
+.assess-head.c { color: var(--kub-red); border-color: var(--kub-red); }
+.aitem { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; border-radius: 5px; min-height: 0; }
+.aitem.s { background: rgba(26,122,60,.08); border-left: 3px solid var(--good); }
+.aitem.c { background: rgba(214,32,43,.07); border-left: 3px solid var(--kub-red); }
+.aitem-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+.aitem-main { font-size: 12.5px; font-weight: 700; line-height: 1.3; }
+.aitem-sub  { font-size: 10.5px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+.hi  { color: var(--good);    font-weight: 800; }
+.lo  { color: var(--kub-red); font-weight: 800; }
+.mid { color: var(--warn);    font-weight: 800; }
+
+/* ── Footer / Nav ── */
+.nav-wrap {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 40px; display: flex; align-items: center; justify-content: center;
+  gap: 8px; z-index: 50;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.25); cursor: pointer; transition: background .2s, transform .2s; }
+.dot.on { background: var(--kub-gold); transform: scale(1.25); }
+.slide-num { position: fixed; bottom: 12px; right: 22px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,.35); letter-spacing: .08em; z-index: 50; }
+.arr {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(20,33,61,.55); border: 1px solid rgba(255,255,255,.12);
+  color: white; font-size: 18px; cursor: pointer; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .18s, opacity .18s; user-select: none;
+}
+.arr:hover { background: rgba(20,33,61,.9); }
+.arr.prev-btn { left: 14px; }
+.arr.next-btn { right: 14px; }
+.arr.dim { opacity: .2; pointer-events: none; }
+
+/* ── 2-column layout ── */
+.two-col { display: flex; gap: 14px; flex: 1; min-height: 0; }
+.col     { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.col-55  { flex: 0 0 55%; }
+.col-45  { flex: 1; }
+.col-50  { flex: 1; }
+
+/* ── Section card ── */
+.sec-card {
+  background: white; border: 1px solid var(--rule); border-radius: 5px;
+  padding: 9px 11px; display: flex; flex-direction: column; gap: 6px;
+}
+.sec-card.flex1 { flex: 1; min-height: 0; overflow: hidden; }
+.sec-title {
+  font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .09em;
+  color: var(--muted); padding-bottom: 5px; border-bottom: 1px solid var(--rule); flex-shrink: 0;
+}
+
+/* ── Horizontal bar chart ── */
+.hbar-wrap { flex: 1; display: flex; flex-direction: column; gap: 3px; min-height: 0; overflow: hidden; }
+.hbar-row  { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.hbar-lbl  { width: 82px; text-align: right; font-size: 10px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hbar-lbl.me { color: var(--kub-dark); font-weight: 800; font-size: 11px; }
+.hbar-track { flex: 1; background: #e8e6e0; border-radius: 2px; height: 13px; overflow: hidden; }
+.hbar-fill  { height: 100%; border-radius: 2px; background: #b0bec5; }
+.hbar-fill.me   { background: var(--kub-dark); }
+.hbar-fill.good { background: var(--good); }
+.hbar-fill.warn { background: var(--warn); }
+.hbar-fill.red  { background: var(--kub-red); }
+.hbar-val  { width: 36px; font-size: 10px; font-weight: 700; color: var(--ink); }
+.hbar-rank { width: 22px; font-size: 9px; color: var(--muted); text-align: right; }
+
+/* ── YoY arrow card ── */
+.yoy-card {
+  background: white; border: 1px solid var(--rule); border-radius: 5px;
+  padding: 9px 12px; display: flex; flex-direction: column; gap: 4px;
+}
+.yoy-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.yoy-nums  { display: flex; align-items: center; gap: 8px; }
+.yoy-prev  { font-size: 16px; font-weight: 700; color: var(--muted); }
+.yoy-arrow { font-size: 16px; color: var(--kub-gold); }
+.yoy-curr  { font-size: 22px; font-weight: 900; color: var(--kub-dark); }
+.yoy-delta { font-size: 11px; font-weight: 700; margin-left: 4px; }
+.yoy-delta.up   { color: var(--good); }
+.yoy-delta.down { color: var(--kub-red); }
+
+/* ── Phase mini bar ── */
+.phase-mini { display: flex; flex-direction: column; gap: 5px; }
+.pm-row     { display: flex; align-items: center; gap: 6px; }
+.pm-lbl     { width: 70px; font-size: 10px; color: var(--ink); }
+.pm-track   { flex: 1; background: #e8e6e0; border-radius: 2px; height: 16px; overflow: hidden; display: flex; align-items: center; padding: 0 4px; }
+.pm-fill    { height: 100%; border-radius: 2px; background: var(--kub-dark); }
+.pm-val     { font-size: 10px; font-weight: 700; color: white; position: absolute; }
+.pm-row-label { width: 50px; font-size: 9px; color: var(--muted); font-weight: 700; }
+
+/* ── Mini visualizations (S1 assess cards) ── */
+.mini-vis { margin-top: 7px; padding-top: 6px; border-top: 1px solid rgba(0,0,0,.07); }
+.mv-note  { font-size: 8.5px; color: var(--muted); margin-top: 3px; }
+/* micro bar rows */
+.mv-row  { display:flex; align-items:center; gap:5px; margin-bottom:3px; }
+.mv-lbl  { width:44px; font-size:9px; font-weight:700; text-align:right; white-space:nowrap; }
+.mv-track{ flex:1; height:10px; background:#e8e6e0; border-radius:2px; overflow:hidden; }
+.mv-fill { height:100%; border-radius:2px; }
+.mv-fill.mk  { background:var(--kub-dark); }
+.mv-fill.gs  { background:var(--good); }
+.mv-fill.rd  { background:var(--kub-red); }
+.mv-fill.av  { background:#c8c4bc; }
+.mv-val  { width:34px; font-size:9px; font-weight:700; text-align:right; }
+/* rank chips */
+.mv-chips{ display:flex; gap:8px; align-items:center; margin-top:4px; }
+.mvc     { text-align:center; padding:4px 10px; border-radius:4px; min-width:54px; }
+.mvc .rk { font-size:16px; font-weight:900; line-height:1.15; }
+.mvc .lb { font-size:8px; margin-top:1px; }
+.mvc.gs  { background:rgba(26,122,60,.11);  color:var(--good); }
+.mvc.rd  { background:rgba(214,32,43,.09);  color:var(--kub-red); }
+.mvc.nt  { background:rgba(29,48,85,.09);   color:var(--kub-mid); }
+/* W/L compact bar pair */
+.mv-wl   { display:flex; align-items:center; gap:5px; margin-bottom:3px; }
+.mv-wlb  { width:30px; font-size:9px; font-weight:800; }
+.mv-wlt  { flex:1; height:11px; background:#e8e6e0; border-radius:2px; overflow:hidden; }
+.mv-wlf  { height:100%; border-radius:2px; }
+.mv-wlv  { width:34px; font-size:9px; font-weight:700; text-align:right; }
+/* territory split bar */
+.mv-terr { height:18px; border-radius:3px; overflow:hidden; display:flex; margin-top:4px; }
+.mv-terr-own{ display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:white;background:var(--kub-red); }
+.mv-terr-opp{ flex:1;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;background:#78909c; }
+
+/* ── Placeholder slides ── */
+.ph-body {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px; padding: 40px;
+}
+.ph-body .ph-num    { font-size: 80px; font-weight: 900; color: rgba(20,33,61,.07); line-height: 1; }
+.ph-body .ph-label  { font-size: 17px; font-weight: 700; color: var(--muted); }
+.ph-body .ph-status { font-size: 11px; color: #bbb; letter-spacing: .06em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- ════════════════════════════════════════
+     Slide 1 — Title / Season Summary
+════════════════════════════════════════ -->
+<div class="slide active">
+<div class="shell">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="sub">Japan Rugby League One D1 &nbsp;·&nbsp; Season 2025–26</div>
+      <h1>Kubota Spears — Season Review</h1>
+      <div class="tagline">Coaching Staff Confidential &nbsp;·&nbsp; R1–R22 Full Season Analysis</div>
+    </div>
+    <div class="record-pill">
+      <div class="big">16W &nbsp; 5L</div>
+      <div class="tiny">21 Matches Played</div>
+    </div>
+  </div>
+  <div class="slide-body">
+    <div class="stat-row">
+      <div class="scard c-win">
+        <div class="big">76%</div>
+        <div class="label">Win Rate</div>
+      </div>
+      <div class="scard">
+        <div class="big">774</div>
+        <div class="label">Points For</div>
+        <div class="note">36.9/G</div>
+      </div>
+      <div class="scard">
+        <div class="big">406</div>
+        <div class="label">Points Against</div>
+        <div class="note">19.3/G</div>
+      </div>
+      <div class="scard c-win">
+        <div class="big">+368</div>
+        <div class="label">Score Diff</div>
+        <div class="note">+17.5/G</div>
+      </div>
+      <div class="scard">
+        <div class="big">5.2</div>
+        <div class="label">Tries / Game</div>
+        <div class="note">被Try 2.6/G (2位)</div>
+      </div>
+      <div class="scard c-gold">
+        <div class="big">87.9%</div>
+        <div class="label">Tackle Success</div>
+        <div class="note">リーグ 3位タイ</div>
+      </div>
+    </div>
+    <div class="divider">Season Assessment</div>
+
+    <div class="assess-grid">
+      <div class="assess-head s">◎ &nbsp;Strengths — 確認された強み</div>
+      <div class="assess-head c">▲ &nbsp;Concerns — 構造的な課題</div>
+
+      <!-- ── S1 · 22m Entry 1位 ── -->
+      <div class="aitem s">
+        <div class="aitem-icon">◎</div>
+        <div style="flex:1;min-width:0;">
+          <div class="aitem-main">敵陣進入力 <span class="hi">リーグ1位</span> · Ph1 セットピース後の初弾が鋭い</div>
+          <div class="aitem-sub">22m Entries <span class="hi">15.10/G</span> (+1.4差, 平均+3.0) &nbsp;·&nbsp; Ph1 GL% 80.9%(4位) &nbsp;·&nbsp; 早期Try率 62.4%(3位) &nbsp;·&nbsp; 中央値フェーズ 2.0</div>
+          <div class="mini-vis">
+            <div style="display:flex;align-items:stretch;gap:8px;margin:3px 0 3px;">
+              <!-- 断トツ #1 badge -->
+              <div style="background:var(--kub-dark);border-radius:5px;padding:5px 10px;text-align:center;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;">
+                <div style="font-size:8px;font-weight:800;color:var(--kub-gold);letter-spacing:.1em;">LEAGUE</div>
+                <div style="font-size:20px;font-weight:900;color:white;line-height:1.1;">#1</div>
+                <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:1px;">15.10/G</div>
+              </div>
+              <!-- avg vs above-avg bar -->
+              <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+                <div style="height:16px;background:#e8e6e0;border-radius:2px;overflow:hidden;position:relative;">
+                  <div style="position:absolute;left:0;top:0;height:100%;width:80.1%;background:#9ab0c8;display:flex;align-items:center;padding:0 5px;">
+                    <span style="font-size:8px;font-weight:700;color:white;white-space:nowrap;">Avg 12.1</span>
+                  </div>
+                  <div style="position:absolute;left:80.1%;top:0;height:100%;right:0;background:var(--kub-gold);display:flex;align-items:center;justify-content:center;">
+                    <span style="font-size:9px;font-weight:900;color:var(--kub-dark);">+3.0</span>
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <span style="font-size:10px;font-weight:900;color:var(--kub-gold);">断トツ — +3.0/G 突出↑</span>
+                </div>
+              </div>
+            </div>
+            <div class="mv-note">リーグ平均から +3.0/G 突出、2位に +1.4差 / Dominant #1 · +3.0 above league avg</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── C1 · 22m Conv% 7位 ── -->
+      <div class="aitem c">
+        <div class="aitem-icon">▲</div>
+        <div style="flex:1;min-width:0;">
+          <div class="aitem-main">22m決定率 <span class="lo">7位(45.1%)</span> — 進入1位との乖離がリーグ最大</div>
+          <div class="aitem-sub">22m TO率 <span class="lo">47.0%(10位)</span> &nbsp;·&nbsp; IC(12番)全22m内指標 最下位 &nbsp;·&nbsp; TF PCM低 &nbsp;·&nbsp; Conv×TO r=−0.922</div>
+          <div class="mini-vis">
+            <div class="mv-chips">
+              <div class="mvc gs"><div class="rk">1位</div><div class="lb">22m Entry</div></div>
+              <div style="font-size:18px;color:var(--muted);align-self:center;">→</div>
+              <div class="mvc rd"><div class="rk">7位</div><div class="lb">Conv%</div></div>
+              <div style="font-size:18px;color:var(--muted);align-self:center;">→</div>
+              <div class="mvc rd"><div class="rk">10位</div><div class="lb">TO率</div></div>
+            </div>
+            <div class="mv-note">進入量1位 ≠ 決定力 — ランク乖離がリーグ最大 / Entry→Conv→TO rank gap</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── S2 · Contest Retention 1位 ── -->
+      <div class="aitem s">
+        <div class="aitem-icon">◎</div>
+        <div style="flex:1;min-width:0;">
+          <div class="aitem-main">外のランナー優秀 · コンテストキック <span class="hi">リテンション1位</span></div>
+          <div class="aitem-sub">OC PCM/carry 4.12m(1位) &nbsp;·&nbsp; FB 22m内PCM/G 5.2m(1位) &nbsp;·&nbsp; Contest Retention <span class="hi">31.8%</span>(2位 Steelers 30.7%)</div>
+          <div class="mini-vis">
+            <div style="display:flex;align-items:center;gap:10px;margin:3px 0 3px;">
+              <!-- Gold No.1 badge -->
+              <div style="background:var(--kub-gold);border-radius:6px;padding:6px 12px;text-align:center;flex-shrink:0;">
+                <div style="font-size:8px;font-weight:800;color:var(--kub-dark);letter-spacing:.1em;">LEAGUE</div>
+                <div style="font-size:22px;font-weight:900;color:var(--kub-dark);line-height:1.1;">No.1</div>
+              </div>
+              <!-- stat + context -->
+              <div style="flex:1;">
+                <div style="font-size:22px;font-weight:900;color:var(--kub-dark);line-height:1.1;">31.8%</div>
+                <div style="font-size:9px;color:var(--muted);margin-top:2px;">コンテストキック保持率</div>
+                <div style="font-size:9px;font-weight:700;color:var(--kub-dark);margin-top:1px;">12チーム中 最高 / Best in League</div>
+              </div>
+            </div>
+            <div class="mv-note">Box/Bomb キックの競り合いはリーグで一番 / #1 in Contest Kick Retention</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── C2 · Box Kick W vs L ── -->
+      <div class="aitem c">
+        <div class="aitem-icon">▲</div>
+        <div style="flex:1;min-width:0;">
+          <div class="aitem-main">負け試合で Box Kick 固執 → <span class="lo">崩壊</span></div>
+          <div class="aitem-sub">Box Retention <span class="lo">40%→13.9%</span> &nbsp;·&nbsp; 相手 Caught Full <span class="lo">20%→41.7%</span> &nbsp;·&nbsp; Box r=−0.53 &nbsp;·&nbsp; Touch Kick r=+0.60</div>
+          <div class="mini-vis">
+            <!-- 崩壊感：縦棒グラフで急降下を視覚化 -->
+            <div style="display:flex;align-items:flex-end;gap:3px;height:50px;margin:4px 0 2px;">
+              <!-- WIN bar (tall, green) -->
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;">
+                <span style="font-size:13px;font-weight:900;color:var(--good);line-height:1.1;">40.0%</span>
+                <div style="width:100%;height:44px;background:var(--good);border-radius:3px 3px 0 0;margin-top:1px;"></div>
+              </div>
+              <!-- down arrow + delta -->
+              <div style="flex:0 0 30px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:3px;">
+                <span style="font-size:24px;color:var(--kub-red);line-height:1;font-weight:900;">↘</span>
+                <span style="font-size:8px;color:var(--kub-red);font-weight:900;white-space:nowrap;">−26pp</span>
+              </div>
+              <!-- LOSS bar (short, red — ~1/3 height) -->
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;">
+                <span style="font-size:13px;font-weight:900;color:var(--kub-red);line-height:1.1;">13.9%</span>
+                <div style="width:100%;height:15px;background:var(--kub-red);border-radius:3px 3px 0 0;margin-top:1px;"></div>
+              </div>
+            </div>
+            <div style="height:1px;background:var(--rule);"></div>
+            <div style="display:flex;gap:3px;margin-top:3px;">
+              <span style="flex:1;text-align:center;font-size:9px;font-weight:700;color:var(--good);">WIN 16G</span>
+              <span style="flex:0 0 30px;"></span>
+              <span style="flex:1;text-align:center;font-size:9px;font-weight:700;color:var(--kub-red);">LOSS 5G</span>
+            </div>
+            <div class="mv-note" style="margin-top:3px;">Box Kick 保持率 — 負け試合では競り合いが封じられ、相手に自由なキックを許している</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── S3 · 守備リーグ最高 ── -->
+      <div class="aitem s">
+        <div class="aitem-icon">◎</div>
+        <div style="flex:1;min-width:0;">
+          <div class="aitem-main">守備指標 <span class="hi">リーグ最高水準</span></div>
+          <div class="aitem-sub">被Try 2.6/G(2位) &nbsp;·&nbsp; タックル成功率 87.9%(3位タイ) &nbsp;·&nbsp; 被ペナルティ/G 8.9(9位=少ない)</div>
+          <div class="mini-vis">
+            <div class="mv-chips">
+              <div class="mvc gs"><div class="rk">2位</div><div class="lb">被Try/G</div></div>
+              <div class="mvc gs"><div class="rk">87.9%</div><div class="lb">Tackle成功</div></div>
+              <div class="mvc nt"><div class="rk">8.9/G</div><div class="lb">Pen少ない</div></div>
+            </div>
+            <div class="mv-note">守備3指標 — いずれもリーグ上位水準 / Top-tier across 3 defence metrics</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── C3 · 自陣規律 ── -->
+      <div class="aitem c">
+        <div class="aitem-icon">▲</div>
+        <div style="flex:1;min-width:0;">
+          <div class="aitem-main">自陣規律 — 量でなく <span class="lo">場所と質</span> に課題</div>
+          <div class="aitem-sub">自陣Pen率 <span class="lo">63.1%(2位)</span> &nbsp;·&nbsp; 被PG失点比 <span class="lo">14.9%(2位)</span> &nbsp;·&nbsp; R22 Steelers 15Pen・PG5本=15pts vs 総得点13pts</div>
+          <div class="mini-vis">
+            <div class="mv-terr">
+              <div class="mv-terr-own" style="width:63.1%">自陣 63.1%</div>
+              <div class="mv-terr-opp">敵陣 36.9%</div>
+            </div>
+            <div class="mv-note">ペナルティ発生エリア分布 / Penalty Location Split</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── S4 · Ph1 GL% 維持 ── -->
+      <div class="aitem s">
+        <div class="aitem-icon">◎</div>
+        <div style="flex:1;min-width:0;">
+          <div class="aitem-main">Ph1 GL% は負け試合でも <span class="hi">84.0%</span> — 初弾の鋭さは維持</div>
+          <div class="aitem-sub">セットピース後の最初の一撃は強豪相手にも機能 &nbsp;·&nbsp; ラインアウト Won% 93.3%(勝試合)</div>
+          <div class="mini-vis">
+            <div class="mv-wl"><span class="mv-wlb" style="color:var(--good)">WIN</span><div class="mv-wlt"><div class="mv-wlf" style="width:80.1%;background:var(--kub-dark)"></div></div><span class="mv-wlv">80.1%</span></div>
+            <div class="mv-wl"><span class="mv-wlb" style="color:var(--ink)">LOSS</span><div class="mv-wlt"><div class="mv-wlf" style="width:84.0%;background:var(--kub-mid)"></div></div><span class="mv-wlv">84.0%</span></div>
+            <div class="mv-note">Ph1 ゲインライン突破率 (W vs L) — 同等水準を維持 / GL% maintained under pressure</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── C4 · Ph2以降 失速 ── -->
+      <div class="aitem c">
+        <div class="aitem-icon">▲</div>
+        <div style="flex:1;min-width:0;">
+          <div class="aitem-main">Ph2以降の失速 · LO Lost <span class="lo">2倍以上</span>(負け試合)</div>
+          <div class="aitem-sub">負け試合 Ph4-6 GL <span class="lo">42.6%</span>(勝ち試合 57.7%より−15pp) &nbsp;·&nbsp; LO Lost 6.7%→<span class="lo">15.3%</span>(2.3倍) &nbsp;·&nbsp; Try/G 6.2→2.0</div>
+          <div class="mini-vis">
+            <div class="mv-wl"><span class="mv-wlb" style="color:var(--good)">WIN</span><div class="mv-wlt"><div class="mv-wlf" style="width:100%;background:var(--good)"></div></div><span class="mv-wlv" style="color:var(--good)">57.7%</span></div>
+            <div class="mv-wl"><span class="mv-wlb" style="color:var(--kub-red)">LOSS</span><div class="mv-wlt"><div class="mv-wlf" style="width:73.8%;background:var(--kub-red)"></div></div><span class="mv-wlv" style="color:var(--kub-red)">42.6%</span></div>
+            <div class="mv-note">Ph4–6 ゲインライン突破率 (W vs L) / GL% Decelerates in Tight Games</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /assess-grid -->
+  </div>
+</div>
+</div><!-- /slide 1 -->
+
+
+<!-- ════════════════════════════════════════
+     Slide 2 — 強み① 敵陣進入力
+     22m Entries リーグ1位 / YoY +17% / Phase Try
+════════════════════════════════════════ -->
+<div class="slide">
+<div class="shell">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="sub">Japan Rugby League One D1 &nbsp;·&nbsp; 2025–26 Season Review &nbsp;·&nbsp; Strengths</div>
+      <h1>強み① &nbsp; 敵陣進入力 &amp; セットピース後の初弾</h1>
+      <div class="tagline">Attack Depth · 22m Entry Volume League #1 · Phase Try Efficiency</div>
+    </div>
+    <div class="record-pill"><div class="big">◎ 1位</div><div class="tiny">22m Entries</div></div>
+  </div>
+
+  <div class="slide-body">
+
+    <!-- Stat cards -->
+    <div class="stat-row">
+      <div class="scard c-win">
+        <div class="big">15.10</div>
+        <div class="label">22m Entries / Game</div>
+        <div class="note">リーグ <strong>1位</strong>（2位 BlueRevs +1.38差）</div>
+      </div>
+      <div class="scard c-win">
+        <div class="big">+16.6%</div>
+        <div class="label">YoY Entry 増加率</div>
+        <div class="note">24-25 12.94/G → 25-26 15.10/G</div>
+      </div>
+      <div class="scard">
+        <div class="big">62.4%</div>
+        <div class="label">早期Try率 Ph1–3</div>
+        <div class="note">リーグ <strong>3位</strong> &nbsp;·&nbsp; Ph1 単独 40.4%</div>
+      </div>
+      <div class="scard">
+        <div class="big">80.9%</div>
+        <div class="label">Ph1 ゲインライン突破率</div>
+        <div class="note">リーグ <strong>4位</strong> &nbsp;·&nbsp; 中央値フェーズ 2.0</div>
+      </div>
+    </div>
+
+    <div class="divider">22m Entries / Game — リーグ全12チーム比較 &nbsp; League Comparison</div>
+
+    <!-- Main chart area -->
+    <div class="two-col" style="flex:1; min-height:0;">
+
+      <!-- LEFT: League bar chart -->
+      <div class="col col-55">
+        <div class="sec-card flex1">
+          <div class="sec-title">22m Entries per Game &nbsp;·&nbsp; 25-26 (R1–R22) &nbsp;↑ 多い方が良い</div>
+          <div class="hbar-wrap">
+
+            <div class="hbar-row">
+              <div class="hbar-lbl me">Spears</div>
+              <div class="hbar-track"><div class="hbar-fill me" style="width:100%"></div></div>
+              <div class="hbar-val" style="color:var(--kub-dark);font-weight:900">15.10</div>
+              <div class="hbar-rank" style="color:var(--good);font-weight:800">1位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">BlueRevs</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:90.9%"></div></div>
+              <div class="hbar-val">13.72</div>
+              <div class="hbar-rank">2位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Steelers</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:89.1%"></div></div>
+              <div class="hbar-val">13.45</div>
+              <div class="hbar-rank">3位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Wild Knights</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:84.8%"></div></div>
+              <div class="hbar-val">12.80</div>
+              <div class="hbar-rank">4位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Verblitz</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:81.7%"></div></div>
+              <div class="hbar-val">12.33</div>
+              <div class="hbar-rank">5位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">BlackRams</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:78.4%"></div></div>
+              <div class="hbar-val">11.84</div>
+              <div class="hbar-rank">6位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Sungoliath</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:77.9%"></div></div>
+              <div class="hbar-val">11.76</div>
+              <div class="hbar-rank">7位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Honda Heat</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:76.9%"></div></div>
+              <div class="hbar-val">11.61</div>
+              <div class="hbar-rank">8位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Eagles</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:73.6%"></div></div>
+              <div class="hbar-val">11.11</div>
+              <div class="hbar-rank">9位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">D-Rocks</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:72.5%"></div></div>
+              <div class="hbar-val">10.94</div>
+              <div class="hbar-rank">10位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Dynaboars</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:72.1%"></div></div>
+              <div class="hbar-val">10.89</div>
+              <div class="hbar-rank">11位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Toshiba</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:64.5%"></div></div>
+              <div class="hbar-val">9.74</div>
+              <div class="hbar-rank">12位</div>
+            </div>
+
+          </div><!-- /hbar-wrap -->
+        </div>
+      </div><!-- /col-55 -->
+
+      <!-- RIGHT: YoY + Phase -->
+      <div class="col col-45">
+
+        <!-- YoY Entry card -->
+        <div class="yoy-card">
+          <div class="yoy-label">YoY 前季比 · 22m Entries per Game</div>
+          <div class="yoy-nums">
+            <div>
+              <div style="font-size:9px;color:var(--muted)">24-25 (R1–18)</div>
+              <div class="yoy-prev">12.94</div>
+            </div>
+            <div class="yoy-arrow">→</div>
+            <div>
+              <div style="font-size:9px;color:var(--muted)">25-26 (R1–22)</div>
+              <div class="yoy-curr">15.10</div>
+            </div>
+            <div class="yoy-delta up">+2.16/G<br><span style="font-size:10px">+16.6%</span></div>
+          </div>
+        </div>
+
+        <!-- Phase Try% chart -->
+        <div class="sec-card" style="flex:1;min-height:0;overflow:hidden;">
+          <div class="sec-title">早期トライ率 Phase Try% &nbsp;·&nbsp; リーグ比較（上位チーム）</div>
+          <div style="font-size:9px;color:var(--muted);margin-bottom:6px;">Ph1–3 Try% — セットピース後3フェーズ以内のトライ比率 ↑ 高い方が良い</div>
+          <div class="hbar-wrap">
+            <div class="hbar-row">
+              <div class="hbar-lbl">BlueRevs</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:100%"></div></div>
+              <div class="hbar-val">66.3%</div>
+              <div class="hbar-rank">1位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">BlackRams</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:99.8%"></div></div>
+              <div class="hbar-val">66.2%</div>
+              <div class="hbar-rank">2位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl me">Spears</div>
+              <div class="hbar-track"><div class="hbar-fill me" style="width:94.1%"></div></div>
+              <div class="hbar-val" style="color:var(--kub-dark);font-weight:900">62.4%</div>
+              <div class="hbar-rank" style="color:var(--good);font-weight:800">3位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Honda Heat</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:93.5%"></div></div>
+              <div class="hbar-val">62.0%</div>
+              <div class="hbar-rank">4位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Steelers</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:92.5%"></div></div>
+              <div class="hbar-val">61.3%</div>
+              <div class="hbar-rank">5位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Wild Knights</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:88.1%"></div></div>
+              <div class="hbar-val">58.4%</div>
+              <div class="hbar-rank">6位</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ph1 bar note -->
+        <div class="sec-card" style="flex-shrink:0;">
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div style="flex:1;">
+              <div style="font-size:9px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.08em;">Ph1 単独 Try率 / Median Phase</div>
+              <div style="display:flex;gap:16px;margin-top:5px;">
+                <div style="text-align:center;">
+                  <div style="font-size:22px;font-weight:900;color:var(--kub-dark);">40.4%</div>
+                  <div style="font-size:9px;color:var(--muted);">Ph1 Try% (3位)</div>
+                </div>
+                <div style="text-align:center;">
+                  <div style="font-size:22px;font-weight:900;color:var(--kub-dark);">2.0</div>
+                  <div style="font-size:9px;color:var(--muted);">中央値フェーズ</div>
+                </div>
+                <div style="text-align:center;">
+                  <div style="font-size:22px;font-weight:900;color:var(--good);">5.5/G</div>
+                  <div style="font-size:9px;color:var(--muted);">H1 Try / Game</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /col-45 -->
+    </div><!-- /two-col -->
+
+  </div><!-- /slide-body -->
+</div><!-- /shell -->
+</div><!-- /slide 2 -->
+
+
+<!-- ════════════════════════════════════════
+     Slide 3 — 強み② 守備 & 個人走力
+     Contest Retention #1 / Tries Conceded #2 / Position PCM
+════════════════════════════════════════ -->
+<div class="slide">
+<div class="shell">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="sub">Japan Rugby League One D1 &nbsp;·&nbsp; 2025–26 Season Review &nbsp;·&nbsp; Strengths</div>
+      <h1>強み② &nbsp; 守備の堅牢さ &amp; 個の走力</h1>
+      <div class="tagline">Defence · Contest Retention League #1 · Tries Conceded #2 · Individual Runners</div>
+    </div>
+    <div class="record-pill"><div class="big">◎ 1位</div><div class="tiny">Contest Retention</div></div>
+  </div>
+
+  <div class="slide-body">
+
+    <!-- Stat cards -->
+    <div class="stat-row">
+      <div class="scard c-win">
+        <div class="big">31.8%</div>
+        <div class="label">Contest Retention</div>
+        <div class="note">リーグ <strong>1位</strong>（2位 Steelers 30.7%）</div>
+      </div>
+      <div class="scard c-win">
+        <div class="big">2.6</div>
+        <div class="label">Tries Conceded / Game</div>
+        <div class="note">リーグ <strong>2位</strong>（1位 Wild Knights 2.4）</div>
+      </div>
+      <div class="scard">
+        <div class="big">87.9%</div>
+        <div class="label">Tackle Success Rate</div>
+        <div class="note">リーグ <strong>3位タイ</strong>（Wild Knights 同率）</div>
+      </div>
+      <div class="scard c-gold">
+        <div class="big">4.12m</div>
+        <div class="label">OC PCM / Carry (22m内)</div>
+        <div class="note">Outside Centre &nbsp;·&nbsp; FB 22m内 <strong>5.2/G</strong></div>
+      </div>
+    </div>
+
+    <div class="divider">守備強度 &amp; コンテストキック — リーグ比較 &nbsp; League Comparison</div>
+
+    <!-- Two col -->
+    <div class="two-col" style="flex:1; min-height:0;">
+
+      <!-- LEFT: Two charts stacked -->
+      <div class="col col-50">
+
+        <!-- Tries Conceded/G -->
+        <div class="sec-card" style="flex:1;min-height:0;overflow:hidden;">
+          <div class="sec-title">被Try / Game &nbsp;↓ 少ない方が良い &nbsp;·&nbsp; Being Tries Conceded (Top 6)</div>
+          <div class="hbar-wrap">
+            <div class="hbar-row">
+              <div class="hbar-lbl">Wild Knights</div>
+              <div class="hbar-track"><div class="hbar-fill good" style="width:40%"></div></div>
+              <div class="hbar-val" style="color:var(--good);font-weight:800">2.4/G</div>
+              <div class="hbar-rank">1位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl me">Spears</div>
+              <div class="hbar-track"><div class="hbar-fill me" style="width:43.3%"></div></div>
+              <div class="hbar-val" style="color:var(--kub-dark);font-weight:900">2.6/G</div>
+              <div class="hbar-rank" style="color:var(--good);font-weight:800">2位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Steelers</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:56.7%"></div></div>
+              <div class="hbar-val">3.4/G</div>
+              <div class="hbar-rank">3位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">BlackRams</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:76.7%"></div></div>
+              <div class="hbar-val">4.6/G</div>
+              <div class="hbar-rank">4位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Sungoliath</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:76.7%"></div></div>
+              <div class="hbar-val">4.6/G</div>
+              <div class="hbar-rank">5位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Toshiba</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:76.7%"></div></div>
+              <div class="hbar-val">4.6/G</div>
+              <div class="hbar-rank">6位</div>
+            </div>
+          </div>
+          <div style="font-size:9px;color:var(--muted);margin-top:4px;">※棒が短い = 失トライが少ない = 守備良好</div>
+        </div>
+
+        <!-- Contest Retention -->
+        <div class="sec-card" style="flex:1;min-height:0;overflow:hidden;">
+          <div class="sec-title">コンテストキック 保持率 &nbsp;↑ 高い方が良い &nbsp;·&nbsp; Contest Kick Retention (Top 6)</div>
+          <div class="hbar-wrap">
+            <div class="hbar-row">
+              <div class="hbar-lbl me">Spears</div>
+              <div class="hbar-track"><div class="hbar-fill me" style="width:100%"></div></div>
+              <div class="hbar-val" style="color:var(--kub-dark);font-weight:900">31.8%</div>
+              <div class="hbar-rank" style="color:var(--good);font-weight:800">1位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Steelers</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:96.5%"></div></div>
+              <div class="hbar-val">30.7%</div>
+              <div class="hbar-rank">2位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Verblitz</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:86.8%"></div></div>
+              <div class="hbar-val">27.6%</div>
+              <div class="hbar-rank">3位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Wild Knights</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:84.3%"></div></div>
+              <div class="hbar-val">26.8%</div>
+              <div class="hbar-rank">4位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Dynaboars</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:80.2%"></div></div>
+              <div class="hbar-val">25.5%</div>
+              <div class="hbar-rank">5位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Sungoliath</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:77.0%"></div></div>
+              <div class="hbar-val">24.5%</div>
+              <div class="hbar-rank">6位</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /col-50 LEFT -->
+
+      <!-- RIGHT: 22m Position PCM -->
+      <div class="col col-50">
+        <div class="sec-card flex1">
+          <div class="sec-title">22m内 ポジション別 Post Contact Metres — Spears 25-26 &nbsp;·&nbsp; Position PCM in Opposition 22</div>
+          <div style="font-size:9px;color:var(--muted);margin-bottom:6px;">外BK（LW/OC/FB）が上位 &nbsp;·&nbsp; IC(12番)は最下位圏 — 課題詳細は Slide 4</div>
+          <div class="hbar-wrap">
+            <div class="hbar-row">
+              <div class="hbar-lbl">LW 左WG</div>
+              <div class="hbar-track"><div class="hbar-fill good" style="width:100%"></div></div>
+              <div class="hbar-val" style="color:var(--good)">138</div>
+              <div class="hbar-rank" style="font-size:8px;">3.5m/c</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">No.8 8番</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:99.3%;background:#5c6bc0;"></div></div>
+              <div class="hbar-val">137</div>
+              <div class="hbar-rank" style="font-size:8px;">1.8m/c</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl me">OC 外CTB</div>
+              <div class="hbar-track"><div class="hbar-fill me" style="width:95.7%"></div></div>
+              <div class="hbar-val" style="color:var(--kub-dark);font-weight:900">132</div>
+              <div class="hbar-rank" style="font-size:8px;color:var(--good);font-weight:700">4.1m/c</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl me">FB 15番</div>
+              <div class="hbar-track"><div class="hbar-fill me" style="width:79.7%"></div></div>
+              <div class="hbar-val" style="color:var(--kub-dark);font-weight:900">110</div>
+              <div class="hbar-rank" style="font-size:8px;color:var(--good);font-weight:700">5.2/G</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">BS 6番</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:79.0%"></div></div>
+              <div class="hbar-val">109</div>
+              <div class="hbar-rank" style="font-size:8px;">1.6m/c</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">THP 3番</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:72.5%"></div></div>
+              <div class="hbar-val">100</div>
+              <div class="hbar-rank" style="font-size:8px;">1.5m/c</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Lock4 4番</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:69.6%"></div></div>
+              <div class="hbar-val">96</div>
+              <div class="hbar-rank" style="font-size:8px;">1.8m/c</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">SH 9番</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:64.5%"></div></div>
+              <div class="hbar-val">89</div>
+              <div class="hbar-rank" style="font-size:8px;">1.8m/c</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Hooker 2番</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:53.6%"></div></div>
+              <div class="hbar-val">74</div>
+              <div class="hbar-rank" style="font-size:8px;">1.2m/c</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Lock5 5番</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:35.5%"></div></div>
+              <div class="hbar-val">49</div>
+              <div class="hbar-rank" style="font-size:8px;">1.1m/c</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl" style="color:var(--kub-red);font-weight:800;">IC 12番</div>
+              <div class="hbar-track"><div class="hbar-fill red" style="width:26.8%"></div></div>
+              <div class="hbar-val" style="color:var(--kub-red);font-weight:800;">37 ▲</div>
+              <div class="hbar-rank" style="font-size:8px;color:var(--kub-red);">1.3m/c</div>
+            </div>
+          </div>
+          <div style="font-size:9px;background:rgba(214,32,43,.08);border-left:3px solid var(--kub-red);padding:4px 7px;border-radius:3px;color:var(--kub-red);font-weight:700;margin-top:4px;">
+            ▲ IC(12番) は22m内 PCM最低 · BK内最下位 → 課題① へ続く
+          </div>
+        </div>
+      </div><!-- /col-50 RIGHT -->
+
+    </div><!-- /two-col -->
+  </div><!-- /slide-body -->
+</div><!-- /shell -->
+</div><!-- /slide 3 -->
+
+
+<!-- ════════════════════════════════════════
+     Slides 4–10 — Stubs (will be implemented next)
+════════════════════════════════════════ -->
+
+<!-- Slide 4 -->
+<div class="slide">
+<div class="shell">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="sub">Japan Rugby League One D1 &nbsp;·&nbsp; 2025–26 Season Review &nbsp;·&nbsp; Challenge</div>
+      <h1>課題① &nbsp; エントリー1位なのにConv%6位 — 22m内での失球</h1>
+      <div class="tagline">Attack Finishing · 22m Conv% 45.1% (6位) · TO Rate 47.0%</div>
+    </div>
+    <div class="record-pill" style="background:rgba(214,32,43,.12);border-color:rgba(214,32,43,.3);">
+      <div class="big" style="color:var(--kub-red);">▲ 6位</div>
+      <div class="tiny">22m Conv%</div>
+    </div>
+  </div>
+
+  <div class="slide-body">
+
+    <div class="stat-row">
+      <div class="scard c-win">
+        <div class="big">15.10/G</div>
+        <div class="label">22m Entries（入口）</div>
+        <div class="note">リーグ <strong>1位</strong> · 断トツ</div>
+      </div>
+      <div class="scard" style="border-left:3px solid var(--kub-red);">
+        <div class="big" style="color:var(--kub-red);">45.1%</div>
+        <div class="label">22m Conv%（出口）</div>
+        <div class="note">リーグ <strong>6位</strong> · Steelers比 −14.7pp</div>
+      </div>
+      <div class="scard" style="border-left:3px solid var(--kub-red);">
+        <div class="big" style="color:var(--kub-red);">47.0%</div>
+        <div class="label">22m TO率（Turnover）</div>
+        <div class="note">前季 40.0% → <strong>+7.0pp悪化</strong></div>
+      </div>
+      <div class="scard">
+        <div class="big">−6.2pp</div>
+        <div class="label">Conv% YoY変化</div>
+        <div class="note">24-25 51.3% → 25-26 45.1%</div>
+      </div>
+    </div>
+
+    <div class="divider">22m Conv% — リーグ全12チーム比較 &nbsp; League Comparison</div>
+
+    <div class="two-col" style="flex:1;min-height:0;">
+
+      <!-- LEFT: Conv% league bar chart -->
+      <div class="col col-55">
+        <div class="sec-card flex1">
+          <div class="sec-title">22m Conv% &nbsp;·&nbsp; 25-26 (R1–R22) &nbsp;↑ 高い方が良い</div>
+          <div class="hbar-wrap">
+            <div class="hbar-row">
+              <div class="hbar-lbl">Steelers</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:100%"></div></div>
+              <div class="hbar-val">59.8%</div>
+              <div class="hbar-rank">1位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Sungoliath</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:94.5%"></div></div>
+              <div class="hbar-val">56.5%</div>
+              <div class="hbar-rank">2位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Wild Knights</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:80.6%"></div></div>
+              <div class="hbar-val">48.2%</div>
+              <div class="hbar-rank">3位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">BlueRevs</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:76.1%"></div></div>
+              <div class="hbar-val">45.5%</div>
+              <div class="hbar-rank">4位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Verblitz</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:75.9%"></div></div>
+              <div class="hbar-val">45.4%</div>
+              <div class="hbar-rank">5位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl me">Spears</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:75.4%;background:var(--kub-red);"></div></div>
+              <div class="hbar-val" style="color:var(--kub-red);font-weight:900">45.1%</div>
+              <div class="hbar-rank" style="color:var(--kub-red);font-weight:800">6位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Honda Heat</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:75.1%"></div></div>
+              <div class="hbar-val">44.9%</div>
+              <div class="hbar-rank">7位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Toshiba</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:74.1%"></div></div>
+              <div class="hbar-val">44.3%</div>
+              <div class="hbar-rank">8位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Dynaboars</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:71.9%"></div></div>
+              <div class="hbar-val">43.0%</div>
+              <div class="hbar-rank">9位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">BlackRams</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:69.7%"></div></div>
+              <div class="hbar-val">41.7%</div>
+              <div class="hbar-rank">10位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">D-Rocks</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:67.7%"></div></div>
+              <div class="hbar-val">40.5%</div>
+              <div class="hbar-rank">11位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Eagles</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:66.6%"></div></div>
+              <div class="hbar-val">39.8%</div>
+              <div class="hbar-rank">12位</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: YoY outcome shift -->
+      <div class="col col-45">
+
+        <!-- Entry vs Conv gap -->
+        <div class="sec-card" style="flex-shrink:0;">
+          <div class="sec-title">入口 vs 出口 &nbsp;·&nbsp; リーグ1位の進入力 → 6位の決定率</div>
+          <div style="display:flex;gap:10px;align-items:center;margin:6px 0;">
+            <div style="text-align:center;background:rgba(26,122,60,.1);border-radius:6px;padding:8px 14px;flex:1;">
+              <div style="font-size:9px;font-weight:800;color:var(--good);text-transform:uppercase;letter-spacing:.08em;">Entries</div>
+              <div style="font-size:26px;font-weight:900;color:var(--good);line-height:1.1;">1位</div>
+              <div style="font-size:10px;color:var(--good);font-weight:700;">15.10/G</div>
+            </div>
+            <div style="font-size:28px;color:var(--kub-red);font-weight:900;">→</div>
+            <div style="text-align:center;background:rgba(214,32,43,.1);border-radius:6px;padding:8px 14px;flex:1;">
+              <div style="font-size:9px;font-weight:800;color:var(--kub-red);text-transform:uppercase;letter-spacing:.08em;">Conv%</div>
+              <div style="font-size:26px;font-weight:900;color:var(--kub-red);line-height:1.1;">6位</div>
+              <div style="font-size:10px;color:var(--kub-red);font-weight:700;">45.1%</div>
+            </div>
+          </div>
+          <div style="font-size:9px;color:var(--muted);text-align:center;">入ってからが課題 — 前季比 Conv −6.2pp / TO +7.0pp</div>
+        </div>
+
+        <!-- YoY outcome stacked bar -->
+        <div class="sec-card" style="flex:1;min-height:0;">
+          <div class="sec-title">22m内結末 YoY比較 &nbsp;·&nbsp; 前季 vs 今季</div>
+          <div style="font-size:9px;color:var(--muted);margin-bottom:8px;">Conv% = Try + PGA &nbsp;·&nbsp; TO% = Turnover + Kick Turnover</div>
+
+          <!-- 24-25 stacked bar -->
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+              <span style="font-size:9px;font-weight:800;color:var(--muted);">24-25 (R1–18)</span>
+              <span style="font-size:9px;color:var(--muted);">195 entries</span>
+            </div>
+            <div style="height:22px;display:flex;border-radius:3px;overflow:hidden;">
+              <div style="width:51.3%;background:var(--good);display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:9px;font-weight:900;color:white;">Conv 51.3%</span>
+              </div>
+              <div style="width:40.0%;background:var(--kub-red);display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:9px;font-weight:900;color:white;">TO 40.0%</span>
+              </div>
+              <div style="flex:1;background:#c8c4bc;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:8px;color:var(--kub-dark);">Pen 8.7%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 25-26 stacked bar -->
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+              <span style="font-size:9px;font-weight:800;color:var(--kub-dark);">25-26 (R1–R22)</span>
+              <span style="font-size:9px;color:var(--muted);">264 entries</span>
+            </div>
+            <div style="height:22px;display:flex;border-radius:3px;overflow:hidden;">
+              <div style="width:45.1%;background:var(--good);display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:9px;font-weight:900;color:white;">Conv 45.1%</span>
+              </div>
+              <div style="width:47.0%;background:var(--kub-red);display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:9px;font-weight:900;color:white;">TO 47.0%</span>
+              </div>
+              <div style="flex:1;background:#c8c4bc;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:8px;color:white;">Pen</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delta indicators -->
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <div style="flex:1;background:rgba(214,32,43,.08);border-radius:4px;padding:5px 8px;text-align:center;">
+              <div style="font-size:14px;font-weight:900;color:var(--kub-red);">−6.2pp</div>
+              <div style="font-size:8px;color:var(--muted);">Conv% 低下</div>
+            </div>
+            <div style="flex:1;background:rgba(214,32,43,.08);border-radius:4px;padding:5px 8px;text-align:center;">
+              <div style="font-size:14px;font-weight:900;color:var(--kub-red);">+7.0pp</div>
+              <div style="font-size:8px;color:var(--muted);">TO% 悪化</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- Slide 5 -->
+<div class="slide">
+<div class="shell">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="sub">Japan Rugby League One D1 &nbsp;·&nbsp; 2025–26 Season Review &nbsp;·&nbsp; Kicking</div>
+      <h1>コンテストキック — クボタの武器 &nbsp;/&nbsp; 強豪は「ロング」で対抗してくる</h1>
+      <div class="tagline">Box+Bomb Contest率 W:42% → L:20% &nbsp;·&nbsp; 本数 W:6.0/G vs L:11.0/G &nbsp;·&nbsp; 量より質の一貫性が勝敗を分ける</div>
+    </div>
+    <div class="record-pill" style="background:rgba(26,122,60,.15);border:1px solid rgba(26,122,60,.4);">
+      <div class="big" style="color:var(--good);">42%</div>
+      <div class="tiny" style="color:var(--good);">Contest (WIN)</div>
+    </div>
+  </div>
+
+  <div class="slide-body">
+
+    <div class="stat-row">
+      <div class="scard c-win">
+        <div class="big">42%</div>
+        <div class="label">コンテスト率 (WIN)</div>
+        <div class="note">再獲得+圧力成功 &nbsp;·&nbsp; 14試合</div>
+      </div>
+      <div class="scard" style="border-left:3px solid var(--kub-red);">
+        <div class="big" style="color:var(--kub-red);">20%</div>
+        <div class="label">コンテスト率 (LOSS)</div>
+        <div class="note">強豪4試合 &nbsp;·&nbsp; <strong>−22pp</strong> 低下</div>
+      </div>
+      <div class="scard" style="border-left:3px solid #9ab0c8;">
+        <div class="big" style="color:var(--kub-mid);">6.0/G</div>
+        <div class="label">Box+Bomb 本数 (WIN)</div>
+        <div class="note">選択的・高質・一貫</div>
+      </div>
+      <div class="scard" style="border-left:3px solid var(--warn);">
+        <div class="big" style="color:var(--warn);">11.0/G</div>
+        <div class="label">Box+Bomb 本数 (LOSS)</div>
+        <div class="note">WIN比 <strong>×1.8 増加</strong> &nbsp;→&nbsp; 質が低下</div>
+      </div>
+    </div>
+
+    <div class="divider">WIN vs LOSS &nbsp;·&nbsp; Box+Bomb コンテスト詳細</div>
+
+    <div class="two-col" style="flex:1;min-height:0;">
+
+      <!-- LEFT: WIN panel -->
+      <div class="col col-50">
+        <div class="sec-card flex1" style="border-top:3px solid var(--good);">
+          <div class="sec-title" style="color:var(--good);">WIN 14試合 &nbsp;·&nbsp; コンテストキック実績</div>
+
+          <!-- Volume bar -->
+          <div style="margin-bottom:10px;">
+            <div style="font-size:9px;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Box+Bomb / Game</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:54.5%;height:100%;background:var(--good);opacity:.7;"></div>
+              </div>
+              <span style="font-size:15px;font-weight:900;color:var(--good);width:44px;text-align:right;">6.0</span>
+            </div>
+          </div>
+
+          <!-- Contest rate bar -->
+          <div style="margin-bottom:14px;">
+            <div style="font-size:9px;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">コンテスト率（再獲得＋圧力成功）</div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:100%;height:100%;background:var(--good);"></div>
+              </div>
+              <span style="font-size:15px;font-weight:900;color:var(--good);width:44px;text-align:right;">42%</span>
+            </div>
+          </div>
+
+          <!-- Outcome breakdown -->
+          <div style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">ポジティブアウトカム内訳（全84本）</div>
+          <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">
+            <!-- Own Player Collected -->
+            <div style="display:flex;align-items:center;gap:7px;">
+              <span style="font-size:10px;color:var(--ink);width:148px;flex-shrink:0;">Own Player Collected</span>
+              <div style="flex:1;height:12px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:48.6%;height:100%;background:var(--good);"></div>
+              </div>
+              <span style="font-size:11px;font-weight:800;color:var(--good);width:52px;text-align:right;">17本 20%</span>
+            </div>
+            <!-- Pressure Error -->
+            <div style="display:flex;align-items:center;gap:7px;">
+              <span style="font-size:10px;color:var(--ink);width:148px;flex-shrink:0;">Pressure Error</span>
+              <div style="flex:1;height:12px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:48.6%;height:100%;background:#4ade80;"></div>
+              </div>
+              <span style="font-size:11px;font-weight:800;color:var(--good);width:52px;text-align:right;">17本 20%</span>
+            </div>
+            <!-- Pressure in Touch -->
+            <div style="display:flex;align-items:center;gap:7px;">
+              <span style="font-size:10px;color:var(--ink);width:148px;flex-shrink:0;">Pressure in Touch</span>
+              <div style="flex:1;height:12px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:2.9%;height:100%;background:#86efac;"></div>
+              </div>
+              <span style="font-size:11px;font-weight:800;color:var(--good);width:52px;text-align:right;">1本 &nbsp;1%</span>
+            </div>
+            <!-- Total -->
+            <div style="display:flex;align-items:center;gap:7px;border-top:1px solid var(--rule);padding-top:4px;margin-top:2px;">
+              <span style="font-size:10px;font-weight:800;color:var(--good);width:148px;flex-shrink:0;">→ コンテスト合計</span>
+              <div style="flex:1;height:12px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:100%;height:100%;background:var(--good);opacity:.35;"></div>
+              </div>
+              <span style="font-size:11px;font-weight:900;color:var(--good);width:52px;text-align:right;">35本 42%</span>
+            </div>
+          </div>
+
+          <div style="padding:6px 10px;background:rgba(26,122,60,.08);border-radius:4px;">
+            <div style="font-size:9px;font-weight:800;color:var(--good);">本数を絞り、高い質でコンテスト</div>
+            <div style="font-size:8px;color:var(--muted);margin-top:2px;">Caught Full 24%（20本）&nbsp;·&nbsp; 相手に難しいシチュエーションで蹴れている</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: LOSS panel -->
+      <div class="col col-50">
+        <div class="sec-card flex1" style="border-top:3px solid var(--kub-red);">
+          <div class="sec-title" style="color:var(--kub-red);">LOSS 4試合（全て強豪） &nbsp;·&nbsp; 相手の対抗策</div>
+
+          <!-- Volume bar (increased) -->
+          <div style="margin-bottom:10px;">
+            <div style="font-size:9px;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Box+Bomb / Game &nbsp;<span style="color:var(--warn);">↑ WIN比×1.8</span></div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:100%;height:100%;background:var(--warn);"></div>
+              </div>
+              <span style="font-size:15px;font-weight:900;color:var(--warn);width:44px;text-align:right;">11.0</span>
+            </div>
+          </div>
+
+          <!-- Contest rate bar (halved) -->
+          <div style="margin-bottom:14px;">
+            <div style="font-size:9px;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">コンテスト率 &nbsp;<span style="color:var(--kub-red);">↓ WIN比−22pp</span></div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:47.6%;height:100%;background:var(--kub-red);"></div>
+              </div>
+              <span style="font-size:15px;font-weight:900;color:var(--kub-red);width:44px;text-align:right;">20%</span>
+            </div>
+          </div>
+
+          <!-- Per-match breakdown for L games -->
+          <div style="font-size:9px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">敗戦試合 内訳（全て上位チーム）</div>
+          <div style="display:flex;flex-direction:column;gap:0;border:1px solid var(--rule);border-radius:4px;overflow:hidden;margin-bottom:10px;">
+            <div style="display:grid;grid-template-columns:1fr 48px 54px 54px;background:var(--kub-dark);padding:4px 10px;">
+              <span style="font-size:8px;font-weight:800;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.06em;">対戦相手</span>
+              <span style="font-size:8px;font-weight:800;color:rgba(255,255,255,.6);text-align:center;">本数</span>
+              <span style="font-size:8px;font-weight:800;color:rgba(255,255,255,.6);text-align:center;">コンテスト</span>
+              <span style="font-size:8px;font-weight:800;color:rgba(255,255,255,.6);text-align:center;">Contest率</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 48px 54px 54px;padding:6px 10px;background:#fff;border-bottom:1px solid var(--rule);">
+              <div><span style="font-size:11px;font-weight:700;color:var(--ink);">BraveLupus</span><span style="font-size:9px;color:var(--muted);margin-left:6px;">L 20–24</span></div>
+              <span style="font-size:12px;font-weight:700;color:var(--muted);text-align:center;">12</span>
+              <span style="font-size:12px;font-weight:700;color:var(--kub-red);text-align:center;">3</span>
+              <span style="font-size:12px;font-weight:700;color:var(--warn);text-align:center;">25%</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 48px 54px 54px;padding:6px 10px;background:#f9f8f6;border-bottom:1px solid var(--rule);">
+              <div><span style="font-size:11px;font-weight:700;color:var(--ink);">Wild Knights</span><span style="font-size:9px;color:var(--muted);margin-left:6px;">L 30–32</span></div>
+              <span style="font-size:12px;font-weight:700;color:var(--muted);text-align:center;">15</span>
+              <span style="font-size:12px;font-weight:700;color:var(--kub-red);text-align:center;">3</span>
+              <span style="font-size:12px;font-weight:700;color:var(--warn);text-align:center;">20%</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 48px 54px 54px;padding:6px 10px;background:#fff;border-bottom:1px solid var(--rule);">
+              <div><span style="font-size:11px;font-weight:700;color:var(--ink);">Verblitz</span><span style="font-size:9px;color:var(--muted);margin-left:6px;">L 7–24</span></div>
+              <span style="font-size:12px;font-weight:700;color:var(--muted);text-align:center;">9</span>
+              <span style="font-size:12px;font-weight:700;color:var(--kub-red);text-align:center;">2</span>
+              <span style="font-size:12px;font-weight:700;color:var(--warn);text-align:center;">22%</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 48px 54px 54px;padding:6px 10px;background:#f9f8f6;">
+              <div><span style="font-size:11px;font-weight:700;color:var(--ink);">Steelers</span><span style="font-size:9px;color:var(--muted);margin-left:6px;">L 19–24</span></div>
+              <span style="font-size:12px;font-weight:700;color:var(--muted);text-align:center;">8</span>
+              <span style="font-size:12px;font-weight:700;color:var(--kub-red);text-align:center;">1</span>
+              <span style="font-size:12px;font-weight:700;color:var(--kub-red);text-align:center;">12%</span>
+            </div>
+          </div>
+
+          <div style="padding:6px 10px;background:rgba(214,32,43,.07);border-radius:4px;">
+            <div style="font-size:9px;font-weight:800;color:var(--kub-red);">強豪はロングキックで対抗 → コンテストのチャンスを与えない</div>
+            <div style="font-size:8px;color:var(--muted);margin-top:2px;">Caught Full 48%（21本）&nbsp;·&nbsp; クリーンキャッチされ、コンテストに持ち込めない展開が続く</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Tactical insight strip -->
+    <div style="flex-shrink:0;padding:8px 14px;background:var(--kub-dark);border-radius:5px;display:flex;align-items:center;gap:14px;">
+      <span style="font-size:11px;font-weight:900;color:var(--kub-gold);white-space:nowrap;letter-spacing:.06em;">戦術的示唆</span>
+      <span style="font-size:10.5px;color:rgba(255,255,255,.85);line-height:1.5;">クボタのコンテストキックは明確な武器（WIN時42%）。強豪はそれを理解し、ロング・クリアキックで対抗してくる。劣勢でも本数を増やさず WIN時と同じ質・選択性を保つことが、この武器を機能させ続ける鍵となる。</span>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- Slide 6 -->
+<div class="slide">
+<div class="shell">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="sub">Japan Rugby League One D1 &nbsp;·&nbsp; 2025–26 Season Review &nbsp;·&nbsp; Challenge</div>
+      <h1>課題③ &nbsp; 自陣規律 — ペナルティの「数」でなく「場所」が命取り</h1>
+      <div class="tagline">Discipline · Pen/G 3位(少ない) · Own-half% 1位(最悪) · PG conceded W:0.75→L:1.60/G</div>
+    </div>
+    <div class="record-pill" style="background:rgba(214,32,43,.12);border-color:rgba(214,32,43,.3);">
+      <div class="big" style="color:var(--kub-red);">▲ 1位</div>
+      <div class="tiny">自陣Pen率</div>
+    </div>
+  </div>
+
+  <div class="slide-body">
+
+    <div class="stat-row">
+      <div class="scard c-win">
+        <div class="big">9.7/G</div>
+        <div class="label">Pen Conceded / Game</div>
+        <div class="note">リーグ <strong>3位</strong>（少ない=良い）</div>
+      </div>
+      <div class="scard" style="border-left:3px solid var(--kub-red);">
+        <div class="big" style="color:var(--kub-red);">62.1%</div>
+        <div class="label">自陣ペナルティ率</div>
+        <div class="note">リーグ <strong>1位</strong>（高い=悪い）</div>
+      </div>
+      <div class="scard" style="border-left:3px solid var(--kub-red);">
+        <div class="big" style="color:var(--kub-red);">×2.1</div>
+        <div class="label">被PG/G &nbsp; W→L</div>
+        <div class="note">WIN 0.75 → LOSS <strong>1.60/G</strong></div>
+      </div>
+      <div class="scard" style="border-left:3px solid var(--kub-red);">
+        <div class="big" style="color:var(--kub-red);">15pts</div>
+        <div class="label">R22 被PG失点</div>
+        <div class="note">5PG = 15pts &nbsp;·&nbsp; Spears総得点13pts超</div>
+      </div>
+    </div>
+
+    <div class="divider">自陣ペナルティ率 — リーグ全12チーム比較 &nbsp;·&nbsp; 高い方が危険</div>
+
+    <div class="two-col" style="flex:1;min-height:0;">
+
+      <!-- LEFT: Own-half Pen% bar chart -->
+      <div class="col col-55">
+        <div class="sec-card flex1">
+          <div class="sec-title">自陣ペナルティ率 &nbsp;·&nbsp; 25-26 (R1–R22) &nbsp;↑ 高いほど危険</div>
+          <div class="hbar-wrap">
+            <div class="hbar-row">
+              <div class="hbar-lbl me">Spears</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:100%;background:var(--kub-red);"></div></div>
+              <div class="hbar-val" style="color:var(--kub-red);font-weight:900">62.1%</div>
+              <div class="hbar-rank" style="color:var(--kub-red);font-weight:800">1位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Dynaboars</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:99.0%"></div></div>
+              <div class="hbar-val">61.5%</div>
+              <div class="hbar-rank">2位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Toshiba</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:98.2%"></div></div>
+              <div class="hbar-val">61.0%</div>
+              <div class="hbar-rank">3位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Sungoliath</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:96.9%"></div></div>
+              <div class="hbar-val">60.2%</div>
+              <div class="hbar-rank">4位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Verblitz</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:95.8%"></div></div>
+              <div class="hbar-val">59.5%</div>
+              <div class="hbar-rank">5位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Honda Heat</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:94.2%"></div></div>
+              <div class="hbar-val">58.5%</div>
+              <div class="hbar-rank">6位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Eagles</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:93.4%"></div></div>
+              <div class="hbar-val">58.0%</div>
+              <div class="hbar-rank">7位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Steelers</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:91.1%"></div></div>
+              <div class="hbar-val">56.6%</div>
+              <div class="hbar-rank">8位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">BlueRevs</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:90.8%"></div></div>
+              <div class="hbar-val">56.4%</div>
+              <div class="hbar-rank">9位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">D-Rocks</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:90.3%"></div></div>
+              <div class="hbar-val">56.1%</div>
+              <div class="hbar-rank">10位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">BlackRams</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:85.2%"></div></div>
+              <div class="hbar-val">52.9%</div>
+              <div class="hbar-rank">11位</div>
+            </div>
+            <div class="hbar-row">
+              <div class="hbar-lbl">Wild Knights</div>
+              <div class="hbar-track"><div class="hbar-fill" style="width:75.5%"></div></div>
+              <div class="hbar-val">46.9%</div>
+              <div class="hbar-rank">12位</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: W/L PG comparison + R22 spotlight -->
+      <div class="col col-45">
+
+        <!-- W vs L PG comparison -->
+        <div class="sec-card" style="flex-shrink:0;">
+          <div class="sec-title">被PG/G &nbsp;·&nbsp; WIN vs LOSS</div>
+          <div style="display:flex;gap:10px;align-items:stretch;margin:6px 0;">
+            <div style="flex:1;text-align:center;background:rgba(26,122,60,.08);border-radius:5px;padding:8px;">
+              <div style="font-size:8px;font-weight:800;color:var(--good);">WIN 16G</div>
+              <div style="font-size:28px;font-weight:900;color:var(--good);line-height:1.1;">0.75</div>
+              <div style="font-size:8px;color:var(--muted);">PG/Game</div>
+            </div>
+            <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;width:30px;">
+              <span style="font-size:20px;color:var(--kub-red);font-weight:900;">↗</span>
+              <span style="font-size:10px;font-weight:900;color:var(--kub-red);">×2.1</span>
+            </div>
+            <div style="flex:1;text-align:center;background:rgba(214,32,43,.08);border-radius:5px;padding:8px;">
+              <div style="font-size:8px;font-weight:800;color:var(--kub-red);">LOSS 5G</div>
+              <div style="font-size:28px;font-weight:900;color:var(--kub-red);line-height:1.1;">1.60</div>
+              <div style="font-size:8px;color:var(--muted);">PG/Game</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- R22 Spotlight -->
+        <div class="sec-card flex1" style="border-top:3px solid var(--kub-red);">
+          <div class="sec-title" style="color:var(--kub-red);">R22 スポットライト &nbsp;·&nbsp; 規律崩壊型の敗北</div>
+          <div style="margin-top:6px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+              <span style="font-size:11px;font-weight:800;color:var(--kub-dark);">vs Steelers &nbsp;(Away)</span>
+              <span style="font-size:13px;font-weight:900;color:var(--kub-red);">L 13–22</span>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+              <div style="background:rgba(214,32,43,.07);border-radius:4px;padding:6px 8px;text-align:center;">
+                <div style="font-size:20px;font-weight:900;color:var(--kub-red);">16</div>
+                <div style="font-size:8px;color:var(--muted);">Penalties Conceded</div>
+              </div>
+              <div style="background:rgba(214,32,43,.07);border-radius:4px;padding:6px 8px;text-align:center;">
+                <div style="font-size:20px;font-weight:900;color:var(--kub-red);">5本</div>
+                <div style="font-size:8px;color:var(--muted);">PG Conceded</div>
+              </div>
+            </div>
+
+            <div style="background:rgba(214,32,43,.1);border-radius:5px;padding:8px;text-align:center;">
+              <div style="font-size:11px;font-weight:900;color:var(--kub-red);">被PG 5本 = <span style="font-size:16px;">15pts</span></div>
+              <div style="font-size:10px;color:var(--kub-dark);margin-top:2px;">Spears 総得点 13pts を上回る</div>
+              <div style="font-size:8px;color:var(--muted);margin-top:3px;">トライ数よりペナルティ失点が試合を決した</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- Slide 7 -->
+<div class="slide">
+<div class="shell">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="sub">Japan Rugby League One D1 &nbsp;·&nbsp; 2025–26 Season Review &nbsp;·&nbsp; YoY Analysis</div>
+      <h1>前季比較 &nbsp; 進入+17%↑ だが変換効率は悪化↓</h1>
+      <div class="tagline">Year on Year · 22m Entry Volume up · Conv% / Try Rate down · GL% improving</div>
+    </div>
+    <div class="record-pill"><div class="big">YoY</div><div class="tiny">24-25 vs 25-26</div></div>
+  </div>
+
+  <div class="slide-body">
+
+    <div class="divider">主要指標 YoY比較 &nbsp;·&nbsp; 24-25 (R1–18) vs 25-26 (R1–R22)</div>
+
+    <div class="two-col" style="flex:1;min-height:0;">
+
+      <!-- LEFT: YoY metric billboard -->
+      <div class="col col-55">
+        <div class="sec-card flex1">
+          <div class="sec-title">主要6指標 前季比 &nbsp;·&nbsp; 矢印の向きが改善(↑↓良)かを示す</div>
+
+          <!-- 2-column metric grid -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;">
+
+            <!-- Entries: +17% GOOD -->
+            <div style="background:rgba(26,122,60,.07);border-radius:5px;padding:8px 10px;">
+              <div style="font-size:8px;font-weight:800;color:var(--good);text-transform:uppercase;letter-spacing:.06em;">22m Entries/G &nbsp;↑ 良</div>
+              <div style="display:flex;align-items:baseline;gap:5px;margin:4px 0 2px;">
+                <span style="font-size:14px;color:var(--muted);">12.94</span>
+                <span style="font-size:11px;color:var(--muted);">→</span>
+                <span style="font-size:20px;font-weight:900;color:var(--good);">15.10</span>
+              </div>
+              <div style="font-size:13px;font-weight:900;color:var(--good);">+2.16 &nbsp;+17%&#8593;</div>
+            </div>
+
+            <!-- Conv%: -6.2pp BAD -->
+            <div style="background:rgba(214,32,43,.07);border-radius:5px;padding:8px 10px;">
+              <div style="font-size:8px;font-weight:800;color:var(--kub-red);text-transform:uppercase;letter-spacing:.06em;">22m Conv% &nbsp;↑ 良</div>
+              <div style="display:flex;align-items:baseline;gap:5px;margin:4px 0 2px;">
+                <span style="font-size:14px;color:var(--muted);">51.3%</span>
+                <span style="font-size:11px;color:var(--muted);">→</span>
+                <span style="font-size:20px;font-weight:900;color:var(--kub-red);">45.1%</span>
+              </div>
+              <div style="font-size:13px;font-weight:900;color:var(--kub-red);">−6.2pp &#8595;</div>
+            </div>
+
+            <!-- TO%: +10.6pp BAD -->
+            <div style="background:rgba(214,32,43,.07);border-radius:5px;padding:8px 10px;">
+              <div style="font-size:8px;font-weight:800;color:var(--kub-red);text-transform:uppercase;letter-spacing:.06em;">22m TO% &nbsp;↓ 良</div>
+              <div style="display:flex;align-items:baseline;gap:5px;margin:4px 0 2px;">
+                <span style="font-size:14px;color:var(--muted);">36.4%</span>
+                <span style="font-size:11px;color:var(--muted);">→</span>
+                <span style="font-size:20px;font-weight:900;color:var(--kub-red);">47.0%</span>
+              </div>
+              <div style="font-size:13px;font-weight:900;color:var(--kub-red);">+10.6pp &#8595;</div>
+            </div>
+
+            <!-- Ph1-3 Try%: -6.6pp BAD -->
+            <div style="background:rgba(214,32,43,.07);border-radius:5px;padding:8px 10px;">
+              <div style="font-size:8px;font-weight:800;color:var(--kub-red);text-transform:uppercase;letter-spacing:.06em;">Ph1-3 早期Try率 &nbsp;↑ 良</div>
+              <div style="display:flex;align-items:baseline;gap:5px;margin:4px 0 2px;">
+                <span style="font-size:14px;color:var(--muted);">69.0%</span>
+                <span style="font-size:11px;color:var(--muted);">→</span>
+                <span style="font-size:20px;font-weight:900;color:var(--kub-red);">62.4%</span>
+              </div>
+              <div style="font-size:13px;font-weight:900;color:var(--kub-red);">−6.6pp &#8595;</div>
+            </div>
+
+            <!-- Early GL%: +1.9pp GOOD -->
+            <div style="background:rgba(26,122,60,.07);border-radius:5px;padding:8px 10px;">
+              <div style="font-size:8px;font-weight:800;color:var(--good);text-transform:uppercase;letter-spacing:.06em;">Ph1-3 GL% &nbsp;↑ 良</div>
+              <div style="display:flex;align-items:baseline;gap:5px;margin:4px 0 2px;">
+                <span style="font-size:14px;color:var(--muted);">68.6%</span>
+                <span style="font-size:11px;color:var(--muted);">→</span>
+                <span style="font-size:20px;font-weight:900;color:var(--good);">70.5%</span>
+              </div>
+              <div style="font-size:13px;font-weight:900;color:var(--good);">+1.9pp &#8593;</div>
+            </div>
+
+            <!-- Overall GL%: +2.1pp GOOD -->
+            <div style="background:rgba(26,122,60,.07);border-radius:5px;padding:8px 10px;">
+              <div style="font-size:8px;font-weight:800;color:var(--good);text-transform:uppercase;letter-spacing:.06em;">全体 GL% &nbsp;↑ 良</div>
+              <div style="display:flex;align-items:baseline;gap:5px;margin:4px 0 2px;">
+                <span style="font-size:14px;color:var(--muted);">64.0%</span>
+                <span style="font-size:11px;color:var(--muted);">→</span>
+                <span style="font-size:20px;font-weight:900;color:var(--good);">66.1%</span>
+              </div>
+              <div style="font-size:13px;font-weight:900;color:var(--good);">+2.1pp &#8593;</div>
+            </div>
+
+          </div><!-- /grid -->
+
+          <!-- Summary note -->
+          <div style="margin-top:8px;padding:6px 10px;background:rgba(29,48,85,.06);border-radius:4px;font-size:9px;color:var(--kub-dark);font-weight:700;text-align:center;">
+            突破力(GL%)は改善 &#8593; &nbsp;·&nbsp; 問題は22m内での「変換効率」の悪化
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Phase Try% + TO type -->
+      <div class="col col-45">
+
+        <!-- Phase Try% stacked bars YoY -->
+        <div class="sec-card" style="flex-shrink:0;">
+          <div class="sec-title">Ph1-3 早期トライ率 YoY &nbsp;·&nbsp; 早い段階での仕留め率</div>
+
+          <div style="margin:6px 0 4px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+              <span style="font-size:9px;font-weight:800;color:var(--muted);">24-25 (18G)</span>
+              <span style="font-size:9px;color:var(--muted);">87 tries</span>
+            </div>
+            <div style="height:24px;display:flex;border-radius:3px;overflow:hidden;">
+              <div style="width:69.0%;background:var(--good);display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:9px;font-weight:900;color:white;">Ph1-3 &nbsp;69.0%</span>
+              </div>
+              <div style="flex:1;background:#c8c4bc;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:8px;color:var(--kub-dark);">Ph4+ 31%</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin:0 0 4px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+              <span style="font-size:9px;font-weight:800;color:var(--kub-dark);">25-26 (21G)</span>
+              <span style="font-size:9px;color:var(--muted);">109 tries</span>
+            </div>
+            <div style="height:24px;display:flex;border-radius:3px;overflow:hidden;">
+              <div style="width:62.4%;background:#6fa87a;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:9px;font-weight:900;color:white;">Ph1-3 &nbsp;62.4%</span>
+              </div>
+              <div style="flex:1;background:#aaa;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:8px;color:white;">Ph4+ 37.6%</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="text-align:center;margin-top:4px;">
+            <span style="font-size:11px;font-weight:900;color:var(--kub-red);">早期仕留め率 −6.6pp ↓ &nbsp;·&nbsp; 後半フェーズに依存が増加</span>
+          </div>
+        </div>
+
+        <!-- 22m TO type breakdown -->
+        <div class="sec-card flex1">
+          <div class="sec-title">22m内 TO 種類別 25-26 &nbsp;·&nbsp; Turnover Causes</div>
+          <div style="font-size:8px;color:var(--muted);margin-bottom:6px;">22m内 Turnover事象 103件の内訳</div>
+
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <!-- Dropped Ball Unforced -->
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:90px;font-size:8px;font-weight:700;color:var(--kub-dark);text-align:right;flex-shrink:0;">Dropped Unforced</div>
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:100%;height:100%;background:var(--kub-red);"></div>
+              </div>
+              <div style="font-size:9px;font-weight:800;color:var(--kub-red);width:36px;text-align:right;">30 (29%)</div>
+            </div>
+            <!-- Lost Ball Forced -->
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:90px;font-size:8px;font-weight:700;color:var(--kub-dark);text-align:right;flex-shrink:0;">Lost Forced</div>
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:76.7%;height:100%;background:var(--kub-red);"></div>
+              </div>
+              <div style="font-size:9px;font-weight:800;color:var(--kub-red);width:36px;text-align:right;">23 (22%)</div>
+            </div>
+            <!-- Lost in Ruck -->
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:90px;font-size:8px;font-weight:700;color:var(--kub-dark);text-align:right;flex-shrink:0;">Lost Ruck/Maul</div>
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:60%;height:100%;background:#c0392b;"></div>
+              </div>
+              <div style="font-size:9px;font-weight:700;color:var(--kub-dark);width:36px;text-align:right;">18 (17%)</div>
+            </div>
+            <!-- Carried in Touch -->
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:90px;font-size:8px;font-weight:700;color:var(--kub-dark);text-align:right;flex-shrink:0;">In Touch</div>
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:40%;height:100%;background:#e08030;"></div>
+              </div>
+              <div style="font-size:9px;font-weight:700;color:var(--kub-dark);width:36px;text-align:right;">12 (12%)</div>
+            </div>
+            <!-- Bad Offload -->
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:90px;font-size:8px;font-weight:700;color:var(--kub-dark);text-align:right;flex-shrink:0;">Bad Offload</div>
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:30%;height:100%;background:#e08030;"></div>
+              </div>
+              <div style="font-size:9px;font-weight:700;color:var(--kub-dark);width:36px;text-align:right;">9 (9%)</div>
+            </div>
+          </div>
+
+          <div style="margin-top:6px;padding:5px 8px;background:rgba(214,32,43,.07);border-radius:3px;font-size:8px;color:var(--kub-dark);">
+            <strong>主因:</strong> ハンドリングエラー(Dropped+Offload=37%) + ブレイクダウンロスト(Forced+Ruck=40%)&nbsp;= 上位77%
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- Slide 8 -->
+<div class="slide">
+<div class="shell">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="sub">Japan Rugby League One D1 &nbsp;·&nbsp; 2025–26 Season Review &nbsp;·&nbsp; Root Cause</div>
+      <h1>核心 &nbsp; 最初の一撃は鋭いが、決まらないと連鎖的に崩れる構造</h1>
+      <div class="tagline">Chain of Failure · Ph1 Strong → 22m TO → Box Trap → Penalty Spiral</div>
+    </div>
+    <div class="record-pill"><div class="big">Chain</div><div class="tiny">Root Cause</div></div>
+  </div>
+
+  <div class="slide-body">
+
+    <!-- Chain flow diagram -->
+    <div style="flex-shrink:0;">
+      <div class="divider">連鎖構造フロー &nbsp;·&nbsp; セットピース後の強い初弾から崩れが始まる</div>
+
+      <!-- Row 1: SP → Ph1強 → 22mTO → 追う展開 -->
+      <div style="display:flex;align-items:stretch;gap:0;margin-bottom:2px;">
+
+        <div style="flex:1;background:rgba(26,122,60,.12);border:1.5px solid var(--good);border-radius:6px;padding:8px 6px;text-align:center;">
+          <div style="font-size:8px;font-weight:800;color:var(--good);letter-spacing:.06em;text-transform:uppercase;">SP後 Ph1</div>
+          <div style="font-size:13px;font-weight:900;color:var(--good);margin:2px 0;">強い</div>
+          <div style="font-size:8px;color:var(--muted);">GL 80.9%<br>W/L同等</div>
+        </div>
+
+        <div style="display:flex;align-items:center;padding:0 3px;color:var(--kub-red);font-size:18px;font-weight:900;">→</div>
+
+        <div style="flex:1.2;background:rgba(214,32,43,.09);border:1.5px solid rgba(214,32,43,.4);border-radius:6px;padding:8px 6px;text-align:center;">
+          <div style="font-size:8px;font-weight:800;color:var(--kub-red);letter-spacing:.06em;text-transform:uppercase;">22m内 TO</div>
+          <div style="font-size:13px;font-weight:900;color:var(--kub-red);margin:2px 0;">47.0%</div>
+          <div style="font-size:8px;color:var(--muted);">BDロスト+<br>ハンドリング</div>
+        </div>
+
+        <div style="display:flex;align-items:center;padding:0 3px;color:var(--kub-red);font-size:18px;font-weight:900;">→</div>
+
+        <div style="flex:1.1;background:rgba(214,32,43,.09);border:1.5px solid rgba(214,32,43,.4);border-radius:6px;padding:8px 6px;text-align:center;">
+          <div style="font-size:8px;font-weight:800;color:var(--kub-red);letter-spacing:.06em;text-transform:uppercase;">追う展開</div>
+          <div style="font-size:13px;font-weight:900;color:var(--kub-red);margin:2px 0;">Try/G</div>
+          <div style="font-size:8px;color:var(--muted);">W 6.2→<br>L 2.0/G</div>
+        </div>
+
+        <div style="display:flex;align-items:center;padding:0 3px;color:var(--kub-red);font-size:18px;font-weight:900;">→</div>
+
+        <div style="flex:1.1;background:rgba(214,32,43,.12);border:1.5px solid rgba(214,32,43,.5);border-radius:6px;padding:8px 6px;text-align:center;">
+          <div style="font-size:8px;font-weight:800;color:var(--kub-red);letter-spacing:.06em;text-transform:uppercase;">Box固執</div>
+          <div style="font-size:13px;font-weight:900;color:var(--kub-red);margin:2px 0;">7.2/G</div>
+          <div style="font-size:8px;color:var(--muted);">W 4.7→<br>L 7.2/G</div>
+        </div>
+
+        <div style="display:flex;align-items:center;padding:0 3px;color:var(--kub-red);font-size:18px;font-weight:900;">→</div>
+
+        <div style="flex:1.2;background:rgba(214,32,43,.15);border:1.5px solid rgba(214,32,43,.6);border-radius:6px;padding:8px 6px;text-align:center;">
+          <div style="font-size:8px;font-weight:800;color:var(--kub-red);letter-spacing:.06em;text-transform:uppercase;">Ret崩壊</div>
+          <div style="font-size:13px;font-weight:900;color:var(--kub-red);margin:2px 0;">13.9%</div>
+          <div style="font-size:8px;color:var(--muted);">W 40%→<br>L 13.9%</div>
+        </div>
+
+        <div style="display:flex;align-items:center;padding:0 3px;color:var(--kub-red);font-size:18px;font-weight:900;">→</div>
+
+        <div style="flex:1;background:rgba(180,0,0,.17);border:1.5px solid rgba(180,0,0,.6);border-radius:6px;padding:8px 6px;text-align:center;">
+          <div style="font-size:8px;font-weight:800;color:#8b0000;letter-spacing:.06em;text-transform:uppercase;">自陣Pen</div>
+          <div style="font-size:13px;font-weight:900;color:#8b0000;margin:2px 0;">62.1%</div>
+          <div style="font-size:8px;color:var(--muted);">自陣率<br>1位</div>
+        </div>
+
+        <div style="display:flex;align-items:center;padding:0 3px;color:#8b0000;font-size:18px;font-weight:900;">→</div>
+
+        <div style="flex:1;background:rgba(120,0,0,.15);border:1.5px solid rgba(120,0,0,.7);border-radius:6px;padding:8px 6px;text-align:center;">
+          <div style="font-size:8px;font-weight:800;color:#6b0000;letter-spacing:.06em;text-transform:uppercase;">被PG倍増</div>
+          <div style="font-size:13px;font-weight:900;color:#6b0000;margin:2px 0;">1.60/G</div>
+          <div style="font-size:8px;color:var(--muted);">L時<br>W比×2.1</div>
+        </div>
+
+      </div><!-- /row 1 -->
+
+      <div style="font-size:9px;color:var(--muted);text-align:center;margin:4px 0 6px;font-style:italic;">
+        「一撃目(Ph1)は鋭い。だが仕留め切れない時、この連鎖が始まる」
+      </div>
+    </div>
+
+    <!-- Phase GL% W/L table -->
+    <div class="two-col" style="flex:1;min-height:0;">
+
+      <div class="col col-55">
+        <div class="sec-card flex1">
+          <div class="sec-title">フェーズ別 ゲインライン突破率 &nbsp;·&nbsp; WIN vs LOSS</div>
+          <div style="font-size:9px;color:var(--muted);margin-bottom:8px;">Ph1は勝敗を問わず高いが、Ph2以降で差が拡大する</div>
+
+          <!-- Ph1 -->
+          <div style="margin-bottom:8px;">
+            <div style="font-size:9px;font-weight:800;color:var(--kub-dark);margin-bottom:4px;">Ph1 (1フェーズ目)</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+              <span style="font-size:8px;width:40px;font-weight:700;color:var(--good);">WIN</span>
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:80.1%;height:100%;background:var(--good);"></div>
+              </div>
+              <span style="font-size:11px;font-weight:900;color:var(--good);width:38px;text-align:right;">80.1%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:8px;width:40px;font-weight:700;color:var(--kub-red);">LOSS</span>
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:84.0%;height:100%;background:#9ab0c8;"></div>
+              </div>
+              <span style="font-size:11px;font-weight:900;color:var(--kub-mid);width:38px;text-align:right;">84.0%</span>
+            </div>
+            <div style="font-size:8px;color:var(--muted);margin-top:2px;padding-left:46px;">負け試合でも初弾のGL突破は高い ← Ph1は問題でない</div>
+          </div>
+
+          <!-- Ph2-3 -->
+          <div style="margin-bottom:8px;">
+            <div style="font-size:9px;font-weight:800;color:var(--kub-dark);margin-bottom:4px;">Ph2–3 (継続フェーズ)</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+              <span style="font-size:8px;width:40px;font-weight:700;color:var(--good);">WIN</span>
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:60.7%;height:100%;background:var(--good);"></div>
+              </div>
+              <span style="font-size:11px;font-weight:900;color:var(--good);width:38px;text-align:right;">60.7%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:8px;width:40px;font-weight:700;color:var(--kub-red);">LOSS</span>
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:50.9%;height:100%;background:var(--kub-red);"></div>
+              </div>
+              <span style="font-size:11px;font-weight:900;color:var(--kub-red);width:38px;text-align:right;">50.9%</span>
+            </div>
+            <div style="font-size:8px;color:var(--kub-red);margin-top:2px;padding-left:46px;font-weight:700;">差: −9.8pp 開始 &#8595;</div>
+          </div>
+
+          <!-- Ph4-6 -->
+          <div>
+            <div style="font-size:9px;font-weight:800;color:var(--kub-dark);margin-bottom:4px;">Ph4–6 (深いフェーズ)</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+              <span style="font-size:8px;width:40px;font-weight:700;color:var(--good);">WIN</span>
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:57.7%;height:100%;background:var(--good);"></div>
+              </div>
+              <span style="font-size:11px;font-weight:900;color:var(--good);width:38px;text-align:right;">57.7%</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:8px;width:40px;font-weight:700;color:var(--kub-red);">LOSS</span>
+              <div style="flex:1;height:14px;background:#e8e6e0;border-radius:2px;overflow:hidden;">
+                <div style="width:42.6%;height:100%;background:var(--kub-red);"></div>
+              </div>
+              <span style="font-size:11px;font-weight:900;color:var(--kub-red);width:38px;text-align:right;">42.6%</span>
+            </div>
+            <div style="font-size:8px;color:var(--kub-red);margin-top:2px;padding-left:46px;font-weight:700;">差: −15.1pp に拡大 &#8595;&#8595;</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="col col-45">
+        <div class="sec-card flex1">
+          <div class="sec-title">構造の本質 &nbsp;·&nbsp; なぜ連鎖するのか</div>
+
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+
+            <div style="padding:8px 10px;background:rgba(26,122,60,.08);border-left:3px solid var(--good);border-radius:0 4px 4px 0;">
+              <div style="font-size:9px;font-weight:800;color:var(--good);">Ph1の強さ</div>
+              <div style="font-size:8px;color:var(--muted);margin-top:2px;">セットピース後の初弾は勝敗に関係なく高品質。22mへの進入数もリーグ1位。</div>
+            </div>
+
+            <div style="padding:8px 10px;background:rgba(214,32,43,.07);border-left:3px solid var(--kub-red);border-radius:0 4px 4px 0;">
+              <div style="font-size:9px;font-weight:800;color:var(--kub-red);">IC/TF前進力の限界</div>
+              <div style="font-size:8px;color:var(--muted);margin-top:2px;">Ph2以降、IC(12番)・TFのブレイクダウン前進力不足がTOを誘発。22m内での仕留めが難しくなる。</div>
+            </div>
+
+            <div style="padding:8px 10px;background:rgba(214,32,43,.09);border-left:3px solid rgba(214,32,43,.7);border-radius:0 4px 4px 0;">
+              <div style="font-size:9px;font-weight:800;color:var(--kub-red);">強みへの過信</div>
+              <div style="font-size:8px;color:var(--muted);margin-top:2px;">得意なBoxが強豪に通じない場面でも固執。「弱点」より「強みへの過信」が敗因。</div>
+            </div>
+
+            <div style="padding:8px 10px;background:rgba(120,0,0,.1);border-left:3px solid #8b0000;border-radius:0 4px 4px 0;">
+              <div style="font-size:9px;font-weight:800;color:#6b0000;">規律崩壊の連鎖</div>
+              <div style="font-size:8px;color:var(--muted);margin-top:2px;">劣勢時の自陣ペナルティ増加 → 被PG倍増。R22では被PG15ptsがSpears総得点を超えた。</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /two-col -->
+
+  </div>
+</div>
+</div>
+
+<!-- Slide 9 -->
+<div class="slide">
+<div class="shell">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="sub">Japan Rugby League One D1 &nbsp;·&nbsp; 2025–26 Season Review &nbsp;·&nbsp; Loss Analysis</div>
+      <h1>敗戦分析 &nbsp; 5敗の内訳と勝敗差</h1>
+    </div>
+    <div class="record-pill"><div class="big">5L</div><div class="tiny">Loss Analysis</div></div>
+  </div>
+  <div class="ph-body">
+    <div class="ph-num">9</div>
+    <div class="ph-label">敗戦 — R6/14 Try差 · R11 接戦 · R18/22 Steelers 規律崩壊</div>
+    <div class="ph-status">Step 4 で実装</div>
+  </div>
+</div>
+</div>
+
+<!-- Slide 10 -->
+<div class="slide">
+<div class="shell">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="sub">Japan Rugby League One D1 &nbsp;·&nbsp; 2025–26 Season Review &nbsp;·&nbsp; Next Season</div>
+      <h1>来季への示唆 &nbsp; 4つの優先施策</h1>
+    </div>
+    <div class="record-pill"><div class="big">Action</div><div class="tiny">Next Season</div></div>
+  </div>
+  <div class="ph-body">
+    <div class="ph-num">10</div>
+    <div class="ph-label">アクション — 強み維持 + 優先施策3点</div>
+    <div class="ph-status">Step 4 で実装</div>
+  </div>
+</div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- ── Navigation UI ── -->
+<div class="nav-wrap" id="navWrap"></div>
+<button class="arr prev-btn" id="btnP" onclick="move(-1)">&#8592;</button>
+<button class="arr next-btn" id="btnN" onclick="move(1)">&#8594;</button>
+<div class="slide-num" id="numEl"></div>
+
+<script>
+(function(){
+  const slides = document.querySelectorAll('.slide');
+  const wrap   = document.getElementById('navWrap');
+  const numEl  = document.getElementById('numEl');
+  const btnP   = document.getElementById('btnP');
+  const btnN   = document.getElementById('btnN');
+  let cur = 0;
+
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' on':'');
+    d.onclick = () => goTo(i);
+    wrap.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[cur].classList.remove('active');
+    wrap.children[cur].classList.remove('on');
+    cur = Math.max(0, Math.min(n, slides.length - 1));
+    slides[cur].classList.add('active');
+    wrap.children[cur].classList.add('on');
+    numEl.textContent = (cur+1) + ' / ' + slides.length;
+    btnP.classList.toggle('dim', cur === 0);
+    btnN.classList.toggle('dim', cur === slides.length - 1);
+  }
+
+  window.move = d => goTo(cur + d);
+  window.goTo = goTo;
+
+  document.addEventListener('keydown', e => {
+    if (e.key==='ArrowRight'||e.key==='ArrowDown'||e.key==='PageDown') move(1);
+    if (e.key==='ArrowLeft' ||e.key==='ArrowUp'  ||e.key==='PageUp')   move(-1);
+    if (e.key==='Home') goTo(0);
+    if (e.key==='End')  goTo(slides.length-1);
+  });
+
+  goTo(0);
+})();
+</script>
+</body>
+</html>

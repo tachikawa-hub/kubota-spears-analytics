@@ -1240,6 +1240,8 @@ def cmd_kpi(args=None):
     
     # season-wide penalty accumulators (page: Penalty)
     pen_types = {}
+    pen_att_types = {}   # types in Attack (Offence) context
+    pen_def_types = {}   # types in Defence context
     pen_od = {"Offence": 0, "Defence": 0}
     pen_half = {1: 0, 2: 0}
     pen_quarter = {"Q1": 0, "Q2": 0, "Q3": 0, "Q4": 0}
@@ -1354,6 +1356,7 @@ def cmd_kpi(args=None):
             tw += 1
     
         # counts
+        ot = m["opponent_name"]
         # Kicks in Play: qualifier3_name='Kick in Play' or 'Kick in Play (Own 22)' (Optaと完全一致)
         kip_rows = cur.execute(
             "SELECT metres FROM events WHERE fxid=? AND team_name=? AND action_name='Kick' "
@@ -1361,6 +1364,30 @@ def cmd_kpi(args=None):
         ).fetchall()
         kicks = len(kip_rows)
         km = sum(_num(r["metres"]) for r in kip_rows)
+        # Opposition kick in play stats
+        opp_kip_rows = cur.execute(
+            "SELECT metres FROM events WHERE fxid=? AND team_name=? AND action_name='Kick' "
+            "AND qualifier3_name IN ('Kick in Play','Kick in Play (Own 22)')", (fx, ot)
+        ).fetchall()
+        opp_kicks = len(opp_kip_rows)
+        opp_km    = int(sum(_num(r["metres"]) for r in opp_kip_rows))
+        opp_contest_tot_k = cur.execute(
+            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? AND action_name='Kick' "
+            "AND qualifier3_name IN ('Kick in Play','Kick in Play (Own 22)') "
+            "AND action_type_name IN ('Bomb','Low','Chip','Cross Pitch','Box')", (fx, ot)
+        ).fetchone()[0]
+        opp_regain_k = cur.execute(
+            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? AND action_name='Kick' "
+            "AND qualifier3_name IN ('Kick in Play','Kick in Play (Own 22)') "
+            "AND action_type_name IN ('Bomb','Low','Chip','Cross Pitch','Box') "
+            "AND action_result_name IN ('Own Player - Collected','Pressure Error','Pressure in Touch','Try Kick')",
+            (fx, ot)
+        ).fetchone()[0]
+        opp_hg_k = cur.execute(
+            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? AND action_name='Kick' "
+            "AND qualifier3_name IN ('Kick in Play','Kick in Play (Own 22)') "
+            "AND action_result_name='Collected Bounce'", (fx, ot)
+        ).fetchone()[0]
         rucks = C(fx, action_name="Ruck")
         carries = C(fx, action_name="Carry")
         metres = sum(_num(r["metres"]) for r in cur.execute(
@@ -1382,15 +1409,41 @@ def cmd_kpi(args=None):
         sc_tot = C(fx, action_name="Scrum")
         sc_won = CL(fx, "Scrum", "action_result_name", "Won%")
         sc_reset = C(fx, action_name="Scrum", action_result_name="Reset")
+        sc_pen_won  = C(fx, action_name="Scrum", action_result_name="Won Penalty")
+        sc_fk_won   = C(fx, action_name="Scrum", action_result_name="Won Free Kick")
+        sc_pen_lost = C(fx, action_name="Scrum", action_result_name="Lost Pen Con")
+        sc_fk_lost  = C(fx, action_name="Scrum", action_result_name="Lost Free Kick")
+        sc_stab_pos = C(fx, action_name="Scrum", qualifier3_name="Positive")
+        sc_stab_neu = C(fx, action_name="Scrum", qualifier3_name="Neutral")
+        sc_stab_neg = C(fx, action_name="Scrum", qualifier3_name="Negative")
         ma_tot = C(fx, action_name="Maul")
         ma_won = C(fx, action_name="Maul", action_result_name="Won Outright")
         ma_try = C(fx, action_name="Maul", action_result_name="Try Scored")
         ma_m = sum(_num(r["metres"]) for r in cur.execute(
             "SELECT metres FROM events WHERE fxid=? AND team_name=? AND action_name='Maul'", (fx, TEAM)
         ).fetchall())
+        # Opposition set piece
+        opp_lo_throw = CT(fx, ot, action_name="Lineout Throw")
+        opp_lo_won   = cur.execute(
+            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? AND action_name='Lineout Throw' AND action_result_name LIKE 'Won%'",
+            (fx, ot)).fetchone()[0]
+        opp_lo_steal = cur.execute(
+            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? AND action_name='Lineout Take' AND action_type_name LIKE 'Lineout Steal%'",
+            (fx, ot)).fetchone()[0]
+        opp_sc_tot   = CT(fx, ot, action_name="Scrum")
+        opp_sc_won   = cur.execute(
+            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? AND action_name='Scrum' AND action_result_name LIKE 'Won%'",
+            (fx, ot)).fetchone()[0]
+        opp_sc_reset = CT(fx, ot, action_name="Scrum", action_result_name="Reset")
+        opp_sc_pen_won  = CT(fx, ot, action_name="Scrum", action_result_name="Won Penalty")
+        opp_sc_pen_lost = CT(fx, ot, action_name="Scrum", action_result_name="Lost Pen Con")
+        opp_ma_tot   = CT(fx, ot, action_name="Maul")
+        opp_ma_try   = CT(fx, ot, action_name="Maul", action_result_name="Try Scored")
+        opp_ma_m     = int(cur.execute(
+            "SELECT COALESCE(SUM(CAST(metres AS REAL)),0) FROM events WHERE fxid=? AND team_name=? AND action_name='Maul'",
+            (fx, ot)).fetchone()[0])
     
         # opponent stats (for Defence match-by-match opponent columns)
-        ot = m["opponent_name"]
         opp_carries = CT(fx, ot, action_name="Carry")
         # 旧: opp_glo = CT(fx, ot, action_name="Carry", qualifier3_name="Crossed Gain line")
         opp_glo = CT(fx, ot, action_name="Ruck", qualifier3="548")
@@ -1434,8 +1487,12 @@ def cmd_kpi(args=None):
         ).fetchall():
             t = r["tp"] or "Other"
             pen_types[t] = pen_types.get(t, 0) + 1
-            if r["od"] in pen_od:
-                pen_od[r["od"]] += 1
+            if r["od"] == "Offence":
+                pen_od["Offence"] += 1
+                pen_att_types[t] = pen_att_types.get(t, 0) + 1
+            elif r["od"] == "Defence":
+                pen_od["Defence"] += 1
+                pen_def_types[t] = pen_def_types.get(t, 0) + 1
             pd = int(_num(r["pd"]))
             if pd in pen_half:
                 pen_half[pd] += 1
@@ -1500,6 +1557,8 @@ def cmd_kpi(args=None):
                 "AND action_result_name IN ('Own Player - Collected','Pressure Error','Pressure in Touch','Try Kick')", (fx, TEAM)
             ).fetchall()),
             "hg": C(fx, action_name="Kick", action_result_name="Collected Bounce"),
+            "opp_kicks": opp_kicks, "opp_km": opp_km,
+            "opp_contest_tot_k": opp_contest_tot_k, "opp_regain_k": opp_regain_k, "opp_hg_k": opp_hg_k,
             "carries": carries, "metres": int(metres), "pcm_team": pcm_team_n,
             # 旧: "glo": C(fx, action_name="Carry", qualifier3_name="Crossed Gain line"),
             "glo": C(fx, action_name="Ruck", qualifier3="548"),
@@ -1531,7 +1590,15 @@ def cmd_kpi(args=None):
             "lo_steal": lo_steal,
             "sc_tot": sc_tot, "sc_won": sc_won, "sc_reset": sc_reset,
             "sc_lost": sc_tot - sc_reset - sc_won,  # 確定式の分母・分子に使用
+            "sc_pen_won": sc_pen_won, "sc_fk_won": sc_fk_won,
+            "sc_pen_lost": sc_pen_lost, "sc_fk_lost": sc_fk_lost,
+            "sc_stab_pos": sc_stab_pos, "sc_stab_neu": sc_stab_neu, "sc_stab_neg": sc_stab_neg,
             "ma_tot": ma_tot, "ma_won": ma_won, "ma_try": ma_try, "ma_m": int(ma_m),
+            # opposition set piece
+            "opp_lo_throw": opp_lo_throw, "opp_lo_won": opp_lo_won, "opp_lo_steal": opp_lo_steal,
+            "opp_sc_tot": opp_sc_tot, "opp_sc_won": opp_sc_won, "opp_sc_reset": opp_sc_reset,
+            "opp_sc_pen_won": opp_sc_pen_won, "opp_sc_pen_lost": opp_sc_pen_lost,
+            "opp_ma_tot": opp_ma_tot, "opp_ma_try": opp_ma_try, "opp_ma_m": opp_ma_m,
             # opponent stats
             "opp_carries": opp_carries, "opp_glo": opp_glo,
             "opp_ruck_gl_d": opp_ruck_gl_d,
@@ -1760,7 +1827,66 @@ def cmd_kpi(args=None):
         if (r["won"] or 0) > 0:
             lineout_players.append({"name": r["nm"], "pos": pos_map.get(r["nm"], ""), "won": r["won"]})
     lineout_players.sort(key=lambda x: x["won"], reverse=True)
-    
+
+    # lineout numbers breakdown (set piece page)
+    lo_nums = []
+    for r in cur.execute(
+        "SELECT qualifier4_name num, "
+        "SUM(CASE WHEN action_result_name LIKE 'Won%' THEN 1 ELSE 0 END) won, "
+        "COUNT(*) total "
+        "FROM events WHERE team_name=? AND action_name='Lineout Throw' "
+        "AND qualifier4_name IS NOT NULL AND qualifier4_name!='' "
+        "GROUP BY qualifier4_name ORDER BY CAST(qualifier4_name AS INT)",
+        (TEAM,)
+    ).fetchall():
+        lo_nums.append({"num": r["num"], "won": int(r["won"] or 0), "total": r["total"]})
+
+    # setpiece season totals
+    _sp = per_match
+    DATA_setpiece = {
+        "lo": {
+            "throw": sum(r["lo_throw"] for r in _sp),
+            "won":   sum(r["lo_won"]   for r in _sp),
+            "steal": sum(r["lo_steal"] for r in _sp),
+        },
+        "opp_lo": {
+            "throw": sum(r["opp_lo_throw"] for r in _sp),
+            "won":   sum(r["opp_lo_won"]   for r in _sp),
+            "steal": sum(r["opp_lo_steal"] for r in _sp),
+        },
+        "lo_nums": lo_nums,
+        "sc": {
+            "tot":      sum(r["sc_tot"]      for r in _sp),
+            "won":      sum(r["sc_won"]      for r in _sp),
+            "reset":    sum(r["sc_reset"]    for r in _sp),
+            "pen_won":  sum(r["sc_pen_won"]  for r in _sp),
+            "fk_won":   sum(r["sc_fk_won"]   for r in _sp),
+            "pen_lost": sum(r["sc_pen_lost"] for r in _sp),
+            "fk_lost":  sum(r["sc_fk_lost"]  for r in _sp),
+            "stab_pos": sum(r["sc_stab_pos"] for r in _sp),
+            "stab_neu": sum(r["sc_stab_neu"] for r in _sp),
+            "stab_neg": sum(r["sc_stab_neg"] for r in _sp),
+        },
+        "opp_sc": {
+            "tot":      sum(r["opp_sc_tot"]      for r in _sp),
+            "won":      sum(r["opp_sc_won"]      for r in _sp),
+            "reset":    sum(r["opp_sc_reset"]    for r in _sp),
+            "pen_won":  sum(r["opp_sc_pen_won"]  for r in _sp),
+            "pen_lost": sum(r["opp_sc_pen_lost"] for r in _sp),
+        },
+        "ma": {
+            "tot":  sum(r["ma_tot"]  for r in _sp),
+            "try_": sum(r["ma_try"]  for r in _sp),
+            "m":    sum(r["ma_m"]    for r in _sp),
+        },
+        "opp_ma": {
+            "tot":  sum(r["opp_ma_tot"]  for r in _sp),
+            "try_": sum(r["opp_ma_try"]  for r in _sp),
+            "m":    sum(r["opp_ma_m"]    for r in _sp),
+        },
+    }
+
+
     con.close()
     
     
@@ -1802,6 +1928,8 @@ def cmd_kpi(args=None):
             "avg_kick": ratio(recs, "km", "kicks"),
             "r2k": ratio(recs, "rucks", "kicks"),
             "regain": mn(recs, "regain"), "contest_tot": mn(recs, "contest_tot"), "hg": mn(recs, "hg"),
+            "opp_kicks": mn(recs, "opp_kicks"), "opp_km": mn(recs, "opp_km"),
+            "opp_contest_tot_k": mn(recs, "opp_contest_tot_k"), "opp_regain_k": mn(recs, "opp_regain_k"), "opp_hg_k": mn(recs, "opp_hg_k"),
             "gk_pct": rate(recs, "gk_made", "gk_att"),
             # attack
             "carries": mn(recs, "carries"), "metres": mn(recs, "metres"),
@@ -1831,12 +1959,21 @@ def cmd_kpi(args=None):
             "opp_db": mn(recs, "opp_db"),
             "opp_e22": mn(recs, "opp_e22"),
             "opp_success": mn(recs, "opp_success_pct"),
-            # set piece
+            # set piece — Kubota
             "lo_won": mn(recs, "lo_won"), "lo_lost": mn(recs, "lo_lost"),
             "lo_steal": mn(recs, "lo_steal"), "lo_pct": rate(recs, "lo_won", "lo_throw"),
             "sc_tot": mn(recs, "sc_tot"), "sc_reset": mn(recs, "sc_reset"),
             "sc_pct": round(sum(r["sc_won"] for r in recs) / max(1, sum(r["sc_tot"] - r["sc_reset"] for r in recs)) * 100, 1),
+            "sc_pen_won": mn(recs, "sc_pen_won"), "sc_fk_won": mn(recs, "sc_fk_won"),
+            "sc_pen_lost": mn(recs, "sc_pen_lost"), "sc_fk_lost": mn(recs, "sc_fk_lost"),
             "ma_tot": mn(recs, "ma_tot"), "ma_try": mn(recs, "ma_try"), "ma_m": mn(recs, "ma_m"),
+            # set piece — Opposition
+            "opp_lo_pct": rate(recs, "opp_lo_won", "opp_lo_throw"),
+            "opp_lo_steal": mn(recs, "opp_lo_steal"),
+            "opp_sc_pct": round(sum(r["opp_sc_won"] for r in recs) / max(1, sum(r["opp_sc_tot"] - r["opp_sc_reset"] for r in recs)) * 100, 1),
+            "opp_sc_pen_won": mn(recs, "opp_sc_pen_won"),
+            "opp_sc_pen_lost": mn(recs, "opp_sc_pen_lost"),
+            "opp_ma_tot": mn(recs, "opp_ma_tot"), "opp_ma_try": mn(recs, "opp_ma_try"), "opp_ma_m": mn(recs, "opp_ma_m"),
         }
     
     
@@ -1854,6 +1991,8 @@ def cmd_kpi(args=None):
             "total": sum(pen_types.values()),
             "full": kub_pen_full, "fk": kub_pen_fk,
             "types": sorted(pen_types.items(), key=lambda kv: kv[1], reverse=True),
+            "att_types": sorted(pen_att_types.items(), key=lambda kv: kv[1], reverse=True),
+            "def_types": sorted(pen_def_types.items(), key=lambda kv: kv[1], reverse=True),
             "od": pen_od,
             "half": {"H1": pen_half[1], "H2": pen_half[2]},
             "quarter": pen_quarter,
@@ -1864,6 +2003,25 @@ def cmd_kpi(args=None):
         "players_defence": players_defence,
         "lineout_players": lineout_players,
         "lineout_throwers": lineout_throwers,
+        "setpiece": DATA_setpiece,
+        "kicking": {
+            "kub": {
+                "kicks":       sum(r["kicks"]        for r in per_match),
+                "km":          sum(r["km"]            for r in per_match),
+                "contest_tot": sum(r["contest_tot"]   for r in per_match),
+                "regain":      sum(r["regain"]        for r in per_match),
+                "hg":          sum(r["hg"]            for r in per_match),
+                "e22":         sum(r["e22"]           for r in per_match),
+            },
+            "opp": {
+                "kicks":       sum(r["opp_kicks"]         for r in per_match),
+                "km":          sum(r["opp_km"]            for r in per_match),
+                "contest_tot": sum(r["opp_contest_tot_k"] for r in per_match),
+                "regain":      sum(r["opp_regain_k"]      for r in per_match),
+                "hg":          sum(r["opp_hg_k"]          for r in per_match),
+                "e22":         sum(r["opp_e22"]           for r in per_match),
+            },
+        },
     }
     
     TEMPLATE = r"""<!DOCTYPE html>
@@ -1936,10 +2094,27 @@ def cmd_kpi(args=None):
     .pen-cols{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;}
     .pen-col{flex:1;min-width:300px;}
     .pen-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
-    .pen-bar-label{font-size:11px;min-width:150px;color:var(--ink);}
+    .pen-bar-label{font-size:11px;min-width:160px;color:var(--ink);}
     .pen-bar-track{flex:1;height:14px;background:#e8e4dc;border-radius:7px;overflow:hidden;}
     .pen-bar-fill{height:100%;border-radius:7px;background:var(--kub-red);}
+    .pen-bar-fill.atk{background:var(--warn);}
     .pen-bar-num{font-size:11px;font-weight:800;min-width:22px;text-align:right;}
+    .pen-sec-hdr{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;margin:10px 0 6px;border-radius:3px;display:flex;justify-content:space-between;align-items:center;}
+    .sp-card{background:#f8f6f2;border:1px solid var(--rule);border-radius:5px;padding:12px 14px;}
+    .sp-card-hdr{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:3px;margin-bottom:8px;}
+    .sp-card-hdr.kub{background:rgba(20,33,61,.12);color:var(--kub-dark);}
+    .sp-card-hdr.opp{background:rgba(214,32,43,.08);color:var(--kub-red);}
+    .sp-big-stat{font-size:26px;font-weight:900;color:var(--kub-dark);margin:4px 0 8px;}
+    .sp-big-stat span{font-size:11px;font-weight:400;color:var(--muted);margin-left:4px;}
+    .sp-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:11px;}
+    .sp-lbl{color:var(--muted);}
+    .sp-val{font-weight:700;}
+    .sp-val.good{color:var(--good);}
+    .sp-val.bad{color:var(--loss);}
+    .sp-val.warn{color:var(--warn);}
+    .pen-sec-hdr.atk{background:rgba(184,92,0,.12);color:var(--warn);}
+    .pen-sec-hdr.def{background:rgba(214,32,43,.1);color:var(--kub-red);}
+    .pen-sec-hdr .cnt{font-size:15px;font-weight:900;}
     .stack{display:flex;height:34px;border-radius:5px;overflow:hidden;margin:6px 0 4px;font-size:12px;font-weight:800;color:white;}
     .stack .seg{display:flex;align-items:center;justify-content:center;}
     .stack .att{background:var(--kub-gold);color:#3a2a08;}
@@ -1969,6 +2144,9 @@ def cmd_kpi(args=None):
     /* 旧: .rank-table tbody tr:nth-child(-n+3) td.name{color:var(--kub-red);} */
     .rank-table tfoot td{padding:6px;background:var(--kub-dark);color:white;font-weight:800;text-align:center;}
     .rank-table tfoot td.l{text-align:left;}
+    .rank-table tbody tr.grp-hdr td{background:#e8e6e0;color:var(--kub-dark);font-size:9px;font-weight:900;text-align:left;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-bottom:1px solid #ccc;}
+    .rank-table tbody tr.grp-avg td{background:rgba(232,161,60,.13);font-style:italic;font-size:10px;border-top:1px solid rgba(232,161,60,.2);border-bottom:2px solid rgba(232,161,60,.25);}
+    .rank-table tbody tr.grp-avg td.name{font-weight:700;}
     .cell-good{color:var(--good);font-weight:800;} .cell-warn{color:var(--warn);font-weight:800;} .cell-dim{color:#bbb;}
     .mini-table{width:100%;border-collapse:collapse;font-size:11px;max-width:420px;}
     .mini-table th{padding:5px 8px;background:var(--kub-mid);color:white;font-size:9.5px;text-transform:uppercase;text-align:left;}
@@ -2078,43 +2256,141 @@ def cmd_kpi(args=None):
            in the opposition half (x_coord 51–110) ÷ total action-time (x_coord −10–110). Computed from Kubota's perspective.</div>`;
      }},
      {id:'kicking',title:'Kicking Game',build:()=>{
+       const K=DATA.kicking, N=DATA.n||1;
+       const f1s=v=>Math.round(v*10)/10;
+       const pct=(a,b)=>b?Math.round(a/b*100)+'%':'—';
+       const sr=(lbl,val,cls='')=>`<div class="sp-row"><span class="sp-lbl">${lbl}</span><span class="sp-val ${cls}">${val}</span></div>`;
+       const secHdr=t=>`<div class="sp-sec-hdr" style="background:var(--kub-dark);color:#fff;padding:6px 12px;font-size:11px;font-weight:900;letter-spacing:.06em;margin:14px 0 8px">${t}</div>`;
+       const kub=K.kub, opp=K.opp;
+
+       // bar helper: value as % of max for side-by-side
+       const mkBar=(v,mx,col)=>{
+         const w=mx?Math.round(v/mx*100):0;
+         return `<div style="background:#ddd;border-radius:3px;height:12px;overflow:hidden"><div style="background:${col};width:${w}%;height:100%"></div></div>`;
+       };
+
+       // contest retain rate
+       const kubRetPct=pct(kub.regain,kub.contest_tot);
+       const oppRetPct=pct(opp.regain,opp.contest_tot);
+
+       // avgTable (12 rows)
        const avg=avgTable([
-         ['kicks','Kicks In Play','per match',1,null],
-         ['km','Kick Metres','per match',0,null],
-         ['avg_kick','Avg m / Kick','metres ÷ kicks',1,null],
-         ['r2k','Ruck : Kick Ratio','rucks ÷ kicks',2,null],
-         // 旧: ['regain','Contest Ret','Own Player – Collected /match',1,true],
-         ['regain','Contest Retained','Own Player - Collected / Pressure Error / Pressure in Touch / Try Kick /match',1,true],
-         ['hg','Kick Hit Grass','Collected Bounce /match',1,null],
-         // 旧: ['gk_pct','Goal Kicking %','goals ÷ attempts',1,true],
-         // 旧: ['trate','Turnover Rate %','(PossTO+LOLost+SCLost)÷(Poss+LOLost+SCLost)',1,false],
-         // 旧: ['opp_h_trate','Opp Half TO Rate %','same formula, x_coord≥50のみ',1,false],
-         ['e22','22m Entries','Enters+Starts into Opposition 22 /match',1,true],
-         ['kub_success','22m Strike Conv %','(Try+PG)÷Attacking 22 Entry×100 /match avg',1,true],
+         ['kicks',          'Kicks in Play',         '/match',                              1, null],
+         ['km',             'Kick Metres',            '/match',                              0, null],
+         ['avg_kick',       'Avg m / Kick',           'metres ÷ kicks',                     1, null],
+         ['r2k',            'Ruck : Kick Ratio',      'rucks ÷ kicks',                      2, null],
+         ['contest_tot',    'Contest Kicks (Kubota)',  'Bomb/Low/Chip/Cross Pitch/Box /match',1, null],
+         ['regain',         'Contest Retained',        'Own Player - Collected / Pressure Error / Pressure in Touch / Try Kick /match', 1, true],
+         ['hg',             'Kick Hit Grass',          'Collected Bounce /match',             1, null],
+         ['opp_kicks',      'Opp Kicks in Play',       '/match',                              1, null],
+         ['opp_regain_k',   'Opp Contest Retained',    'opp contest kicks regained /match',   1, false],
+         ['opp_hg_k',       'Opp Kick Hit Grass',      'opp Collected Bounce /match',         1, null],
+         ['e22',            '22m Entries',             'Enters+Starts into Opp 22 /match',    1, true],
+         ['kub_success',    '22m Strike Conv %',       '(Try+PG) ÷ Attacking 22 Entry',       1, true],
        ]);
+
+       // match-by-match (collapsible)
        const it=itTable(baseCols.concat([
-         {h:'Ball In Play (min)',fn:r=>f1(r.at_tot/60)},
-         {h:'Possession %',fn:r=>r.poss_den?f1(r.at_kub/r.poss_den*100):'-'},
-         /* OLD: {h:'Territory %',fn:r=>r.terr_den?f1(r.terr_num/r.terr_den*100):'-'}, */
-         {h:'Territory %',fn:r=>r.terr_den_v2?f1(r.terr_num_v2/r.terr_den_v2*100):'-'},
-         {h:'Kicks In Play',fn:r=>r.kicks},
-         {h:'Kick Metres',fn:r=>r.km},
-         {h:'Avg Metres / Kick',fn:r=>r.kicks?f1(r.km/r.kicks):'-'},
-         {h:'Ruck : Kick Ratio',fn:r=>r.kicks?f2(r.rucks/r.kicks):'-'},
-         // 旧: {h:'Contest Ret',fn:r=>r.regain},
-         {h:'Contest Retained',fn:r=>r.regain},
-         {h:'Kick Hit Grass',fn:r=>r.hg},
-         // 旧: {h:'Goal Kicking %',fn:r=>r.gk_att?f1(r.gk_made/r.gk_att*100)+'%':'-'},
-         // 旧: {h:'Turnover Rate %',fn:r=>(r.attacks+r.lo_lost+r.sc_lost)?f1((r.poss_to+r.lo_lost+r.sc_lost)/(r.attacks+r.lo_lost+r.sc_lost)*100):'-'},
-         // 旧: {h:'Opp Half TO Rate %',fn:r=>(r.opp_h_poss_n+r.opp_h_lo_lost+r.opp_h_sc_lost)?...},
-         {h:'22m Entries',fn:r=>r.e22},
-         {h:'22m Strike Conv %',fn:r=>r.e22?f1(r.kub_success_pct)+'%':'-'},
+         {h:'Kicks',fn:r=>r.kicks},
+         {h:'Kick m',fn:r=>r.km},
+         {h:'Avg m/K',fn:r=>r.kicks?f1(r.km/r.kicks):'-'},
+         {h:'R:K',fn:r=>r.kicks?f2(r.rucks/r.kicks):'-'},
+         {h:'Contest',fn:r=>r.contest_tot},
+         {h:'Retained',fn:r=>r.regain},
+         {h:'Ret%',fn:r=>r.contest_tot?f0(r.regain/r.contest_tot*100)+'%':'-'},
+         {h:'Hit Grass',fn:r=>r.hg},
+         {h:'Opp Kicks',fn:r=>r.opp_kicks},
+         {h:'Opp Ret',fn:r=>r.opp_regain_k},
+         {h:'Opp Ret%',fn:r=>r.opp_contest_tot_k?f0(r.opp_regain_k/r.opp_contest_tot_k*100)+'%':'-'},
+         {h:'Opp HG',fn:r=>r.opp_hg_k},
+         {h:'22m Entry',fn:r=>r.e22},
+         {h:'22m Strike',fn:r=>r.e22?f1(r.kub_success_pct)+'%':'-'},
        ]));
-       return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
-         <div class="sec-title">Match-by-match</div>${it}
-         // 旧: <div class="note">Contest Ret = contest kicks (Bomb/Low/Chip/Cross Pitch) regained. Kick Hit Grass = Collected Bounce only
-         <div class="note">Contest Retained = contest kicks 5種 (Bomb/Low/Chip/Cross Pitch/Box) のうち Own Player - Collected / Pressure Error / Pressure in Touch / Try Kick. Kick Hit Grass = Collected Bounce only
-           (kick-in-touch-on-bounce excluded). GK% = (Conv+PG+DG made) ÷ attempts.</div>`;
+
+       // max values for bars
+       const kickMax=Math.max(kub.kicks,opp.kicks,1);
+       const retMax=Math.max(kub.regain,opp.regain,1);
+       const hgMax=Math.max(kub.hg,opp.hg,1);
+
+       return `
+         <div class="sec-title" style="margin-bottom:4px">Win / Loss / Season — averages</div>${avg}
+
+         ${secHdr('KICK VOLUME & QUALITY')}
+         <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+           <div class="sp-card" style="flex:1;min-width:260px">
+             <div class="sp-card-hdr kub">KUBOTA</div>
+             <div class="sp-big-stat">${f1s(kub.kicks/N)} <span>Kicks /match</span></div>
+             ${sr('Total Kicks (season)', kub.kicks)}
+             ${sr('Total Kick Metres', kub.km+'m')}
+             ${sr('Avg Metres / Kick', kub.kicks?f1s(kub.km/kub.kicks)+'m':'—')}
+             ${sr('Ruck : Kick Ratio', G.season.r2k.toFixed(2))}
+           </div>
+           <div class="sp-card" style="flex:1;min-width:260px">
+             <div class="sp-card-hdr opp">OPPOSITION</div>
+             <div class="sp-big-stat">${f1s(opp.kicks/N)} <span>Kicks /match</span></div>
+             ${sr('Total Kicks (season)', opp.kicks)}
+             ${sr('Total Kick Metres', opp.km+'m')}
+             ${sr('Avg Metres / Kick', opp.kicks?f1s(opp.km/opp.kicks)+'m':'—')}
+           </div>
+         </div>
+
+         ${secHdr('CONTEST KICK')}
+         <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+           <div class="sp-card" style="flex:1;min-width:260px">
+             <div class="sp-card-hdr kub">KUBOTA</div>
+             ${sr('Total Contest Kicks', kub.contest_tot)}
+             ${sr('Per Match', f1s(kub.contest_tot/N))}
+             <div style="margin:8px 0 4px">
+               <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px">
+                 <span style="color:var(--muted)">Retained</span>
+                 <span style="font-weight:700;color:var(--good)">${kub.regain} (${kubRetPct})</span></div>
+               ${mkBar(kub.regain,kub.contest_tot,'var(--good)')}
+             </div>
+             <div style="margin:8px 0 4px">
+               <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px">
+                 <span style="color:var(--muted)">Hit Grass</span>
+                 <span style="font-weight:700">${kub.hg} (${pct(kub.hg,kub.kicks)}/G)</span></div>
+               ${mkBar(kub.hg,hgMax,'var(--kub-gold)')}
+             </div>
+           </div>
+           <div class="sp-card" style="flex:1;min-width:260px">
+             <div class="sp-card-hdr opp">OPPOSITION</div>
+             ${sr('Total Contest Kicks', opp.contest_tot)}
+             ${sr('Per Match', f1s(opp.contest_tot/N))}
+             <div style="margin:8px 0 4px">
+               <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px">
+                 <span style="color:var(--muted)">Retained</span>
+                 <span style="font-weight:700;color:var(--loss)">${opp.regain} (${oppRetPct})</span></div>
+               ${mkBar(opp.regain,opp.contest_tot,'var(--loss)')}
+             </div>
+             <div style="margin:8px 0 4px">
+               <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px">
+                 <span style="color:var(--muted)">Hit Grass</span>
+                 <span style="font-weight:700">${opp.hg} (${pct(opp.hg,opp.kicks)}/G)</span></div>
+               ${mkBar(opp.hg,hgMax,'var(--kub-gold)')}
+             </div>
+           </div>
+         </div>
+
+         ${secHdr('22m ENTRY & STRIKE RATE')}
+         <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+           <div class="sp-card" style="flex:1;min-width:260px">
+             <div class="sp-card-hdr kub">KUBOTA — Into Opp 22</div>
+             <div class="sp-big-stat">${f1s(kub.e22/N)} <span>Entries /match</span></div>
+             ${sr('Season Total Entries', kub.e22)}
+             ${sr('22m Strike Conv %', G.season.kub_success.toFixed(1)+'%')}
+           </div>
+           <div class="sp-card" style="flex:1;min-width:260px">
+             <div class="sp-card-hdr opp">OPPOSITION — Into Kubota 22</div>
+             <div class="sp-big-stat">${f1s(opp.e22/N)} <span>Entries /match</span></div>
+             ${sr('Season Total Entries', opp.e22)}
+             ${sr('22m Strike Conv %', G.season.opp_success.toFixed(1)+'%')}
+           </div>
+         </div>
+
+         <details style="margin-top:8px"><summary style="cursor:pointer;font-size:11px;color:var(--muted);font-weight:700;padding:4px 0">Match-by-match ▸</summary>
+           <div style="margin-top:6px">${it}</div></details>
+         <div class="note">Contest Kicks = Bomb/Low/Chip/Cross Pitch/Box. Retained = Own Player - Collected / Pressure Error / Pressure in Touch / Try Kick. Hit Grass = Collected Bounce. 22m Strike Conv % = (Try + Penalty Goal outcomes) ÷ Attacking 22 Entry count.</div>`;
      }},
      {id:'attack',title:'Attack',build:()=>{
        // 旧 avgTable順: gl,lqb,carries,metres,db,lb,offloads,e22,kub_success,c22,s22,to_con
@@ -2203,64 +2479,207 @@ def cmd_kpi(args=None):
            Opponent 22m Strike Conv % = (Try + Penalty Goal Attempt outcomes from Attacking 22 Entry) ÷ total Attacking 22 Entry count × 100. Note: Attacking 22 Entry count may differ from Possession 22m Entries.</div>`;
      }},
      {id:'setpiece',title:'Set Piece',build:()=>{
-       const avg=avgTable([
-         ['lo_won','Lineout Won','per match',1,true],
-         ['lo_lost','Lineout Lost','per match',1,false],
-         ['lo_pct','Lineout Win %','won ÷ throws',1,true],
-         ['lo_steal','Lineout Steals','opp throw stolen /match',1,true],
-         ['sc_tot','Scrums','per match',1,null],
-         ['sc_reset','Scrum Resets','per match',1,false],
-         ['sc_pct','Scrum Win %','won ÷ scrums',1,true],
-         ['ma_tot','Mauls','per match',1,null],
-         ['ma_try','Maul Tries','per match',1,true],
-         ['ma_m','Maul Metres','per match',0,true],
-       ]);
-       const it=itTable(baseCols.concat([
-         {h:'Lineouts Won',fn:r=>r.lo_won},{h:'Lineouts Lost',fn:r=>r.lo_lost},
-         {h:'Lineout Win %',fn:r=>r.lo_throw?f0(r.lo_won/r.lo_throw*100)+'%':'-'},
-         {h:'Lineout Steals',fn:r=>r.lo_steal},
-         {h:'Scrums',fn:r=>r.sc_tot},{h:'Scrum Resets',fn:r=>r.sc_reset},
-         {h:'Scrum Won %',fn:r=>(r.sc_tot-r.sc_reset)?f0(r.sc_won/(r.sc_tot-r.sc_reset)*100)+'%':'-'},
-         {h:'Mauls',fn:r=>r.ma_tot},{h:'Maul Tries',fn:r=>r.ma_try},{h:'Maul Metres',fn:r=>r.ma_m},
-       ]));
+       const SP=DATA.setpiece, N=DATA.n||1;
+       const sr=(lbl,val,cls='')=>`<div class="sp-row"><span class="sp-lbl">${lbl}</span><span class="sp-val ${cls}">${val}</span></div>`;
+       const pct=(a,b)=>b?f0(a/b*100)+'%':'—';
+       const f1s=v=>Math.round(v*10)/10;
+       const secHdr=t=>`<div class="sp-sec-hdr" style="background:var(--kub-dark);color:#fff;padding:6px 12px;font-size:11px;font-weight:900;letter-spacing:.06em;margin:14px 0 8px">${t}</div>`;
+
+       // LINEOUT
+       const lo=SP.lo, olo=SP.opp_lo;
+       const loPct=pct(lo.won,lo.throw), oloPct=pct(olo.won,olo.throw);
+       const loWonPM=f1s(lo.won/N), loLostPM=f1s((lo.throw-lo.won)/N);
+       const oloWonPM=f1s(olo.won/N), oloLostPM=f1s((olo.throw-olo.won)/N);
+       const numRows=SP.lo_nums.map(({num,won,total})=>{
+         const p=total?Math.round(won/total*100):0;
+         const col=p>=90?'var(--good)':p>=80?'var(--kub-dark)':'var(--warn)';
+         const bar=`<div style="background:#ddd;border-radius:3px;height:16px;overflow:hidden"><div style="background:${col};width:${p}%;height:100%"></div></div>`;
+         return `<tr style="border-bottom:1px solid rgba(0,0,0,.05)">
+           <td style="width:64px;font-size:12px;font-weight:600;padding:6px 4px 6px 0;white-space:nowrap">${num} Man</td>
+           <td style="width:48px;text-align:right;font-weight:900;font-size:15px;color:${col};padding:6px 6px">${p}%</td>
+           <td style="padding:6px 10px 6px 4px">${bar}</td>
+           <td style="width:56px;font-size:11px;color:var(--muted);white-space:nowrap">${won}/${total}</td></tr>`;
+       }).join('');
        const th=DATA.lineout_throwers.map(p=>`<tr><td>${p.name}</td><td class="pos">${p.pos}</td>
          <td class="n">${p.tot}</td><td class="n" style="color:var(--good)">${p.won}</td>
          <td class="n" style="color:var(--loss)">${p.lost}</td><td class="n">${p.pct}%</td></tr>`).join('');
        const lp=DATA.lineout_players.map(p=>`<tr><td>${p.name}</td><td class="pos">${p.pos}</td><td class="n">${p.won}</td></tr>`).join('');
-       return `<div class="sec-title">Win / Loss / Season — averages</div>${avg}
-         <div class="sec-title">Match-by-match</div>${it}
-         <div style="display:flex;gap:30px;flex-wrap:wrap;margin-top:4px">
-           <div style="flex:1;min-width:380px">
-             <div class="sec-title">Thrower success rate (season)</div>
-             <table class="mini-table" style="max-width:none"><thead><tr><th>Thrower</th><th>Position</th>
-               <th style="text-align:right">Thrown</th><th style="text-align:right">Won</th>
-               <th style="text-align:right">Lost</th><th style="text-align:right">Win%</th></tr></thead>
-             <tbody>${th}</tbody></table>
+
+       // SCRUM
+       const sc=SP.sc, osc=SP.opp_sc;
+       const scPct=pct(sc.won,sc.tot-sc.reset||1), oscPct=pct(osc.won,osc.tot-osc.reset||1);
+       const stabTot=sc.stab_pos+sc.stab_neu+sc.stab_neg||1;
+       const stabBars=['Positive','Neutral','Negative'].map((lbl,i)=>{
+         const n=[sc.stab_pos,sc.stab_neu,sc.stab_neg][i];
+         const p=Math.round(n/stabTot*100);
+         const bg=i===0?'var(--good)':i===1?'var(--kub-gold)':'var(--loss)';
+         return `<div style="display:flex;align-items:center;gap:6px;margin:3px 0">
+           <span style="width:58px;font-size:10px;color:var(--muted)">${lbl}</span>
+           <div style="flex:1;background:#ddd;border-radius:2px;height:9px;overflow:hidden">
+             <div style="background:${bg};width:${p}%;height:100%"></div></div>
+           <span style="width:56px;font-size:10px;text-align:right">${n} (${p}%)</span></div>`;
+       }).join('');
+
+       // MAUL
+       const ma=SP.ma, oma=SP.opp_ma;
+
+       // avgTable (10 key KPIs)
+       const avg=avgTable([
+         ['lo_pct',       'Lineout Win % (Kubota)',     'won ÷ thrown',            1, true],
+         ['lo_steal',     'Lineout Steals (Kubota)',    'opp throw stolen /match',       1, true],
+         ['opp_lo_pct',   'Lineout Win % (Opp)',        'opp won ÷ thrown',         1, false],
+         ['opp_lo_steal', 'Lineout Steals (Opp)',       'stolen from Kubota /match',     1, false],
+         ['sc_pct',       'Scrum Win % (Kubota)',       'excl. resets',                  1, true],
+         ['sc_pen_won',   'Scrum Pen Won (Kubota)',     '/match',                        1, true],
+         ['sc_pen_lost',  'Scrum Pen Lost (Kubota)',    '/match',                        1, false],
+         ['opp_sc_pct',   'Scrum Win % (Opp)',          'excl. resets',                  1, false],
+         ['ma_try',       'Maul Tries (Kubota)',        '/match',                        1, true],
+         ['opp_ma_try',   'Maul Tries (Opp)',           '/match',                        1, false],
+       ]);
+
+       // match-by-match (collapsible)
+       const it=itTable(baseCols.concat([
+         {h:'LO Won',fn:r=>r.lo_won},{h:'LO Lost',fn:r=>r.lo_lost},
+         {h:'LO Win%',fn:r=>r.lo_throw?f0(r.lo_won/r.lo_throw*100)+'%':'-'},
+         {h:'LO Steal',fn:r=>r.lo_steal},
+         {h:'Sc Win%',fn:r=>(r.sc_tot-r.sc_reset)?f0(r.sc_won/(r.sc_tot-r.sc_reset)*100)+'%':'-'},
+         {h:'Sc PW',fn:r=>r.sc_pen_won},{h:'Sc PL',fn:r=>r.sc_pen_lost},
+         {h:'Maul',fn:r=>r.ma_tot},{h:'Ma Try',fn:r=>r.ma_try},
+         {h:'Opp LO%',fn:r=>r.opp_lo_throw?f0(r.opp_lo_won/r.opp_lo_throw*100)+'%':'-'},
+         {h:'Opp Sc%',fn:r=>(r.opp_sc_tot-r.opp_sc_reset)?f0(r.opp_sc_won/(r.opp_sc_tot-r.opp_sc_reset)*100)+'%':'-'},
+       ]));
+
+       return `
+         <div class="sec-title" style="margin-bottom:4px">Win / Loss / Season — averages</div>${avg}
+
+         ${secHdr('LINEOUT')}
+         <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px">
+           <div class="sp-card" style="flex:1;min-width:260px">
+             <div class="sp-card-hdr kub">KUBOTA — My Throw</div>
+             <div class="sp-big-stat">${loPct} <span>Win Rate</span></div>
+             <div style="display:flex;gap:12px;margin:6px 0 8px">
+               <div style="flex:1;text-align:center;background:rgba(26,122,60,.08);border-radius:4px;padding:6px 4px">
+                 <div style="font-size:18px;font-weight:900;color:var(--good)">${loWonPM}</div>
+                 <div style="font-size:9px;color:var(--muted)">Won /match</div></div>
+               <div style="flex:1;text-align:center;background:rgba(192,32,43,.07);border-radius:4px;padding:6px 4px">
+                 <div style="font-size:18px;font-weight:900;color:var(--loss)">${loLostPM}</div>
+                 <div style="font-size:9px;color:var(--muted)">Lost /match</div></div></div>
+             ${sr('Season total (Won/Lost)', lo.won+' / '+(lo.throw-lo.won)+' of '+lo.throw)}
+             ${sr('Stolen by Opposition', lo.steal, lo.steal>5?'bad':'good')}
            </div>
-           <div style="flex:1;min-width:300px">
-             <div class="sec-title">Lineout claims by player (season)</div>
-             <table class="mini-table"><thead><tr><th>Player</th><th>Position</th><th style="text-align:right">LO Won</th></tr></thead><tbody>${lp}</tbody></table>
+           <div class="sp-card" style="flex:1;min-width:260px">
+             <div class="sp-card-hdr opp">OPPOSITION — Their Throw</div>
+             <div class="sp-big-stat">${oloPct} <span>Win Rate</span></div>
+             <div style="display:flex;gap:12px;margin:6px 0 8px">
+               <div style="flex:1;text-align:center;background:rgba(192,32,43,.07);border-radius:4px;padding:6px 4px">
+                 <div style="font-size:18px;font-weight:900;color:var(--loss)">${oloWonPM}</div>
+                 <div style="font-size:9px;color:var(--muted)">Opp Won /match</div></div>
+               <div style="flex:1;text-align:center;background:rgba(26,122,60,.08);border-radius:4px;padding:6px 4px">
+                 <div style="font-size:18px;font-weight:900;color:var(--good)">${oloLostPM}</div>
+                 <div style="font-size:9px;color:var(--muted)">Opp Lost /match</div></div></div>
+             ${sr('Season total (Won/Lost)', olo.won+' / '+(olo.throw-olo.won)+' of '+olo.throw)}
+             ${sr('Stolen by Kubota', olo.steal, olo.steal>4?'good':'')}
            </div>
          </div>
-         <div class="note">Thrower Win% = that player's Lineout Throws won ÷ thrown (Won* / Lost* outcomes). Steals = own team winning the
-           opposition throw (Lineout Take 'Lineout Steal*'). Maul Metres uses the <code>metres</code> column on Maul events.</div>`;
+         <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+           <div style="flex:1.1;min-width:240px">
+             <div class="sec-title">Lineout Numbers — Kubota Success Rate</div>
+             <table style="width:100%;border-collapse:collapse;margin-top:4px">${numRows}</table>
+           </div>
+           <div style="flex:1;min-width:220px">
+             <div class="sec-title">Thrower Success Rate</div>
+             <table class="mini-table" style="max-width:none"><thead><tr><th>Thrower</th><th>Pos</th>
+               <th style="text-align:right">Tot</th><th style="text-align:right">Won</th>
+               <th style="text-align:right">Lost</th><th style="text-align:right">Win%</th></tr></thead>
+             <tbody>${th}</tbody></table>
+             <div class="sec-title" style="margin-top:8px">Claims by Player</div>
+             <table class="mini-table"><thead><tr><th>Player</th><th>Pos</th><th style="text-align:right">Won</th></tr></thead>
+             <tbody>${lp}</tbody></table>
+           </div>
+         </div>
+
+         ${secHdr('SCRUM')}
+         <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+           <div class="sp-card" style="flex:1;min-width:260px">
+             <div class="sp-card-hdr kub">KUBOTA</div>
+             <div class="sp-big-stat">${scPct} <span>Win Rate (excl. Resets)</span></div>
+             ${sr('Total / Won / Reset', sc.tot+' / '+sc.won+' / '+sc.reset)}
+             <div style="margin:6px 0 4px;border-top:1px solid #e0ddd5;padding-top:6px;display:flex;gap:10px">
+               <div style="flex:1;text-align:center">
+                 <div style="font-size:15px;font-weight:900;color:var(--good)">${sc.pen_won}</div>
+                 <div style="font-size:9px;color:var(--muted)">Pen Won</div></div>
+               <div style="flex:1;text-align:center">
+                 <div style="font-size:15px;font-weight:900;color:var(--good)">${sc.fk_won}</div>
+                 <div style="font-size:9px;color:var(--muted)">FK Won</div></div>
+               <div style="flex:1;text-align:center">
+                 <div style="font-size:15px;font-weight:900;color:var(--loss)">${sc.pen_lost}</div>
+                 <div style="font-size:9px;color:var(--muted)">Pen Lost</div></div>
+               <div style="flex:1;text-align:center">
+                 <div style="font-size:15px;font-weight:900;color:var(--loss)">${sc.fk_lost}</div>
+                 <div style="font-size:9px;color:var(--muted)">FK Lost</div></div></div>
+             <div style="border-top:1px solid #e0ddd5;padding-top:6px;margin-top:4px">
+               <div style="font-size:9px;color:var(--muted);font-weight:700;margin-bottom:4px">STABILITY</div>
+               ${stabBars}</div>
+           </div>
+           <div class="sp-card" style="flex:1;min-width:260px">
+             <div class="sp-card-hdr opp">OPPOSITION</div>
+             <div class="sp-big-stat">${oscPct} <span>Win Rate (excl. Resets)</span></div>
+             ${sr('Total / Won / Reset', osc.tot+' / '+osc.won+' / '+osc.reset)}
+             <div style="margin:6px 0 4px;border-top:1px solid #e0ddd5;padding-top:6px;display:flex;gap:10px">
+               <div style="flex:1;text-align:center">
+                 <div style="font-size:15px;font-weight:900;color:var(--loss)">${osc.pen_won}</div>
+                 <div style="font-size:9px;color:var(--muted)">Opp Pen Won</div></div>
+               <div style="flex:1;text-align:center">
+                 <div style="font-size:15px;font-weight:900;color:var(--good)">${osc.pen_lost}</div>
+                 <div style="font-size:9px;color:var(--muted)">Opp Pen Lost</div></div></div>
+           </div>
+         </div>
+
+         ${secHdr('MAUL')}
+         <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+           <div class="sp-card" style="flex:1;min-width:260px">
+             <div class="sp-card-hdr kub">KUBOTA</div>
+             ${sr('Total / Tries / Metres', ma.tot+' / '+ma.try_+' / '+ma.m+'m')}
+             ${sr('Per Match', f1s(ma.tot/N)+' mauls · '+f1s(ma.try_/N)+' tries · '+f1s(ma.m/N)+'m')}
+             ${sr('Metres per Maul', ma.tot?f1s(ma.m/ma.tot):'—')}
+           </div>
+           <div class="sp-card" style="flex:1;min-width:260px">
+             <div class="sp-card-hdr opp">OPPOSITION</div>
+             ${sr('Total / Tries / Metres', oma.tot+' / '+oma.try_+' / '+oma.m+'m')}
+             ${sr('Per Match', f1s(oma.tot/N)+' mauls · '+f1s(oma.try_/N)+' tries · '+f1s(oma.m/N)+'m')}
+             ${sr('Metres per Maul', oma.tot?f1s(oma.m/oma.tot):'—')}
+           </div>
+         </div>
+
+         <details style="margin-top:8px"><summary style="cursor:pointer;font-size:11px;color:var(--muted);font-weight:700;padding:4px 0">Match-by-match ▸</summary>
+           <div style="margin-top:6px">${it}</div></details>
+         <div class="note">Win% excludes Resets. Stability = qualifier3 on Scrum events. Steals = Lineout Take 'Lineout Steal%'. Numbers bar: green ≥ 85%, amber &lt; 85%.</div>`;
      }},
      {id:'penalty',title:'Penalty',build:()=>{
-       const P=DATA.penalty, max=Math.max(...P.types.map(t=>t[1]),1);
-       const bars=P.types.map(([t,n])=>`<div class="pen-bar-row">
-         <span class="pen-bar-label">${t}</span>
-         <div class="pen-bar-track"><div class="pen-bar-fill" style="width:${Math.round(n/max*100)}%"></div></div>
-         <span class="pen-bar-num">${n}</span></div>`).join('');
+       const P=DATA.penalty;
+       const att=P.od.Offence, def=P.od.Defence, odtot=att+def||1;
+       // helper: render bar list with given color class
+       const mkBars=(list,cls='')=>{
+         const mx=Math.max(...list.map(t=>t[1]),1);
+         return list.map(([t,n])=>`<div class="pen-bar-row">
+           <span class="pen-bar-label">${t}</span>
+           <div class="pen-bar-track"><div class="pen-bar-fill ${cls}" style="width:${Math.round(n/mx*100)}%"></div></div>
+           <span class="pen-bar-num">${n}</span></div>`).join('');
+       };
+       // Attack vs Defence type breakdown
+       const attBars=mkBars(P.att_types||[],'atk');
+       const defBars=mkBars(P.def_types||[]);
+       // position group
        const posOrder=['Front Row','Lock','Loosie','Inside','Midfield','Back 3'];
        const posMax=Math.max(...posOrder.map(g=>P.pos_group[g]),1);
        const posBars=posOrder.filter(g=>P.pos_group[g]).map(g=>`<div class="pen-bar-row">
          <span class="pen-bar-label">${g}</span>
          <div class="pen-bar-track"><div class="pen-bar-fill" style="width:${Math.round(P.pos_group[g]/posMax*100)}%"></div></div>
          <span class="pen-bar-num">${P.pos_group[g]}</span></div>`).join('');
-       const att=P.od.Offence, def=P.od.Defence, odtot=att+def||1;
+       // stacked bars
        const stack=`<div class="stack">
-         <div class="seg att" style="width:${att/odtot*100}%">Attack ${att}</div>
-         <div class="seg def" style="width:${def/odtot*100}%">Defence ${def}</div></div>`;
+         <div class="seg att" style="width:${att/odtot*100}%">Attack ${att} (${Math.round(att/odtot*100)}%)</div>
+         <div class="seg def" style="width:${def/odtot*100}%">Defence ${def} (${Math.round(def/odtot*100)}%)</div></div>`;
        const qmax=Math.max(...['Q1','Q2','Q3','Q4'].map(q=>P.quarter[q]),1);
        const qb=['Q1','Q2','Q3','Q4'].map(q=>`<div class="vbar-col">
          <div class="vbar-num">${P.quarter[q]}</div>
@@ -2283,7 +2702,7 @@ def cmd_kpi(args=None):
          ['In Defence / match', def/DATA.n, Lg.def],
        ];
        const cmpRows=cmp.map(([lbl,k,l])=>{
-         const d=k-l; const cls=d<=0?'pos':'neg';  // fewer infringements = good
+         const d=k-l; const cls=d<=0?'pos':'neg';
          return `<tr><td class="k">${lbl}</td><td>${f1(k)}</td><td>${f1(l)}</td>
            <td class="delta ${cls}">${d>=0?'+':''}${f1(d)}</td></tr>`;}).join('');
        const cmpTable=`<table class="avg-table"><thead><tr><th class="k">Metric</th>
@@ -2291,14 +2710,18 @@ def cmd_kpi(args=None):
        return `<div class="cards">${cards}</div>
          <div class="sec-title">Kubota vs League average (per match)</div>${cmpTable}
          <div class="pen-cols">
-           <div class="pen-col">
-             <div class="sec-title">By Type (season total)</div>${bars}
-             <div class="sec-title">By Position Group (season total)</div>${posBars}
+           <div class="pen-col" style="flex:1.5;min-width:320px">
+             <div class="sec-title">Penalty Type — Attack vs Defence 別内訳</div>
+             <div class="pen-sec-hdr atk">IN ATTACK <span class="cnt">${att}</span></div>
+             ${attBars}
+             <div class="pen-sec-hdr def" style="margin-top:14px">IN DEFENCE <span class="cnt">${def}</span></div>
+             ${defBars}
            </div>
-           <div class="pen-col">
-             <div class="sec-title">Attack vs Defence (qualifier3)</div>${stack}
-             <div class="sec-title">By Half</div>${hb}
-             <div class="sec-title">By Quarter</div><div class="vbar-chart">${qb}</div>
+           <div class="pen-col" style="flex:1;min-width:240px">
+             <div class="sec-title">Attack vs Defence</div>${stack}
+             <div class="sec-title" style="margin-top:10px">By Position Group</div>${posBars}
+             <div class="sec-title" style="margin-top:10px">By Half</div>${hb}
+             <div class="sec-title" style="margin-top:10px">By Quarter</div><div class="vbar-chart">${qb}</div>
            </div>
          </div>
          <div class="note">Infringements = Penalty Conceded (Full Penalty ${P.full} + Free Kick ${P.fk} = ${P.total}).
@@ -2313,7 +2736,18 @@ def cmd_kpi(args=None):
        const totGlo=R.reduce((s,r)=>s+Math.round(r.gl/100*r.carries),0);
        const totAccN=R.reduce((s,r)=>s+Math.round((r.pass_acc||0)/100*(r.passes||0)),0);
        const totOOA=tot.ooa13+tot.ooa4;
-       const rows=R.map(r=>`<tr>
+       const PG={'Loosehead Prop':'Front Row','Hooker':'Front Row','Tighthead Prop':'Front Row','Lock (4)':'Lock','Lock (5)':'Lock','Lock':'Lock','Blindside Flanker':'Loosie','Openside Flanker':'Loosie','Flanker':'Loosie','Number 8':'Loosie','Scrum Half':'Inside','Fly Half':'Inside','Inside Centre':'Midfield','Outside Centre':'Midfield','Left Wing':'Back 3','Right Wing':'Back 3','Wing':'Back 3','Full Back':'Back 3'};
+       const _atkAvg=(buf)=>{
+         if(!buf.length) return '';
+         const n=buf.length,s=buf.reduce((a,r)=>{['carries','metres','pcm','lb','db','ol','tries','err','passes','kicks','kick_m','ooa13','ooa4','pt'].forEach(k=>a[k]=(a[k]||0)+(r[k]||0));a._glo=(a._glo||0)+Math.round((r.gl||0)/100*(r.carries||0));a._pgood=(a._pgood||0)+Math.round((r.pass_acc||0)/100*(r.passes||0));return a;},{_glo:0,_pgood:0});
+         const f1=v=>v.toFixed(1),av=k=>s[k]?f1(s[k]/n):'-';
+         return`<tr class="grp-avg"><td></td><td class="name">Avg ${n}P</td><td class="pos"></td><td>${av('pt')}</td><td>${av('carries')}</td><td>${av('metres')}</td><td>${s.carries?f1(s.metres/s.carries):'-'}</td><td>${s.carries?f1(s.pcm/s.carries):'-'}</td><td>${s.carries?(s._glo/s.carries*100).toFixed(1)+'%':'-'}</td><td>${s.lb?f1(s.lb/n):'-'}</td><td>${s.db?f1(s.db/n):'-'}</td><td>${s.ol?f1(s.ol/n):'-'}</td><td>${s.tries?f1(s.tries/n):'-'}</td><td>${s.err?f1(s.err/n):'-'}</td><td>${s.passes?f1(s.passes/n):'-'}</td><td>${s.passes?(s._pgood/s.passes*100).toFixed(1)+'%':'-'}</td><td>${s.kicks?f1(s.kicks/n):'-'}</td><td>${s.kick_m?f1(s.kick_m/n):'-'}</td><td>${s.kicks?f1(s.kick_m/s.kicks):'-'}</td><td>${s.ooa13?f1(s.ooa13/n):'-'}</td><td>${s.ooa4?f1(s.ooa4/n):'-'}</td><td>${(s.ooa13+s.ooa4)?(s.ooa13/(s.ooa13+s.ooa4)*100).toFixed(1)+'%':'-'}</td></tr>`;
+       };
+       const rows=R.reduce((acc,r,i,a)=>{
+         const grp=PG[r.pos]||'Other';
+         if(grp!==acc.g){if(acc.b.length)acc.s+=_atkAvg(acc.b);acc.g=grp;acc.b=[];acc.s+=`<tr class="grp-hdr"><td colspan="22">${grp}</td></tr>`;}
+         acc.b.push(r);
+         acc.s+=`<tr>
          <td class="shirt">${r.shirt}</td><td class="name">${r.name}</td><td class="pos">${r.pos}</td><td>${r.pt}</td>
          <td>${r.carries}</td><td>${r.metres}</td><td>${r.avg}</td>
          <td>${r.carries?r.pcm_per_carry:'-'}</td>
@@ -2325,7 +2759,10 @@ def cmd_kpi(args=None):
          <td>${r.passes||'-'}</td><td>${r.passes?r.pass_acc+'%':'-'}</td>
          <td>${r.kicks||'-'}</td><td>${r.kick_m||'-'}</td><td>${r.kicks?r.avg_kick:'-'}</td>
          <td>${r.ooa13||'-'}</td><td>${r.ooa4||'-'}</td>
-         <td class="${(r.ooa13+r.ooa4)?(r.ooa_eff>=70?'cell-good':r.ooa_eff<55?'cell-warn':''):'cell-dim'}">${(r.ooa13+r.ooa4)?r.ooa_eff+'%':'-'}</td></tr>`).join('');
+         <td class="${(r.ooa13+r.ooa4)?(r.ooa_eff>=70?'cell-good':r.ooa_eff<55?'cell-warn':''):'cell-dim'}">${(r.ooa13+r.ooa4)?r.ooa_eff+'%':'-'}</td></tr>`;
+         if(i===a.length-1)acc.s+=_atkAvg(acc.b);
+         return acc;
+       },{g:'',b:[],s:''}).s;
        return `<div class="sec-title">Individual Attack — season totals (ranked by position)</div>
          <div class="rank-wrap"><table class="rank-table">
            <thead><tr><th>No.</th><th class="l">Name</th><th class="l">Position</th><th>Play Time (min)</th>
@@ -2351,7 +2788,18 @@ def cmd_kpi(args=None):
      {id:'ind-defence',title:'Indiv Defence',build:()=>{
        const R=DATA.players_defence;
        const tot=R.reduce((a,r)=>{['tk','mt','att','tkl_assist','dom','try_saver','to_t','passive','oa','legs','ht_tot','jck','tow','pen'].forEach(k=>a[k]=(a[k]||0)+(r[k]||0));return a;},{});
-       const rows=R.map(r=>`<tr>
+       const PG={'Loosehead Prop':'Front Row','Hooker':'Front Row','Tighthead Prop':'Front Row','Lock (4)':'Lock','Lock (5)':'Lock','Lock':'Lock','Blindside Flanker':'Loosie','Openside Flanker':'Loosie','Flanker':'Loosie','Number 8':'Loosie','Scrum Half':'Inside','Fly Half':'Inside','Inside Centre':'Midfield','Outside Centre':'Midfield','Left Wing':'Back 3','Right Wing':'Back 3','Wing':'Back 3','Full Back':'Back 3'};
+       const _defAvg=(buf)=>{
+         if(!buf.length) return '';
+         const n=buf.length,s=buf.reduce((a,r)=>{['att','tkl_assist','tk','mt','dom','try_saver','to_t','oa','passive','jck','tow','pen','legs','ht_tot','pt'].forEach(k=>a[k]=(a[k]||0)+(r[k]||0));return a;},{});
+         const f1=v=>v.toFixed(1),av=k=>s[k]?f1(s[k]/n):'-';
+         return`<tr class="grp-avg"><td></td><td class="name">Avg ${n}P</td><td class="pos"></td><td>${av('pt')}</td><td>${av('att')}</td><td>${s.tkl_assist?f1(s.tkl_assist/n):'-'}</td><td>${av('tk')}</td><td>${s.mt?f1(s.mt/n):'-'}</td><td>${s.att?(s.tk/s.att*100).toFixed(1)+'%':'-'}</td><td>${s.ht_tot?(s.legs/s.ht_tot*100).toFixed(1)+'%':'-'}</td><td>${s.dom?f1(s.dom/n):'-'}</td><td>${s.att?(s.dom/s.att*100).toFixed(1)+'%':'-'}</td><td>${s.try_saver?f1(s.try_saver/n):'-'}</td><td>${s.to_t?f1(s.to_t/n):'-'}</td><td>${s.oa?f1(s.oa/n):'-'}</td><td>${s.passive?f1(s.passive/n):'-'}</td><td>${s.jck?f1(s.jck/n):'-'}</td><td>${s.tow?f1(s.tow/n):'-'}</td><td>${s.pen?f1(s.pen/n):'-'}</td></tr>`;
+       };
+       const rows=R.reduce((acc,r,i,a)=>{
+         const grp=PG[r.pos]||'Other';
+         if(grp!==acc.g){if(acc.b.length)acc.s+=_defAvg(acc.b);acc.g=grp;acc.b=[];acc.s+=`<tr class="grp-hdr"><td colspan="19">${grp}</td></tr>`;}
+         acc.b.push(r);
+         acc.s+=`<tr>
          <td class="shirt">${r.shirt}</td><td class="name">${r.name}</td><td class="pos">${r.pos}</td><td>${r.pt}</td>
          <td>${r.att}</td><td class="${r.tkl_assist?'cell-good':'cell-dim'}">${r.tkl_assist||'-'}</td><td>${r.tk}</td><td class="${r.mt>=20?'cell-warn':''}">${r.mt}</td>
          <td class="${r.pct>=90?'cell-good':r.pct<75?'cell-warn':''}">${r.pct}%</td>
@@ -2364,7 +2812,10 @@ def cmd_kpi(args=None):
          <td>${r.passive||'-'}</td>
          <td class="${r.jck?'cell-good':'cell-dim'}">${r.jck||'-'}</td>
          <td class="${r.tow?'cell-good':'cell-dim'}">${r.tow||'-'}</td>
-         <td class="${r.pen>=12?'cell-warn':''}">${r.pen||'-'}</td></tr>`).join('');
+         <td class="${r.pen>=12?'cell-warn':''}">${r.pen||'-'}</td></tr>`;
+         if(i===a.length-1)acc.s+=_defAvg(acc.b);
+         return acc;
+       },{g:'',b:[],s:''}).s;
        return `<div class="sec-title">Individual Defence — season totals (ranked by tackles made)</div>
          <div class="rank-wrap"><table class="rank-table">
            <thead><tr><th>No.</th><th class="l">Name</th><th class="l">Position</th><th>Play Time (min)</th>
