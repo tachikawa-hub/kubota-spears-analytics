@@ -320,23 +320,18 @@ def result_col(team_d, opp_d):
 # Needle = 安定率% = (Pos+Neu)/total.  Red dashed target line at 95%.
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _speedometer_svg(pos, neu, neg, title):
+def _speedometer_svg(pos, neu, neg):
+    """Pure SVG arc + needle only — no text inside."""
     total    = pos + neu + neg or 1
     stable_p = round(100 * (pos + neu) / total)
-    pos_p    = round(100 * pos / total)
-    neu_p    = round(100 * neu / total)
-    neg_p    = 100 - pos_p - neu_p
 
-    # Gauge positions (0=left / 100=right).  Neg | Neu | Pos
-    neg_end  = 100.0 * neg / total          # Neg  → [0, neg_end]
-    neu_end  = 100.0 * (neg + neu) / total  # Neu  → [neg_end, neu_end]
-    # Pos → [neu_end, 100]
-    # Needle at stable_p = 100 - neg_end  (boundary Neu|Pos from right = Neg|Neu from left)
+    neg_end  = 100.0 * neg / total
+    neu_end  = 100.0 * (neg + neu) / total
 
     cx, cy  = 68, 59
-    ro, ri  = 52, 34   # outer / inner radius
+    ro, ri  = 52, 34
     SVG_W   = 136
-    SVG_H   = 90
+    SVG_H   = 65   # baseline at cy=59, +6px padding
 
     def pt(p, r):
         a = math.pi * (1.0 - p / 100.0)
@@ -357,17 +352,14 @@ def _speedometer_svg(pos, neu, neg, title):
         arc_seg(neu_end, 100.0,   "#16A34A")
     )
 
-    # Baseline
     base = (f'<line x1="{cx-ro}" y1="{cy}" x2="{cx+ro}" y2="{cy}" '
             f'stroke="#CBD5E1" stroke-width="1"/>')
 
-    # 95% target line (extends slightly beyond arc ring)
     tx_o, ty_o = pt(95, ro + 5)
     tx_i, ty_i = pt(95, ri - 5)
     target = (f'<line x1="{tx_i:.2f}" y1="{ty_i:.2f}" x2="{tx_o:.2f}" y2="{ty_o:.2f}" '
               f'stroke="#DC2626" stroke-width="2.2" stroke-dasharray="3,2"/>')
 
-    # Needle triangle
     na    = math.pi * (1.0 - stable_p / 100.0)
     nx2   = cx + (ro - 6) * math.cos(na)
     ny2   = cy - (ro - 6) * math.sin(na)
@@ -380,37 +372,46 @@ def _speedometer_svg(pos, neu, neg, title):
         f'<circle cx="{cx}" cy="{cy}" r="5" fill="#0F172A"/>'
     )
 
-    # Centre readout
-    nc = won_color(stable_p)
-    readout = (
-        f'<text x="{cx}" y="{cy+17}" text-anchor="middle" '
-        f'font-size="20" font-weight="800" fill="{nc}" '
-        f'font-family="Oswald,sans-serif">{stable_p}%</text>'
-        f'<text x="{cx}" y="{cy+27}" text-anchor="middle" '
-        f'font-size="6.5" fill="#64748B">安定率</text>'
-    )
-
-    # Title
-    title_t = (f'<text x="{cx}" y="10" text-anchor="middle" '
-               f'font-size="8.5" font-weight="800" fill="#14213D">{title}</text>')
-
-    # Legend (left=Neg, centre=Neu, right=Pos)
-    legend = (
-        f'<text x="2"          y="{SVG_H-2}" font-size="6.5" fill="#DC2626" font-weight="700">Neg {neg} ({neg_p}%)</text>'
-        f'<text x="{cx}"       y="{SVG_H-2}" text-anchor="middle" font-size="6.5" fill="#6B7280" font-weight="700">Neu {neu} ({neu_p}%)</text>'
-        f'<text x="{SVG_W-2}"  y="{SVG_H-2}" text-anchor="end"    font-size="6.5" fill="#16A34A" font-weight="700">Pos {pos} ({pos_p}%)</text>'
-    )
-
     return (
         f'<svg viewBox="0 0 {SVG_W} {SVG_H}" style="display:block;width:100%">'
-        + title_t + segs + base + target + needle + readout + legend
+        + segs + base + target + needle
         + f'</svg>'
     )
 
 
+def _gauge_block(pos, neu, neg, title):
+    """HTML block: ① title ② SVG (arc only) ③ large % ④ legend."""
+    total    = pos + neu + neg or 1
+    stable_p = round(100 * (pos + neu) / total)
+    pos_p    = round(100 * pos / total)
+    neu_p    = round(100 * neu / total)
+    neg_p    = 100 - pos_p - neu_p
+    nc       = won_color(stable_p)
+
+    svg = _speedometer_svg(pos, neu, neg)
+
+    title_html = (
+        f'<div style="text-align:center;font-size:8.5px;font-weight:800;color:#14213D;'
+        f'text-transform:uppercase;letter-spacing:.05em;padding-bottom:2px">{title}</div>'
+    )
+    pct_html = (
+        f'<div style="text-align:center;font-family:Oswald,sans-serif;font-size:26px;'
+        f'font-weight:800;color:{nc};line-height:1.1;margin:2px 0 4px">{stable_p}%</div>'
+    )
+    legend_html = (
+        f'<div style="display:flex;justify-content:space-between;padding:0 2px 2px">'
+        f'<span style="font-size:6.5px;color:#DC2626;font-weight:700">Neg {neg} ({neg_p}%)</span>'
+        f'<span style="font-size:6.5px;color:#6B7280;font-weight:700">Neu {neu} ({neu_p}%)</span>'
+        f'<span style="font-size:6.5px;color:#16A34A;font-weight:700">Pos {pos} ({pos_p}%)</span>'
+        f'</div>'
+    )
+
+    return title_html + svg + pct_html + legend_html
+
+
 def stability_col(own_stab, opp_stab):
-    own_svg = _speedometer_svg(*own_stab, "Own Ball")
-    opp_svg = _speedometer_svg(*opp_stab, "Opp Ball")
+    own_block = _gauge_block(*own_stab, "Own Ball")
+    opp_block = _gauge_block(*opp_stab, "Opp Ball")
     return (
         f'<div style="background:#fff;border:1px solid #DEE2E6;border-radius:6px;overflow:hidden;'
         f'display:flex;flex-direction:column">'
@@ -418,9 +419,9 @@ def stability_col(own_stab, opp_stab):
         f'<span style="font-size:8.5px;font-weight:800;color:#14213D;text-transform:uppercase;'
         f'letter-spacing:.05em">Stability</span>'
         f'</div>'
-        f'<div style="flex:1;padding:4px 6px 2px">{own_svg}</div>'
+        f'<div style="flex:1;padding:4px 6px 2px">{own_block}</div>'
         f'<div style="height:1px;background:#E5E7EB;margin:0 8px"></div>'
-        f'<div style="flex:1;padding:2px 6px 4px">{opp_svg}</div>'
+        f'<div style="flex:1;padding:2px 6px 4px">{opp_block}</div>'
         f'</div>'
     )
 
