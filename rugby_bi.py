@@ -1508,10 +1508,13 @@ def cmd_kpi(args=None):
             "SELECT COALESCE(SUM(CAST(metres3 AS REAL)),0) FROM events "
             "WHERE fxid=? AND team_name=? AND action_name='Carry'",
             (fx, TEAM)).fetchone()[0])
-        # Turnover Rate 確定式: (PossTO + LOLost + SCLost) / (Poss + LOLost + SCLost)
+        # Turnover Rate 確定式:
+        #   分母: (Poss + LOLost + SCLost)
+        #   分子: (KickError + PenCon + Turnover + Turnover(Scrum) + DropGoalMiss + LOLost + SCLost)
+        _TO_RESULTS = "('Turnover','Turnover (Scrum)','Pen Con','Kick Error','Drop Goal Missed')"
         poss_to_n = cur.execute(
             "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
-            "AND action_name='Possession' AND action_result_name IN ('Turnover','Turnover (Scrum)')",
+            f"AND action_name='Possession' AND action_result_name IN {_TO_RESULTS}",
             (fx, TEAM)).fetchone()[0]
         # Opp Half TO Rate: x_coord >= 50 限定
         opp_h_poss_n = cur.execute(
@@ -1520,7 +1523,7 @@ def cmd_kpi(args=None):
             "AND CAST(x_coord AS REAL) >= 50", (fx, TEAM)).fetchone()[0]
         opp_h_poss_to = cur.execute(
             "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
-            "AND action_name='Possession' AND action_result_name IN ('Turnover','Turnover (Scrum)') "
+            f"AND action_name='Possession' AND action_result_name IN {_TO_RESULTS} "
             "AND x_coord IS NOT NULL AND x_coord!='' AND CAST(x_coord AS REAL) >= 50",
             (fx, TEAM)).fetchone()[0]
         opp_h_lo_lost = cur.execute(
@@ -1578,7 +1581,7 @@ def cmd_kpi(args=None):
             "pen": C(fx, action_name="Penalty Conceded"),
             # 旧: "to_con": C(fx, action_name="Turnover"),  # 全Turnoverイベント (34.69%の旧定義)
             "to_con": C(fx, action_name="Turnover"),
-            "poss_to": poss_to_n,  # Possession WHERE result IN ('Turnover','Turnover (Scrum)')
+            "poss_to": poss_to_n,  # Possession losses: Turnover+TO(Scrum)+PenCon+KickError+DGMiss
             "attacks": C(fx, action_name="Possession"),
             "tk": tk, "mt": mt,
             "dom": C(fx, action_name="Tackle", qualifier4_name="Dominant Tackle"),
@@ -1913,15 +1916,15 @@ def cmd_kpi(args=None):
             "terr": rate(recs, "terr_num_v2", "terr_den_v2"),          # v2（中点・BIP_v2）
             "tries": mn(recs, "tries"),
             "tries_con": mn(recs, "tries_conceded"),
-            # 旧: "trate": rate(recs, "to_con", "attacks"),  # Turnover÷Possession (34.69% 旧定義)
+            # 確定式: (KickErr+PenCon+TO+TO(Scrum)+DGMiss+LOLost+SCLost)/(Poss+LOLost+SCLost)
             "trate": (
                 sum(r["poss_to"] + r["lo_lost"] + r["sc_lost"] for r in recs) /
                 max(1, sum(r["attacks"] + r["lo_lost"] + r["sc_lost"] for r in recs)) * 100
-            ),  # 確定式: (PossTO+LOLost+SCLost)/(Poss+LOLost+SCLost)
+            ),
             "opp_h_trate": (
                 sum(r["opp_h_poss_to"] + r["opp_h_lo_lost"] + r["opp_h_sc_lost"] for r in recs) /
                 max(1, sum(r["opp_h_poss_n"] + r["opp_h_lo_lost"] + r["opp_h_sc_lost"] for r in recs)) * 100
-            ),  # 敵陣Turnover Rate (x_coord>=50)
+            ),  # 同定義 x_coord>=50
             "pen": mn(recs, "pen"),
             # kicking
             "kicks": mn(recs, "kicks"), "km": mn(recs, "km"),
@@ -2233,7 +2236,7 @@ def cmd_kpi(args=None):
          ['terr','Territory %','action-time in opp half (x 51–110)',1,true],
          ['tries','Tries Scored','per match',1,true],
          ['tries_con','Tries Conceded','per match',1,false],
-         ['trate','Turnover Rate %','(PossTO+LOLost+SCLost)÷(Poss+LOLost+SCLost)',1,false],
+         ['trate','Turnover Rate %','(TO+TO(Scrum)+PenCon+KickErr+DGMiss+LOLost+SCLost)÷(Poss+LOLost+SCLost)',1,false],
          ['opp_h_trate','Opp Half TO Rate %','same formula, x_coord≥50のみ',1,false],
          ['pen','Penalties Conceded','per match',1,false],
        ]);
@@ -3043,7 +3046,7 @@ function itTable(cols){
     ['terr','Territory %','action-time in opp half (x 51&#8211;110)',1,true],
     ['tries','Tries Scored','per match',1,true],
     ['tries_con','Tries Conceded','per match',1,false],
-    ['trate','Turnover Rate %','(PossTO+LOLost+SCLost)&#247;(Poss+LOLost+SCLost)',1,false],
+    ['trate','Turnover Rate %','(TO+TO(Scrum)+PenCon+KickErr+DGMiss+LOLost+SCLost)&#247;(Poss+LOLost+SCLost)',1,false],
     ['opp_h_trate','Opp Half TO Rate %','same formula, x&#8201;&#8805;&#8201;50 only',1,false],
     ['pen','Penalties Conceded','per match',1,false],
   ]);
@@ -3335,10 +3338,13 @@ def compute_stats(df, max_round):
     res['OV_PointsScored']     = pd.Series(pts_s)
     res['OV_PointsFor_PG']     = (pd.Series(pts_s) / m).round(1)
     res['OV_TriesScored']      = tries_a.groupby('teamName').size()
-    # Turnover Rate = (PossTO + LOlost + SClost) / (Poss + LOlost + SClost) × 100
+    # Turnover Rate 確定式:
+    #   分母: (Poss + LOLost + SCLost)
+    #   分子: (KickErr + PenCon + Turnover + Turnover(Scrum) + DropGoalMiss + LOLost + SCLost)
+    _TO_RESULTS = ['Turnover', 'Turnover (Scrum)', 'Pen Con', 'Kick Error', 'Drop Goal Missed']
     _lo_lost = lo_throw[lo_throw['ActionResultName'].str.startswith('Lost', na=False)]
     _sc_lost = scrum[scrum['ActionResultName'].isin(SL)]
-    _poss_to = poss[poss['ActionResultName'].isin(['Turnover','Turnover (Scrum)'])]
+    _poss_to = poss[poss['ActionResultName'].isin(_TO_RESULTS)]
     _lo_lost_n = _lo_lost.groupby('teamName').size()
     _sc_lost_n = _sc_lost.groupby('teamName').size()
     _poss_to_n = _poss_to.groupby('teamName').size()
@@ -3346,7 +3352,7 @@ def compute_stats(df, max_round):
     _to_den    = _poss_n.add(_lo_lost_n, fill_value=0).add(_sc_lost_n, fill_value=0)
     _to_num    = _poss_to_n.add(_lo_lost_n, fill_value=0).add(_sc_lost_n, fill_value=0)
     res['OV_TORate_pct']       = (_to_num / _to_den * 100).round(1)
-    # Turnover Rate at Opposition Half (x_coord >= 50)
+    # Turnover Rate at Opposition Half (x_coord >= 50) — same formula
     poss_xok    = poss[poss['x_coord'].notna()].copy()
     poss_xok['_x'] = poss_xok['x_coord'].astype(float)
     lo_lost_xok = _lo_lost[_lo_lost['x_coord'].notna()].copy()
@@ -3356,7 +3362,7 @@ def compute_stats(df, max_round):
     _opp_poss   = poss_xok[poss_xok['_x'] >= 50]
     _opp_lo     = lo_lost_xok[lo_lost_xok['_x'] >= 50]
     _opp_sc     = sc_lost_xok[sc_lost_xok['_x'] >= 50]
-    _opp_pto    = _opp_poss[_opp_poss['ActionResultName'].isin(['Turnover','Turnover (Scrum)'])]
+    _opp_pto    = _opp_poss[_opp_poss['ActionResultName'].isin(_TO_RESULTS)]
     _opp_to_den = _opp_poss.groupby('teamName').size().add(_opp_lo.groupby('teamName').size(), fill_value=0).add(_opp_sc.groupby('teamName').size(), fill_value=0)
     _opp_to_num = _opp_pto.groupby('teamName').size().add(_opp_lo.groupby('teamName').size(), fill_value=0).add(_opp_sc.groupby('teamName').size(), fill_value=0)
     res['OV_OppTORate_pct']    = (_opp_to_num / _opp_to_den * 100).round(1)
