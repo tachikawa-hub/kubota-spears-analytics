@@ -6,7 +6,7 @@ Lineout section v4:
   - Area breakdown shows each team's own-ball throws
   - Thrower Ranking replaces Throw Direction
 """
-import os, re
+import os, re, sqlite3, collections
 
 # ── KUBOTA SPEARS season data (R1–R22, from DB) ───────────────────────────
 SPEARS = {
@@ -48,14 +48,7 @@ SPEARS = {
         ("Shaun Stevenson", 7,  7),
         ("Bernard Foley",   4,  4),
     ],
-    "takes": [
-        ("Ruan Botha",    52, 49),
-        ("David Bulbring",47, 44),
-        ("Faulua Makisi", 41, 41),
-        ("Akira Ieremia", 37, 34),
-        ("Merwe Olivier", 19, 15),
-        ("Tyler Paul",    19, 17),
-    ],
+    "takes": [],        # populated at runtime from DB (see _load_spears_takes)
     "steals": [
         ("Akira Ieremia",  {"Middle":2,"Front":1,"15M+":1}),
         ("Merwe Olivier",  {"Front":3,"Middle":1}),
@@ -192,17 +185,18 @@ TEAM_DATA = {
 }
 
 BIOUT_DIR = "/Users/ktachikawa/Desktop/BIoutput"
+DB_PATH   = os.path.join(BIOUT_DIR, "rugby.db")
 
 # ── Zone breakdown data (from DB) ─────────────────────────────────────────
 # Lineout Take: ActionTypeName = "Lineout Win Front" → zone "Front" etc.
 TAKE_ZONES = {
-    # Spears catchers
-    "Ruan Botha":     {"Front":19,"Middle":28,"Back":6},
-    "David Bulbring": {"Front":28,"Middle":33,"Back":2,"Quick":1},
-    "Faulua Makisi":  {"Front":42,"Middle":7,"Back":3,"15M+":2},
-    "Akira Ieremia":  {"Front":13,"Middle":23,"Back":7,"15M+":3},
-    "Merwe Olivier":  {"Front":11,"Middle":11,"Back":2},
-    "Tyler Paul":     {"Front":6,"Middle":3,"Back":3,"15M+":8},
+    # Spears catchers — populated at runtime from DB (see _load_spears_takes)
+    "Ruan Botha":     {},
+    "David Bulbring": {},
+    "Faulua Makisi":  {},
+    "Akira Ieremia":  {},
+    "Merwe Olivier":  {},
+    "Tyler Paul":     {},
     # BlackRams
     "Harrison Fox":          {"Front":4},
     "Reijiro Yamamoto":      {},
@@ -362,6 +356,65 @@ AREA_COLOR     = {"Own22":"#16A34A","OwnHalf":"#2563EB","OppHalf":"#D97706","Opp
 
 def pct(n, d): return round(100*n/d) if d else 0
 def wc(p): return "#16A34A" if p>=90 else "#2563EB" if p>=80 else "#D97706"
+
+# ── Load Spears takes from DB (all 21 matches) ────────────────────────────
+def _load_spears_takes():
+    """
+    Query rugby.db for Spears own-ball lineout take data.
+    takes  → (name, total_all_take_rows, won_count) sorted by won desc
+    zones  → {player: {zone: won_count, ...}}
+    Total  = Lineout Win + Lineout Steal rows (all Take rows for that player).
+    Won    = Lineout Win rows only (own ball caught).
+    """
+    ZONE_MAP = {
+        "Lineout Win Front":  "Front",
+        "Lineout Win Middle": "Middle",
+        "Lineout Win Back":   "Back",
+        "Lineout Win Quick":  "Quick",
+        "Lineout Win 15m+":  "15M+",
+    }
+    won_cnt   = collections.Counter()
+    total_cnt = collections.Counter()
+    zone_cnt  = collections.defaultdict(collections.Counter)
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute("""
+            SELECT player_name, action_type_name, COUNT(*) AS cnt
+            FROM events
+            WHERE action_name = 'Lineout Take'
+              AND team_name LIKE '%Kubota%'
+            GROUP BY player_name, action_type_name
+        """).fetchall()
+        conn.close()
+    except Exception as e:
+        print(f"[WARN] DB read failed ({e}); using empty takes.")
+        return [], {}
+
+    for r in rows:
+        p   = r["player_name"]
+        atn = r["action_type_name"]
+        cnt = r["cnt"]
+        total_cnt[p] += cnt
+        if "Lineout Win" in atn:
+            won_cnt[p]     += cnt
+            zone            = ZONE_MAP.get(atn, atn.replace("Lineout Win ", ""))
+            zone_cnt[p][zone] += cnt
+
+    takes = sorted(
+        [(p, total_cnt[p], won_cnt[p]) for p in won_cnt],
+        key=lambda x: -x[2],
+    )
+    zones = {p: dict(z) for p, z in zone_cnt.items()}
+    return takes, zones
+
+
+_db_takes, _db_zones = _load_spears_takes()
+# Override SPEARS["takes"] with DB data
+SPEARS["takes"] = _db_takes
+# Override TAKE_ZONES for Spears players
+TAKE_ZONES.update(_db_zones)
 
 
 # ── Delivery Type card ─────────────────────────────────────────────────────
