@@ -96,6 +96,7 @@ GOAL = ['Penalty Goal','Conversion','Drop Goal']
 # 旧: CONT = ['Bomb','Low','Chip','Cross Pitch']
 CONT = ['Bomb','Low','Chip','Cross Pitch','Box']
 TO_S = ['Turnover Won','Lineout Steal','Scrum Steal']
+TO_RESULTS = ['Turnover', 'Turnover (Scrum)', 'Pen Con', 'Kick Error', 'Drop Goal Missed']
 REST = ['50m Restart','50m Restart Retained','Goal Line Restart',
         '22m Restart','22m Restart Retained']
 SPD_FAST = ("0-1 Seconds","1-2 Seconds","2-3 Seconds")
@@ -1511,21 +1512,18 @@ def cmd_kpi(args=None):
         # Turnover Rate 確定式:
         #   分母: (Poss + LOLost + SCLost)
         #   分子: (KickError + PenCon + Turnover + Turnover(Scrum) + DropGoalMiss + LOLost + SCLost)
-        _TO_RESULTS = "('Turnover','Turnover (Scrum)','Pen Con','Kick Error','Drop Goal Missed')"
-        poss_to_n = cur.execute(
-            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
-            f"AND action_name='Possession' AND action_result_name IN {_TO_RESULTS}",
-            (fx, TEAM)).fetchone()[0]
+        poss_to_n = C(fx, action_name='Possession', action_result_name=TO_RESULTS)
         # Opp Half TO Rate: x_coord >= 50 限定
         opp_h_poss_n = cur.execute(
             "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
             "AND action_name='Possession' AND x_coord IS NOT NULL AND x_coord!='' "
             "AND CAST(x_coord AS REAL) >= 50", (fx, TEAM)).fetchone()[0]
+        _ph = ','.join('?' * len(TO_RESULTS))
         opp_h_poss_to = cur.execute(
-            "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
-            f"AND action_name='Possession' AND action_result_name IN {_TO_RESULTS} "
+            f"SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
+            f"AND action_name='Possession' AND action_result_name IN ({_ph}) "
             "AND x_coord IS NOT NULL AND x_coord!='' AND CAST(x_coord AS REAL) >= 50",
-            (fx, TEAM)).fetchone()[0]
+            (fx, TEAM) + tuple(TO_RESULTS)).fetchone()[0]
         opp_h_lo_lost = cur.execute(
             "SELECT COUNT(*) FROM events WHERE fxid=? AND team_name=? "
             "AND action_name='Lineout Throw' AND action_result_name LIKE 'Lost%' "
@@ -1579,8 +1577,7 @@ def cmd_kpi(args=None):
             "s22": C(fx, action_name="Possession", qualifier4_name="Starts inside Opposition 22"),
             "tries": C(fx, action_name="Try"),
             "pen": C(fx, action_name="Penalty Conceded"),
-            # 旧: "to_con": C(fx, action_name="Turnover"),  # 全Turnoverイベント (34.69%の旧定義)
-            "to_con": C(fx, action_name="Turnover"),
+            "to_con": C(fx, action_name="Turnover"),  # Turnovers Conceded列用: raw count (poss_toとは別定義)
             "poss_to": poss_to_n,  # Possession losses: Turnover+TO(Scrum)+PenCon+KickError+DGMiss
             "attacks": C(fx, action_name="Possession"),
             "tk": tk, "mt": mt,
@@ -3067,7 +3064,7 @@ function itTable(cols){
     +'<div class="sec-title">Win / Loss / Season &#8212; averages</div>'+avg
     +'<div class="sec-title">Match-by-match</div>'+it
     +'<div class="note">Territory % = Kubota action-time in opp half (x&#8201;51&#8211;110) &#247; total action-time. '
-    +'Turnover Rate = (PossTO+LOLost+SCLost)&#247;(Poss+LOLost+SCLost)&#215;100.</div>';
+    +'Turnover Rate = (TO+TO(Scrum)+PenCon+KickErr+DGMiss+LOLost+SCLost)&#247;(Poss+LOLost+SCLost)&#215;100.</div>';
 })();
 """
     JS = JS_RAW.replace("%%DATA%%", DATA_JSON)
@@ -3341,10 +3338,9 @@ def compute_stats(df, max_round):
     # Turnover Rate 確定式:
     #   分母: (Poss + LOLost + SCLost)
     #   分子: (KickErr + PenCon + Turnover + Turnover(Scrum) + DropGoalMiss + LOLost + SCLost)
-    _TO_RESULTS = ['Turnover', 'Turnover (Scrum)', 'Pen Con', 'Kick Error', 'Drop Goal Missed']
     _lo_lost = lo_throw[lo_throw['ActionResultName'].str.startswith('Lost', na=False)]
     _sc_lost = scrum[scrum['ActionResultName'].isin(SL)]
-    _poss_to = poss[poss['ActionResultName'].isin(_TO_RESULTS)]
+    _poss_to = poss[poss['ActionResultName'].isin(TO_RESULTS)]
     _lo_lost_n = _lo_lost.groupby('teamName').size()
     _sc_lost_n = _sc_lost.groupby('teamName').size()
     _poss_to_n = _poss_to.groupby('teamName').size()
@@ -3362,7 +3358,7 @@ def compute_stats(df, max_round):
     _opp_poss   = poss_xok[poss_xok['_x'] >= 50]
     _opp_lo     = lo_lost_xok[lo_lost_xok['_x'] >= 50]
     _opp_sc     = sc_lost_xok[sc_lost_xok['_x'] >= 50]
-    _opp_pto    = _opp_poss[_opp_poss['ActionResultName'].isin(_TO_RESULTS)]
+    _opp_pto    = _opp_poss[_opp_poss['ActionResultName'].isin(TO_RESULTS)]
     _opp_to_den = _opp_poss.groupby('teamName').size().add(_opp_lo.groupby('teamName').size(), fill_value=0).add(_opp_sc.groupby('teamName').size(), fill_value=0)
     _opp_to_num = _opp_pto.groupby('teamName').size().add(_opp_lo.groupby('teamName').size(), fill_value=0).add(_opp_sc.groupby('teamName').size(), fill_value=0)
     res['OV_OppTORate_pct']    = (_opp_to_num / _opp_to_den * 100).round(1)
@@ -3771,7 +3767,7 @@ def build_html(home, opp, master, detail, max_round, df=None):
         ('Gainline %',            'ATT_Gainline_pct',       False, 1, '%'),
         ('Line Breaks / G',       'OV_LineBreaks_PG',       False, 2, ''),
         ('Kicks in Play / G',     'KICK_KicksIP_PG',        False, 1, ''),
-        ('Turnover Conceded / G', 'OV_TurnoverConc_PG',     True,  1, ''),
+        ('Turnover Conceded / G (TO action)', 'OV_TurnoverConc_PG',     True,  1, ''),
         ('Turnover Rate %',       'OV_TORate_pct',          True,  1, '%'),
         ('Opp Half TO Rate %',    'OV_OppTORate_pct',       True,  1, '%'),
         # Defence
@@ -4671,7 +4667,7 @@ function showSub(sid,subId,btn){
                 ('Gainline %',            'ATT_Gainline_pct',   False, 1, '%'),
                 ('Line Breaks / G',       'OV_LineBreaks_PG',   False, 2, ''),
                 ('Kicks in Play / G',     'KICK_KicksIP_PG',    False, 1, ''),
-                ('Turnover Conceded / G', 'OV_TurnoverConc_PG', True,  1, ''),
+                ('Turnover Conceded / G (TO action)', 'OV_TurnoverConc_PG', True,  1, ''),
                 ('Turnover Rate %',       'OV_TORate_pct',      True,  1, '%'),
                 ('Opp Half TO Rate %',    'OV_OppTORate_pct',   True,  1, '%'),
             ]
