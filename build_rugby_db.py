@@ -57,6 +57,7 @@ CREATE TABLE matches (
     season INTEGER,
     competition_id INTEGER,
     competition_name TEXT,
+    league TEXT,
     home_team_id INTEGER,
     home_team_name TEXT,
     away_team_id INTEGER,
@@ -168,11 +169,14 @@ for path, first in files:
     else:
         res = "D"
 
+    comp = first["competitionName"]
+    league = 'd1' if 'D1' in comp else ('d2' if 'D2' in comp else 'other')
+
     cur.execute(
-        "INSERT INTO matches VALUES (" + ",".join("?" * 27) + ")",
+        "INSERT INTO matches VALUES (" + ",".join("?" * 28) + ")",
         (
             fxid, to_iso(first["datePlayed"]), num(first["roundNumber"]), num(first["season"]),
-            num(first["competitionID"]), first["competitionName"],
+            num(first["competitionID"]), first["competitionName"], league,
             num(first["homeTeamID"]), first["homeTeamName"],
             num(first["awayTeamID"]), first["awayTeamName"],
             num(first["hometeamHTscore"]), num(first["awayteamHTscore"]),

@@ -3137,6 +3137,7 @@ function itTable(cols){
 
 def compute_stats(df, max_round):
     df = df[df['roundNumber'] <= max_round].copy()
+    df = df[df['competitionName'] == 'Japan Rugby League One D1'].copy()
     df['oppTeam'] = df.apply(
         lambda r: r['awayTeamName'] if r['teamName']==r['homeTeamName'] else r['homeTeamName'], axis=1)
     df = df.sort_values(['FXID','MatchTime']).reset_index(drop=True)
@@ -5192,7 +5193,7 @@ def cmd_build(args=None):
     cur.execute("""
     CREATE TABLE matches (
         fxid INTEGER PRIMARY KEY, date_played TEXT, round_number INTEGER,
-        season INTEGER, competition_id INTEGER, competition_name TEXT,
+        season INTEGER, competition_id INTEGER, competition_name TEXT, league TEXT,
         home_team_id INTEGER, home_team_name TEXT, away_team_id INTEGER, away_team_name TEXT,
         home_ht_score INTEGER, away_ht_score INTEGER, home_ft_score INTEGER, away_ft_score INTEGER,
         venue_id INTEGER, venue_name TEXT, city_name TEXT, kickoff_time TEXT,
@@ -5277,10 +5278,13 @@ def cmd_build(args=None):
             opp_name = first["homeTeamName"]
         res = None if kub_score is None or opp_score is None else ("W" if kub_score > opp_score else "L" if kub_score < opp_score else "D")
 
+        comp = first["competitionName"]
+        league = 'd1' if 'D1' in comp else ('d2' if 'D2' in comp else 'other')
+
         cur.execute(
-            "INSERT INTO matches VALUES (" + ",".join("?" * 27) + ")",
+            "INSERT INTO matches VALUES (" + ",".join("?" * 28) + ")",
             (fxid, to_iso(first["datePlayed"]), num(first["roundNumber"]), num(first["season"]),
-             num(first["competitionID"]), first["competitionName"],
+             num(first["competitionID"]), first["competitionName"], league,
              num(first["homeTeamID"]), first["homeTeamName"],
              num(first["awayTeamID"]), first["awayTeamName"],
              num(first["hometeamHTscore"]), num(first["awayteamHTscore"]),
