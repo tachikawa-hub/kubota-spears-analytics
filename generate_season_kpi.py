@@ -178,6 +178,18 @@ for m in matches:
     }
     per_match.append(rec)
 
+# --- per-player lineout take stats (full season, all 21 matches) ---
+player_takes_rows = cur.execute("""
+    SELECT player_name,
+           COUNT(*) AS total,
+           SUM(CASE WHEN action_type_name LIKE 'Lineout Win%' THEN 1 ELSE 0 END) AS won
+    FROM events
+    WHERE team_name=? AND action_name='Lineout Take'
+    GROUP BY player_name
+    ORDER BY total DESC
+""", (TEAM,)).fetchall()
+player_takes = [(r["player_name"], r["total"], r["won"]) for r in player_takes_rows]
+
 con.close()
 
 # --- season aggregates ---
@@ -230,7 +242,7 @@ season = {
     "pens_pg": round(tot("pens") / n, 1),
 }
 
-DATA = {"team": TEAM, "season": season, "matches": per_match}
+DATA = {"team": TEAM, "season": season, "matches": per_match, "player_takes": player_takes}
 
 # ---------------------------------------------------------------- HTML
 TEMPLATE = r"""<!DOCTYPE html>
@@ -521,9 +533,60 @@ function pageDefence() {
   ]);
 }
 
+// ── PAGE 5: SET PIECE — LINEOUT TAKE ────────────────────────────────────
+function pageSetPiece() {
+  const PT = DATA.player_takes;
+  const totTot = PT.reduce((s,r)=>s+r[1],0);
+  const totWon = PT.reduce((s,r)=>s+r[2],0);
+  const totPct = totTot ? Math.round(totWon/totTot*100) : 0;
+
+  const rows = PT.map((r,i) => {
+    const [name, tot, won] = r;
+    const p = tot ? Math.round(won/tot*100) : 0;
+    const cls = p >= 90 ? 'cell-good' : p < 80 ? 'cell-warn' : '';
+    return `<tr>
+      <td>${i+1}</td>
+      <td style="text-align:left;font-weight:700">${name}</td>
+      <td>${tot}</td>
+      <td>${won}</td>
+      <td class="${cls}">${p}%</td>
+    </tr>`;
+  }).join('');
+
+  const totRow = `<tr class="total-row">
+    <td colspan="2" class="lcol">SEASON TOTAL</td>
+    <td>${totTot}</td>
+    <td>${totWon}</td>
+    <td>${totPct}%</td>
+  </tr>`;
+
+  return `<div class="page">
+    ${header('Set Piece — Lineout Take')}
+    <div class="tbl-wrap">
+      <div class="tbl-title">Lineout Take — Individual Rankings (${DATA.team}, all ${S.matches} matches)</div>
+      <table class="season-tbl">
+        <thead><tr>
+          <th>#</th>
+          <th class="lcol">Player</th>
+          <th>Total</th>
+          <th>Won</th>
+          <th>Won%</th>
+        </tr></thead>
+        <tbody>${rows}${totRow}</tbody>
+      </table>
+      <div class="legend">
+        <span>Total = all Lineout Take events (Win + Steal attempts)</span>
+        <span>Won = Lineout Win (own-ball catch secured)</span>
+        <span>Won% = Won ÷ Total</span>
+        <span>green ≥90% / amber &lt;80%</span>
+      </div>
+    </div>
+  </div>`;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   document.body.innerHTML =
-    pageOverview() + pageKicking() + pageAttack() + pageDefence();
+    pageOverview() + pageKicking() + pageAttack() + pageDefence() + pageSetPiece();
 });
 </script>
 </body>

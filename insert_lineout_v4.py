@@ -6,7 +6,7 @@ Lineout section v4:
   - Area breakdown shows each team's own-ball throws
   - Thrower Ranking replaces Throw Direction
 """
-import os, re, sqlite3, collections
+import csv, glob, os, re, sqlite3, collections
 
 # ── KUBOTA SPEARS season data (R1–R22, from DB) ───────────────────────────
 SPEARS = {
@@ -186,6 +186,7 @@ TEAM_DATA = {
 
 BIOUT_DIR = "/Users/ktachikawa/Desktop/BIoutput"
 DB_PATH   = os.path.join(BIOUT_DIR, "rugby.db")
+CSV_DIR   = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
 
 # ── Zone breakdown data (from DB) ─────────────────────────────────────────
 # Lineout Take: ActionTypeName = "Lineout Win Front" → zone "Front" etc.
@@ -433,15 +434,73 @@ def _load_all_takes_from_db():
 
 _all_db_takes = _load_all_takes_from_db()
 
-# ── Apply DB data to SPEARS ────────────────────────────────────────────────
+# ── Apply DB data to SPEARS (DB has all 21 Spears games) ──────────────────
 _sp = _all_db_takes.get("Kubota Spears", {})
 if _sp.get("takes"):
     SPEARS["takes"] = _sp["takes"]
 TAKE_ZONES.update(_sp.get("zones", {}))
 
-# ── Apply DB data to all opponent teams ────────────────────────────────────
+
+# ── Load opponent takes from full-season CSVs (all league games, not Spears-only) ─
+def _load_opp_takes_from_csvs():
+    """
+    Read all BI CSVs from CSV_DIR to get every team's full-season take data.
+    Kubota Spears is skipped (already loaded from DB above).
+    Returns {team_name: {"takes": [(player, total, won), ...], "zones": {player: {zone: n}}}}
+    """
+    _ZONE_MAP = {
+        "Lineout Win Front":  "Front",
+        "Lineout Win Middle": "Middle",
+        "Lineout Win Back":   "Back",
+        "Lineout Win Quick":  "Quick",
+        "Lineout Win 15m+":   "15M+",
+    }
+    won_cnt   = collections.defaultdict(collections.Counter)
+    total_cnt = collections.defaultdict(collections.Counter)
+    zone_cnt  = collections.defaultdict(lambda: collections.defaultdict(collections.Counter))
+
+    csv_files = glob.glob(os.path.join(CSV_DIR, "*.csv"))
+    if not csv_files:
+        print(f"[WARN] No CSVs found in {CSV_DIR}; opponent takes unchanged.")
+        return {}
+
+    for fpath in sorted(csv_files):
+        try:
+            with open(fpath, encoding="utf-8-sig", newline="") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    if row.get("actionName") != "Lineout Take":
+                        continue
+                    tn = row.get("teamName", "")
+                    if tn == "Kubota Spears":
+                        continue
+                    p   = row.get("playerName", "")
+                    atn = row.get("ActionTypeName", "")
+                    total_cnt[tn][p] += 1
+                    if atn.startswith("Lineout Win"):
+                        won_cnt[tn][p] += 1
+                        zone = _ZONE_MAP.get(atn, atn.replace("Lineout Win ", ""))
+                        zone_cnt[tn][p][zone] += 1
+        except Exception as e:
+            print(f"[WARN] Skipping {os.path.basename(fpath)}: {e}")
+            continue
+
+    result = {}
+    for tn in total_cnt:
+        takes = sorted(
+            [(p, total_cnt[tn][p], won_cnt[tn].get(p, 0)) for p in total_cnt[tn]],
+            key=lambda x: -x[1],
+        )
+        zones = {p: dict(z) for p, z in zone_cnt[tn].items()}
+        result[tn] = {"takes": takes, "zones": zones}
+    return result
+
+
+_csv_opp_takes = _load_opp_takes_from_csvs()
+
+# ── Apply CSV data to all opponent teams ───────────────────────────────────
 for _abbr, _db_name in _DB_TEAM_NAME.items():
-    _td = _all_db_takes.get(_db_name, {})
+    _td = _csv_opp_takes.get(_db_name, {})
     if _td.get("takes"):
         TEAM_DATA[_abbr]["takes"] = _td["takes"]
     TAKE_ZONES.update(_td.get("zones", {}))
