@@ -315,66 +315,113 @@ def result_col(team_d, opp_d):
     return f'<div style="display:flex;flex-direction:column;gap:8px">{own}{opp}</div>'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# STABILITY DONUT
+# STABILITY SPEEDOMETER  (half-circle gauge)
+# Arc order left→right: Negative(red) | Neutral(gray) | Positive(green)
+# Needle = 安定率% = (Pos+Neu)/total.  Red dashed target line at 95%.
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _donut_svg(pos, neu, neg, title):
-    total = pos + neu + neg or 1
-    stable_p = pct(pos + neu, total)
-    pos_p    = pct(pos, total)
-    neu_p    = pct(neu, total)
+def _speedometer_svg(pos, neu, neg, title):
+    total    = pos + neu + neg or 1
+    stable_p = round(100 * (pos + neu) / total)
+    pos_p    = round(100 * pos / total)
+    neu_p    = round(100 * neu / total)
     neg_p    = 100 - pos_p - neu_p
 
-    cx, cy = 55, 56
-    r_out, r_in = 46, 28
+    # Gauge positions (0=left / 100=right).  Neg | Neu | Pos
+    neg_end  = 100.0 * neg / total          # Neg  → [0, neg_end]
+    neu_end  = 100.0 * (neg + neu) / total  # Neu  → [neg_end, neu_end]
+    # Pos → [neu_end, 100]
+    # Needle at stable_p = 100 - neg_end  (boundary Neu|Pos from right = Neg|Neu from left)
 
-    def arc(start_deg, sweep_deg, ro, ri):
-        if sweep_deg >= 360: sweep_deg = 359.99
-        s = math.radians(start_deg - 90)
-        e = math.radians(start_deg + sweep_deg - 90)
-        lg = 1 if sweep_deg > 180 else 0
-        x1o = cx + ro*math.cos(s); y1o = cy + ro*math.sin(s)
-        x2o = cx + ro*math.cos(e); y2o = cy + ro*math.sin(e)
-        x1i = cx + ri*math.cos(e); y1i = cy + ri*math.sin(e)
-        x2i = cx + ri*math.cos(s); y2i = cy + ri*math.sin(s)
-        return (f"M {x1o:.2f} {y1o:.2f} A {ro} {ro} 0 {lg} 1 {x2o:.2f} {y2o:.2f} "
-                f"L {x1i:.2f} {y1i:.2f} A {ri} {ri} 0 {lg} 0 {x2i:.2f} {y2i:.2f} Z")
+    cx, cy  = 68, 59
+    ro, ri  = 52, 34   # outer / inner radius
+    SVG_W   = 136
+    SVG_H   = 90
 
-    angle = 0
-    paths = ""
-    for val, color in [(pos,"#16A34A"),(neu,"#9CA3AF"),(neg,"#DC2626")]:
-        if val == 0: continue
-        sweep = 360 * val / total
-        paths += f'<path d="{arc(angle, sweep, r_out, r_in)}" fill="{color}"/>'
-        angle += sweep
+    def pt(p, r):
+        a = math.pi * (1.0 - p / 100.0)
+        return cx + r * math.cos(a), cy - r * math.sin(a)
 
-    center = (
-        f'<text x="{cx}" y="{cy-7}" text-anchor="middle" font-size="9" fill="#555" font-weight="700">安定率</text>'
-        f'<text x="{cx}" y="{cy+13}" text-anchor="middle" font-size="22" font-weight="700" fill="#16A34A">{stable_p}%</text>'
+    def arc_seg(p1, p2, color):
+        if p2 - p1 < 0.05: return ""
+        la = 1 if (p2 - p1) >= 99.9 else 0
+        x1o, y1o = pt(p1, ro); x2o, y2o = pt(p2, ro)
+        x1i, y1i = pt(p1, ri); x2i, y2i = pt(p2, ri)
+        d = (f"M {x1o:.2f},{y1o:.2f} A {ro} {ro} 0 {la} 0 {x2o:.2f},{y2o:.2f} "
+             f"L {x2i:.2f},{y2i:.2f} A {ri} {ri} 0 {la} 1 {x1i:.2f},{y1i:.2f} Z")
+        return f'<path d="{d}" fill="{color}"/>'
+
+    segs = (
+        arc_seg(0,       neg_end, "#DC2626") +
+        arc_seg(neg_end, neu_end, "#9CA3AF") +
+        arc_seg(neu_end, 100.0,   "#16A34A")
     )
+
+    # Baseline
+    base = (f'<line x1="{cx-ro}" y1="{cy}" x2="{cx+ro}" y2="{cy}" '
+            f'stroke="#CBD5E1" stroke-width="1"/>')
+
+    # 95% target line (extends slightly beyond arc ring)
+    tx_o, ty_o = pt(95, ro + 5)
+    tx_i, ty_i = pt(95, ri - 5)
+    target = (f'<line x1="{tx_i:.2f}" y1="{ty_i:.2f}" x2="{tx_o:.2f}" y2="{ty_o:.2f}" '
+              f'stroke="#DC2626" stroke-width="2.2" stroke-dasharray="3,2"/>')
+
+    # Needle triangle
+    na    = math.pi * (1.0 - stable_p / 100.0)
+    nx2   = cx + (ro - 6) * math.cos(na)
+    ny2   = cy - (ro - 6) * math.sin(na)
+    sn, cn = math.sin(na), math.cos(na)
+    nx_l = cx + 5 * sn;  ny_l = cy + 5 * cn
+    nx_r = cx - 5 * sn;  ny_r = cy - 5 * cn
+    needle = (
+        f'<path d="M {nx2:.2f},{ny2:.2f} L {nx_l:.2f},{ny_l:.2f} L {nx_r:.2f},{ny_r:.2f} Z" '
+        f'fill="#0F172A" opacity="0.9"/>'
+        f'<circle cx="{cx}" cy="{cy}" r="5" fill="#0F172A"/>'
+    )
+
+    # Centre readout
+    nc = won_color(stable_p)
+    readout = (
+        f'<text x="{cx}" y="{cy+17}" text-anchor="middle" '
+        f'font-size="20" font-weight="800" fill="{nc}" '
+        f'font-family="Oswald,sans-serif">{stable_p}%</text>'
+        f'<text x="{cx}" y="{cy+27}" text-anchor="middle" '
+        f'font-size="6.5" fill="#64748B">安定率</text>'
+    )
+
+    # Title
+    title_t = (f'<text x="{cx}" y="10" text-anchor="middle" '
+               f'font-size="8.5" font-weight="800" fill="#14213D">{title}</text>')
+
+    # Legend (left=Neg, centre=Neu, right=Pos)
     legend = (
-        f'<text x="{cx}" y="{cy+35}" text-anchor="middle" font-size="8.5" fill="#16A34A" font-weight="700">Pos {pos} ({pos_p}%)</text>'
-        f'<text x="{cx}" y="{cy+47}" text-anchor="middle" font-size="8.5" fill="#6B7280" font-weight="700">Neu {neu} ({neu_p}%)</text>'
-        f'<text x="{cx}" y="{cy+59}" text-anchor="middle" font-size="8.5" fill="#DC2626" font-weight="700">Neg {neg} ({neg_p}%)</text>'
+        f'<text x="2"          y="{SVG_H-2}" font-size="6.5" fill="#DC2626" font-weight="700">Neg {neg} ({neg_p}%)</text>'
+        f'<text x="{cx}"       y="{SVG_H-2}" text-anchor="middle" font-size="6.5" fill="#6B7280" font-weight="700">Neu {neu} ({neu_p}%)</text>'
+        f'<text x="{SVG_W-2}"  y="{SVG_H-2}" text-anchor="end"    font-size="6.5" fill="#16A34A" font-weight="700">Pos {pos} ({pos_p}%)</text>'
     )
-    title_t = f'<text x="{cx}" y="12" text-anchor="middle" font-size="9" font-weight="800" fill="#14213D">{title}</text>'
 
     return (
-        f'<svg viewBox="0 0 110 130" width="110" height="130" style="display:block">'
-        + title_t + paths + center + legend
+        f'<svg viewBox="0 0 {SVG_W} {SVG_H}" style="display:block;width:100%">'
+        + title_t + segs + base + target + needle + readout + legend
         + f'</svg>'
     )
 
+
 def stability_col(own_stab, opp_stab):
+    own_svg = _speedometer_svg(*own_stab, "Own Ball")
+    opp_svg = _speedometer_svg(*opp_stab, "Opp Ball")
     return (
-        f'<div style="background:#fff;border:1px solid #DEE2E6;border-radius:6px;overflow:hidden">'
+        f'<div style="background:#fff;border:1px solid #DEE2E6;border-radius:6px;overflow:hidden;'
+        f'display:flex;flex-direction:column">'
         f'<div style="background:#F8F9FA;padding:4px 8px;border-bottom:1px solid #DEE2E6">'
-        f'<span style="font-size:8.5px;font-weight:800;color:#14213D;text-transform:uppercase;letter-spacing:.05em">Stability</span>'
+        f'<span style="font-size:8.5px;font-weight:800;color:#14213D;text-transform:uppercase;'
+        f'letter-spacing:.05em">Stability</span>'
         f'</div>'
-        f'<div style="padding:10px 4px;display:flex;justify-content:space-around;align-items:center">'
-        + _donut_svg(*own_stab,"Own Ball")
-        + _donut_svg(*opp_stab,"Opp Ball")
-        + f'</div></div>'
+        f'<div style="flex:1;padding:4px 6px 2px">{own_svg}</div>'
+        f'<div style="height:1px;background:#E5E7EB;margin:0 8px"></div>'
+        f'<div style="flex:1;padding:2px 6px 4px">{opp_svg}</div>'
+        f'</div>'
     )
 
 # ─────────────────────────────────────────────────────────────────────────────
