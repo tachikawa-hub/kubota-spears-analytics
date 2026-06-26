@@ -191,7 +191,6 @@ TEAM_DATA = {
 },
 }
 
-SCOUT_DIR = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
 BIOUT_DIR = "/Users/ktachikawa/Desktop/BIoutput"
 
 # ── Zone breakdown data (from DB) ─────────────────────────────────────────
@@ -749,7 +748,7 @@ def process_file(fpath, abbr):
 
 def main():
     done = 0
-    for d in [BIOUT_DIR, SCOUT_DIR]:
+    for d in [BIOUT_DIR]:
         if not os.path.isdir(d):
             continue
         for fname in sorted(os.listdir(d)):
