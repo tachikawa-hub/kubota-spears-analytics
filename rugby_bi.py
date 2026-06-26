@@ -1238,7 +1238,11 @@ def cmd_kpi(args=None):
     # Main processing
     matches = cur.execute("SELECT * FROM matches ORDER BY date_played, fxid").fetchall()
     per_match = []
-    
+    _KT_TYPES = ['Bomb','Chip','Cross Pitch','Territorial','Low','Box','Touch Kick']
+    _OC_TYPES = ['Own Player - Collected','Pressure Error','Pressure in Touch','Collected Bounce']
+    _kt_ph = ','.join('?'*len(_KT_TYPES))
+    _oc_ph = ','.join('?'*len(_OC_TYPES))
+
     # season-wide penalty accumulators (page: Penalty)
     pen_types = {}
     pen_att_types = {}   # types in Attack (Offence) context
@@ -1389,6 +1393,27 @@ def cmd_kpi(args=None):
             "AND qualifier3_name IN ('Kick in Play','Kick in Play (Own 22)') "
             "AND action_result_name='Collected Bounce'", (fx, ot)
         ).fetchone()[0]
+        # Kick type & outcome breakdown (per match, all kicks)
+        _kub_kt = {r[0]: r[1] for r in cur.execute(
+            f"SELECT action_type_name, COUNT(*) FROM events WHERE fxid=? AND team_name=? "
+            f"AND action_name='Kick' AND action_type_name IN ({_kt_ph}) GROUP BY action_type_name",
+            (fx, TEAM) + tuple(_KT_TYPES)
+        ).fetchall()}
+        _opp_kt = {r[0]: r[1] for r in cur.execute(
+            f"SELECT action_type_name, COUNT(*) FROM events WHERE fxid=? AND team_name=? "
+            f"AND action_name='Kick' AND action_type_name IN ({_kt_ph}) GROUP BY action_type_name",
+            (fx, ot) + tuple(_KT_TYPES)
+        ).fetchall()}
+        _kub_oc = {r[0]: r[1] for r in cur.execute(
+            f"SELECT action_result_name, COUNT(*) FROM events WHERE fxid=? AND team_name=? "
+            f"AND action_name='Kick' AND action_result_name IN ({_oc_ph}) GROUP BY action_result_name",
+            (fx, TEAM) + tuple(_OC_TYPES)
+        ).fetchall()}
+        _opp_oc = {r[0]: r[1] for r in cur.execute(
+            f"SELECT action_result_name, COUNT(*) FROM events WHERE fxid=? AND team_name=? "
+            f"AND action_name='Kick' AND action_result_name IN ({_oc_ph}) GROUP BY action_result_name",
+            (fx, ot) + tuple(_OC_TYPES)
+        ).fetchall()}
         rucks = C(fx, action_name="Ruck")
         carries = C(fx, action_name="Carry")
         metres = sum(_num(r["metres"]) for r in cur.execute(
@@ -1560,6 +1585,10 @@ def cmd_kpi(args=None):
             "hg": C(fx, action_name="Kick", action_result_name="Collected Bounce"),
             "opp_kicks": opp_kicks, "opp_km": opp_km,
             "opp_contest_tot_k": opp_contest_tot_k, "opp_regain_k": opp_regain_k, "opp_hg_k": opp_hg_k,
+            "kt":  {k: _kub_kt.get(k,0) for k in _KT_TYPES},
+            "okt": {k: _opp_kt.get(k,0) for k in _KT_TYPES},
+            "koc": {k: _kub_oc.get(k,0) for k in _OC_TYPES},
+            "ooc": {k: _opp_oc.get(k,0) for k in _OC_TYPES},
             "carries": carries, "metres": int(metres), "pcm_team": pcm_team_n,
             # 旧: "glo": C(fx, action_name="Carry", qualifier3_name="Crossed Gain line"),
             "glo": C(fx, action_name="Ruck", qualifier3="548"),
@@ -2021,6 +2050,24 @@ def cmd_kpi(args=None):
                 "hg":          sum(r["opp_hg_k"]          for r in per_match),
                 "e22":         sum(r["opp_e22"]           for r in per_match),
             },
+            "win": {
+                "n":         len(wins),
+                "kub_kt":    {k: sum(r["kt"][k]  for r in wins) for k in _KT_TYPES},
+                "opp_kt":    {k: sum(r["okt"][k] for r in wins) for k in _KT_TYPES},
+                "kub_oc":    {k: sum(r["koc"][k] for r in wins) for k in _OC_TYPES},
+                "opp_oc":    {k: sum(r["ooc"][k] for r in wins) for k in _OC_TYPES},
+                "kub_kicks": sum(r["kicks"]      for r in wins),
+                "opp_kicks": sum(r["opp_kicks"]  for r in wins),
+            },
+            "loss": {
+                "n":         len(losses),
+                "kub_kt":    {k: sum(r["kt"][k]  for r in losses) for k in _KT_TYPES},
+                "opp_kt":    {k: sum(r["okt"][k] for r in losses) for k in _KT_TYPES},
+                "kub_oc":    {k: sum(r["koc"][k] for r in losses) for k in _OC_TYPES},
+                "opp_oc":    {k: sum(r["ooc"][k] for r in losses) for k in _OC_TYPES},
+                "kub_kicks": sum(r["kicks"]      for r in losses),
+                "opp_kicks": sum(r["opp_kicks"]  for r in losses),
+            },
         },
     }
     
@@ -2269,10 +2316,6 @@ def cmd_kpi(args=None):
          return `<div style="background:#ddd;border-radius:3px;height:12px;overflow:hidden"><div style="background:${col};width:${w}%;height:100%"></div></div>`;
        };
 
-       // contest retain rate
-       const kubRetPct=pct(kub.regain,kub.contest_tot);
-       const oppRetPct=pct(opp.regain,opp.contest_tot);
-
        // avgTable (12 rows)
        const avg=avgTable([
          ['kicks',          'Kicks in Play',         '/match',                              1, null],
@@ -2307,10 +2350,20 @@ def cmd_kpi(args=None):
          {h:'22m Strike',fn:r=>r.e22?f1(r.kub_success_pct)+'%':'-'},
        ]));
 
-       // max values for bars
-       const kickMax=Math.max(kub.kicks,opp.kicks,1);
-       const retMax=Math.max(kub.regain,opp.regain,1);
-       const hgMax=Math.max(kub.hg,opp.hg,1);
+       // Kick Type & Outcome helpers
+       const KW=K.win, KL=K.loss;
+       const ktTypes=['Bomb','Chip','Cross Pitch','Territorial','Low','Box','Touch Kick'];
+       const ktClr={'Bomb':'#2563EB','Chip':'#16A34A','Cross Pitch':'#D97706','Territorial':'#DC2626','Low':'#7C3AED','Box':'#0891B2','Touch Kick':'#9CA3AF'};
+       const sbar=(ktData,kicks,nG,label,lc)=>{
+         if(!kicks) return `<div style="margin-bottom:8px"><span style="font-weight:700;color:${lc}">${label} (${nG}G)</span>: no data</div>`;
+         const perG=(kicks/nG).toFixed(1);
+         const seg=ktTypes.map(t=>{const n=ktData[t]||0,w=Math.round(n/kicks*100);return w?`<div title="${t}: ${n} (${w}%)" style="width:${w}%;background:${ktClr[t]};height:18px"></div>`:''}).join('');
+         const det=ktTypes.filter(t=>(ktData[t]||0)>0).map(t=>{const n=ktData[t]||0,p=Math.round(n/kicks*100);return `<span style="font-size:9.5px;white-space:nowrap"><span style="display:inline-block;width:7px;height:7px;background:${ktClr[t]};border-radius:1px;vertical-align:middle;margin-right:2px"></span>${t}&nbsp;${n}(${p}%)</span>`;}).join('&ensp;');
+         return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><b style="color:${lc}">${label} (${nG}G)</b><span style="color:var(--muted)">${kicks}&nbsp;kicks&nbsp;&middot;&nbsp;${perG}/G</span></div><div style="display:flex;border-radius:3px;overflow:hidden;height:18px">${seg}</div><div style="display:flex;flex-wrap:wrap;gap:2px 8px;margin-top:5px">${det}</div></div>`;
+       };
+       const ocRow=(lbl,wn,ln,nW,nL)=>`<tr><td style="padding:4px 6px;font-size:11px">${lbl}</td><td style="text-align:center;font-weight:700;padding:3px 4px">${wn}&nbsp;<span style="color:var(--muted);font-weight:400;font-size:10px">(${(wn/nW).toFixed(1)}/G)</span></td><td style="text-align:center;font-weight:700;padding:3px 4px">${ln}&nbsp;<span style="color:var(--muted);font-weight:400;font-size:10px">(${(ln/nL).toFixed(1)}/G)</span></td></tr>`;
+       const ocTable=(wOC,lOC,nW,nL)=>`<table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:8px"><thead><tr><th style="text-align:left;padding:4px 6px;border-bottom:2px solid var(--rule);font-size:10px"></th><th style="text-align:center;padding:4px;border-bottom:2px solid var(--rule);font-size:10px;color:var(--win)">WIN (${nW}G)</th><th style="text-align:center;padding:4px;border-bottom:2px solid var(--rule);font-size:10px;color:var(--loss)">LOSS (${nL}G)</th></tr></thead><tbody><tr><td colspan="3" style="padding:4px 6px;font-size:10px;font-weight:900;text-transform:uppercase;color:var(--muted);background:#f0ede8">Retained</td></tr>${ocRow('Own Player Collected',wOC['Own Player - Collected']||0,lOC['Own Player - Collected']||0,nW,nL)}${ocRow('Pressure Error',wOC['Pressure Error']||0,lOC['Pressure Error']||0,nW,nL)}${ocRow('Pressure in Touch',wOC['Pressure in Touch']||0,lOC['Pressure in Touch']||0,nW,nL)}<tr><td colspan="3" style="padding:4px 6px;font-size:10px;font-weight:900;text-transform:uppercase;color:var(--muted);background:#f0ede8">Collected Bounce</td></tr>${ocRow('Hit Grass',wOC['Collected Bounce']||0,lOC['Collected Bounce']||0,nW,nL)}</tbody></table>`;
+       const nWin=KW.n, nLoss=KL.n;
 
        return `
          <div class="sec-title" style="margin-bottom:4px">Win / Loss / Season — averages</div>${avg}
@@ -2334,41 +2387,27 @@ def cmd_kpi(args=None):
            </div>
          </div>
 
-         ${secHdr('CONTEST KICK')}
-         <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+         ${secHdr('KICK TYPE & OUTCOME')}
+         <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px">
            <div class="sp-card" style="flex:1;min-width:260px">
-             <div class="sp-card-hdr kub">KUBOTA</div>
-             ${sr('Total Contest Kicks', kub.contest_tot)}
-             ${sr('Per Match', f1s(kub.contest_tot/N))}
-             <div style="margin:8px 0 4px">
-               <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px">
-                 <span style="color:var(--muted)">Retained</span>
-                 <span style="font-weight:700;color:var(--good)">${kub.regain} (${kubRetPct})</span></div>
-               ${mkBar(kub.regain,kub.contest_tot,'var(--good)')}
-             </div>
-             <div style="margin:8px 0 4px">
-               <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px">
-                 <span style="color:var(--muted)">Hit Grass</span>
-                 <span style="font-weight:700">${kub.hg} (${pct(kub.hg,kub.kicks)}/G)</span></div>
-               ${mkBar(kub.hg,hgMax,'var(--kub-gold)')}
-             </div>
+             <div class="sp-card-hdr kub">KUBOTA — Kick Type</div>
+             ${sbar(KW.kub_kt,KW.kub_kicks,nWin,'WIN','var(--win)')}
+             ${sbar(KL.kub_kt,KL.kub_kicks,nLoss,'LOSS','var(--loss)')}
            </div>
            <div class="sp-card" style="flex:1;min-width:260px">
-             <div class="sp-card-hdr opp">OPPOSITION</div>
-             ${sr('Total Contest Kicks', opp.contest_tot)}
-             ${sr('Per Match', f1s(opp.contest_tot/N))}
-             <div style="margin:8px 0 4px">
-               <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px">
-                 <span style="color:var(--muted)">Retained</span>
-                 <span style="font-weight:700;color:var(--loss)">${opp.regain} (${oppRetPct})</span></div>
-               ${mkBar(opp.regain,opp.contest_tot,'var(--loss)')}
-             </div>
-             <div style="margin:8px 0 4px">
-               <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px">
-                 <span style="color:var(--muted)">Hit Grass</span>
-                 <span style="font-weight:700">${opp.hg} (${pct(opp.hg,opp.kicks)}/G)</span></div>
-               ${mkBar(opp.hg,hgMax,'var(--kub-gold)')}
-             </div>
+             <div class="sp-card-hdr opp">OPPOSITION — Kick Type</div>
+             ${sbar(KW.opp_kt,KW.opp_kicks,nWin,'WIN','var(--win)')}
+             ${sbar(KL.opp_kt,KL.opp_kicks,nLoss,'LOSS','var(--loss)')}
+           </div>
+         </div>
+         <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+           <div class="sp-card" style="flex:1;min-width:260px">
+             <div class="sp-card-hdr kub">KUBOTA — Kick Outcome</div>
+             ${ocTable(KW.kub_oc,KL.kub_oc,nWin,nLoss)}
+           </div>
+           <div class="sp-card" style="flex:1;min-width:260px">
+             <div class="sp-card-hdr opp">OPPOSITION — Kick Outcome</div>
+             ${ocTable(KW.opp_oc,KL.opp_oc,nWin,nLoss)}
            </div>
          </div>
 
@@ -2390,7 +2429,7 @@ def cmd_kpi(args=None):
 
          <details style="margin-top:8px"><summary style="cursor:pointer;font-size:11px;color:var(--muted);font-weight:700;padding:4px 0">Match-by-match ▸</summary>
            <div style="margin-top:6px">${it}</div></details>
-         <div class="note">Contest Kicks = Bomb/Low/Chip/Cross Pitch/Box. Retained = Own Player - Collected / Pressure Error / Pressure in Touch / Try Kick. Hit Grass = Collected Bounce. 22m Strike Conv % = (Try + Penalty Goal outcomes) ÷ Attacking 22 Entry count.</div>`;
+         <div class="note">Kick Type: Bomb/Chip/Cross Pitch/Territorial/Low/Box/Touch Kick (all kicks, WIN/LOSS別). Retained = Own Player Collected + Pressure Error + Pressure in Touch. Hit Grass = Collected Bounce. 22m Strike Conv % = (Try + Penalty Goal outcomes) ÷ Attacking 22 Entry count.</div>`;
      }},
      {id:'attack',title:'Attack',build:()=>{
        // 旧 avgTable順: gl,lqb,carries,metres,db,lb,offloads,e22,kub_success,c22,s22,to_con
