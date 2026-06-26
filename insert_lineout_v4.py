@@ -357,64 +357,94 @@ AREA_COLOR     = {"Own22":"#16A34A","OwnHalf":"#2563EB","OppHalf":"#D97706","Opp
 def pct(n, d): return round(100*n/d) if d else 0
 def wc(p): return "#16A34A" if p>=90 else "#2563EB" if p>=80 else "#D97706"
 
-# ── Load Spears takes from DB (all 21 matches) ────────────────────────────
-def _load_spears_takes():
+# ── DB team name mapping (TEAM_DATA abbr → exact DB team_name string) ─────
+_DB_TEAM_NAME = {
+    "BlackRams":   "BlackRams Tokyo",
+    "BlueRevs":    "Shizuoka BlueRevs",
+    "BraveLupus":  "Toshiba Brave Lupus Tokyo",
+    "D-Rocks":     "Urayasu D-Rocks",
+    "Dynaboars":   "Mitsubishi Sagamihara Dynaboars",
+    "Eagles":      "Yokohama Canon Eagles",
+    "Heat":        "Mie Honda Heat",
+    "Steelers":    "Kobelco Kobe Steelers",
+    "Sungoliath":  "Tokyo Sungoliath",
+    "Verblitz":    "Toyota Verblitz",
+    "WildKnights": "Saitama Wild Knights",
+}
+
+# ── Load all lineout take data from DB in one pass ─────────────────────────
+def _load_all_takes_from_db():
     """
-    Query rugby.db for Spears own-ball lineout take data.
-    takes  → (name, total_all_take_rows, won_count) sorted by won desc
-    zones  → {player: {zone: won_count, ...}}
-    Total  = Lineout Win + Lineout Steal rows (all Take rows for that player).
-    Won    = Lineout Win rows only (own ball caught).
+    Single DB query → per-team takes and zone breakdown.
+    For Spears: all 21 matches (full season).
+    For opponents: vs-Spears matches only (1–3 matches each).
+    Returns {db_team_name: {"takes": [...], "zones": {...}}}
+    takes  = [(player, total_take_rows, won_count), ...] sorted by won desc
+    total  = Lineout Win + Lineout Steal rows for that player.
+    won    = Lineout Win rows only (own-ball catches).
+    zones  = {player: {zone: won_count, ...}} (own-ball wins only).
     """
     ZONE_MAP = {
         "Lineout Win Front":  "Front",
         "Lineout Win Middle": "Middle",
         "Lineout Win Back":   "Back",
         "Lineout Win Quick":  "Quick",
-        "Lineout Win 15m+":  "15M+",
+        "Lineout Win 15m+":   "15M+",
     }
-    won_cnt   = collections.Counter()
-    total_cnt = collections.Counter()
-    zone_cnt  = collections.defaultdict(collections.Counter)
-
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
         rows = conn.execute("""
-            SELECT player_name, action_type_name, COUNT(*) AS cnt
+            SELECT team_name, player_name, action_type_name, COUNT(*) AS cnt
             FROM events
             WHERE action_name = 'Lineout Take'
-              AND team_name LIKE '%Kubota%'
-            GROUP BY player_name, action_type_name
+            GROUP BY team_name, player_name, action_type_name
         """).fetchall()
         conn.close()
     except Exception as e:
-        print(f"[WARN] DB read failed ({e}); using empty takes.")
-        return [], {}
+        print("[WARN] DB read failed (%s); using empty takes." % e)
+        return {}
+
+    won_cnt   = collections.defaultdict(collections.Counter)
+    total_cnt = collections.defaultdict(collections.Counter)
+    zone_cnt  = collections.defaultdict(lambda: collections.defaultdict(collections.Counter))
 
     for r in rows:
+        tn  = r["team_name"]
         p   = r["player_name"]
         atn = r["action_type_name"]
         cnt = r["cnt"]
-        total_cnt[p] += cnt
+        total_cnt[tn][p] += cnt
         if "Lineout Win" in atn:
-            won_cnt[p]     += cnt
-            zone            = ZONE_MAP.get(atn, atn.replace("Lineout Win ", ""))
-            zone_cnt[p][zone] += cnt
+            won_cnt[tn][p] += cnt
+            zone = ZONE_MAP.get(atn, atn.replace("Lineout Win ", ""))
+            zone_cnt[tn][p][zone] += cnt
 
-    takes = sorted(
-        [(p, total_cnt[p], won_cnt[p]) for p in won_cnt],
-        key=lambda x: -x[2],
-    )
-    zones = {p: dict(z) for p, z in zone_cnt.items()}
-    return takes, zones
+    result = {}
+    for tn in total_cnt:
+        takes = sorted(
+            [(p, total_cnt[tn][p], won_cnt[tn].get(p, 0)) for p in won_cnt[tn]],
+            key=lambda x: -x[2],
+        )
+        zones = {p: dict(z) for p, z in zone_cnt[tn].items()}
+        result[tn] = {"takes": takes, "zones": zones}
+    return result
 
 
-_db_takes, _db_zones = _load_spears_takes()
-# Override SPEARS["takes"] with DB data
-SPEARS["takes"] = _db_takes
-# Override TAKE_ZONES for Spears players
-TAKE_ZONES.update(_db_zones)
+_all_db_takes = _load_all_takes_from_db()
+
+# ── Apply DB data to SPEARS ────────────────────────────────────────────────
+_sp = _all_db_takes.get("Kubota Spears", {})
+if _sp.get("takes"):
+    SPEARS["takes"] = _sp["takes"]
+TAKE_ZONES.update(_sp.get("zones", {}))
+
+# ── Apply DB data to all opponent teams ────────────────────────────────────
+for _abbr, _db_name in _DB_TEAM_NAME.items():
+    _td = _all_db_takes.get(_db_name, {})
+    if _td.get("takes"):
+        TEAM_DATA[_abbr]["takes"] = _td["takes"]
+    TAKE_ZONES.update(_td.get("zones", {}))
 
 
 # ── Delivery Type card ─────────────────────────────────────────────────────
