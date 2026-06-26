@@ -315,30 +315,29 @@ def result_col(team_d, opp_d):
     return f'<div style="display:flex;flex-direction:column;gap:8px">{own}{opp}</div>'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# STABILITY SPEEDOMETER  (half-circle gauge)
+# STABILITY DONUT  (semicircle donut, 180°)
 # Arc order left→right: Negative(red) | Neutral(gray) | Positive(green)
-# Needle = 安定率% = (Pos+Neu)/total.  Red dashed target line at 95%.
+# White vertical target line at 95%.  No needle.
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _speedometer_svg(pos, neu, neg):
-    """Pure SVG arc + needle only — no text inside."""
-    total    = pos + neu + neg or 1
-    stable_p = round(100 * (pos + neu) / total)
+    """Semicircle donut SVG — thick ring, no needle, white 95% target line."""
+    total   = pos + neu + neg or 1
+    neg_end = 100.0 * neg / total
+    neu_end = 100.0 * (neg + neu) / total
 
-    neg_end  = 100.0 * neg / total
-    neu_end  = 100.0 * (neg + neu) / total
-
-    cx, cy  = 68, 59
-    ro, ri  = 52, 34
-    SVG_W   = 136
-    SVG_H   = 65   # baseline at cy=59, +6px padding
+    cx, cy = 74, 64
+    ro, ri = 58, 26   # ring thickness = 32px
+    SVG_W  = 148
+    SVG_H  = 70       # 6px below center baseline
 
     def pt(p, r):
         a = math.pi * (1.0 - p / 100.0)
         return cx + r * math.cos(a), cy - r * math.sin(a)
 
     def arc_seg(p1, p2, color):
-        if p2 - p1 < 0.05: return ""
+        if p2 - p1 < 0.05:
+            return ""
         la = 1 if (p2 - p1) >= 99.9 else 0
         x1o, y1o = pt(p1, ro); x2o, y2o = pt(p2, ro)
         x1i, y1i = pt(p1, ri); x2i, y2i = pt(p2, ri)
@@ -352,35 +351,23 @@ def _speedometer_svg(pos, neu, neg):
         arc_seg(neu_end, 100.0,   "#16A34A")
     )
 
-    base = (f'<line x1="{cx-ro}" y1="{cy}" x2="{cx+ro}" y2="{cy}" '
-            f'stroke="#CBD5E1" stroke-width="1"/>')
-
-    tx_o, ty_o = pt(95, ro + 5)
-    tx_i, ty_i = pt(95, ri - 5)
-    target = (f'<line x1="{tx_i:.2f}" y1="{ty_i:.2f}" x2="{tx_o:.2f}" y2="{ty_o:.2f}" '
-              f'stroke="#DC2626" stroke-width="2.2" stroke-dasharray="3,2"/>')
-
-    na    = math.pi * (1.0 - stable_p / 100.0)
-    nx2   = cx + (ro - 6) * math.cos(na)
-    ny2   = cy - (ro - 6) * math.sin(na)
-    sn, cn = math.sin(na), math.cos(na)
-    nx_l = cx + 5 * sn;  ny_l = cy + 5 * cn
-    nx_r = cx - 5 * sn;  ny_r = cy - 5 * cn
-    needle = (
-        f'<path d="M {nx2:.2f},{ny2:.2f} L {nx_l:.2f},{ny_l:.2f} L {nx_r:.2f},{ny_r:.2f} Z" '
-        f'fill="#0F172A" opacity="0.9"/>'
-        f'<circle cx="{cx}" cy="{cy}" r="5" fill="#0F172A"/>'
+    # White vertical target line at 95%
+    tx_o, ty_o = pt(95, ro + 4)
+    tx_i, ty_i = pt(95, ri - 4)
+    target = (
+        f'<line x1="{tx_i:.2f}" y1="{ty_i:.2f}" x2="{tx_o:.2f}" y2="{ty_o:.2f}" '
+        f'stroke="white" stroke-width="3" stroke-linecap="round"/>'
     )
 
     return (
         f'<svg viewBox="0 0 {SVG_W} {SVG_H}" style="display:block;width:100%">'
-        + segs + base + target + needle
+        + segs + target
         + f'</svg>'
     )
 
 
 def _gauge_block(pos, neu, neg, title):
-    """HTML block: ① title ② SVG (arc only) ③ large % ④ legend."""
+    """HTML block: ① title ② SVG donut ③ large % (HTML) ④ legend."""
     total    = pos + neu + neg or 1
     stable_p = round(100 * (pos + neu) / total)
     pos_p    = round(100 * pos / total)
@@ -392,14 +379,14 @@ def _gauge_block(pos, neu, neg, title):
 
     title_html = (
         f'<div style="text-align:center;font-size:8.5px;font-weight:800;color:#14213D;'
-        f'text-transform:uppercase;letter-spacing:.05em;padding-bottom:2px">{title}</div>'
+        f'text-transform:uppercase;letter-spacing:.05em;padding-bottom:1px">{title}</div>'
     )
     pct_html = (
         f'<div style="text-align:center;font-family:Oswald,sans-serif;font-size:26px;'
-        f'font-weight:800;color:{nc};line-height:1.1;margin:2px 0 4px">{stable_p}%</div>'
+        f'font-weight:800;color:{nc};line-height:1;margin:0 0 2px">{stable_p}%</div>'
     )
     legend_html = (
-        f'<div style="display:flex;justify-content:space-between;padding:0 2px 2px">'
+        f'<div style="display:flex;justify-content:space-between;padding:0 2px">'
         f'<span style="font-size:6.5px;color:#DC2626;font-weight:700">Neg {neg} ({neg_p}%)</span>'
         f'<span style="font-size:6.5px;color:#6B7280;font-weight:700">Neu {neu} ({neu_p}%)</span>'
         f'<span style="font-size:6.5px;color:#16A34A;font-weight:700">Pos {pos} ({pos_p}%)</span>'
@@ -419,9 +406,9 @@ def stability_col(own_stab, opp_stab):
         f'<span style="font-size:8.5px;font-weight:800;color:#14213D;text-transform:uppercase;'
         f'letter-spacing:.05em">Stability</span>'
         f'</div>'
-        f'<div style="flex:1;padding:4px 6px 2px">{own_block}</div>'
-        f'<div style="height:1px;background:#E5E7EB;margin:0 8px"></div>'
-        f'<div style="flex:1;padding:2px 6px 4px">{opp_block}</div>'
+        f'<div style="flex:1;padding:4px 4px 0">{own_block}</div>'
+        f'<div style="height:1px;background:#E5E7EB;margin:0 6px"></div>'
+        f'<div style="flex:1;padding:4px 4px 4px">{opp_block}</div>'
         f'</div>'
     )
 
