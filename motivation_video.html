@@ -634,144 +634,186 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 
 <!-- SLIDE 4: SET PIECE -->
 <div class="slide" id="s4">
-  <div class="ctag">Chapter 4 — Set Piece</div>
-  <div class="mtitle">SET PIECE —<span class="acc"> CONSISTENT ALL SEASON</span></div>
-  <div class="jasub">全21試合 LO・スクラム成功率の推移 — 敗戦ラウンドでの傾向に注目</div>
+  <div class="ctag">CHAPTER 4 — SET PIECE</div>
+  <div class="mtitle">SET PIECE —<br><span class="acc">CONSISTENCY IS THE NEXT LEVEL.</span></div>
+  <div class="jasub">「高い水準にいる。あとは一貫性。」</div>
   <div class="rline"></div>
-  <div class="srow" style="margin-bottom:8px">
-    <div><div class="bnum-sm bnum">91%</div><div class="nlabel">Lineout Win<br>285/312</div></div>
-    <div><div class="bnum-sm bnum">95%</div><div class="nlabel">Scrum Win<br>(incl. Reset)</div></div>
-    <div><div class="bnum-sm bnum">23</div><div class="nlabel">LO Steals<br>Season</div></div>
-    <div style="margin-left:auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-      <span style="font-family:var(--ef);font-size:.68rem;color:#888"><span style="display:inline-block;width:13px;height:11px;background:var(--gold);vertical-align:middle"></span>&nbsp;LO Win%</span>
-      <span style="font-family:var(--ef);font-size:.68rem;color:#888"><span style="display:inline-block;width:13px;height:11px;background:var(--red);opacity:.75;vertical-align:middle"></span>&nbsp;Scrum Win%</span>
-      <span style="font-family:var(--ef);font-size:.68rem;color:var(--red)"><span style="display:inline-block;width:13px;height:11px;background:var(--red);opacity:.35;vertical-align:middle"></span>&nbsp;Loss round</span>
+  <div class="body2">
+
+    <!-- Left: two-section SVG (my ball top / opp pressure bottom) -->
+    <div style="flex:1;min-width:0;display:flex;align-items:flex-start;height:100%">
+      <svg viewBox="0 0 420 268" style="width:100%;height:100%;max-height:62vh">
+
+        <!-- ─── SECTION 1: MY BALL SET PIECE ─── -->
+        <!-- Y-axis 70-100% | 100px span | baseline y=118 | factor=3.333 -->
+
+        <!-- Legend + section label -->
+        <rect x="0" y="2" width="10" height="10" fill="#2a6496" rx="1"/>
+        <text x="14" y="10" fill="#888" font-size="8" font-family="Helvetica Neue,Arial">vs Title Rivals (7G)</text>
+        <rect x="152" y="2" width="10" height="10" fill="#484848" rx="1"/>
+        <text x="166" y="10" fill="#666" font-size="8" font-family="Helvetica Neue,Arial">vs Others (14G)</text>
+        <text x="420" y="10" fill="#555" font-size="7.5" font-family="Helvetica Neue,Arial" font-weight="700" letter-spacing="1.5" text-anchor="end">MY BALL SET PIECE</text>
+
+        <!-- Y-axis gridlines -->
+        <line x1="50" y1="118" x2="360" y2="118" stroke="#2a2a2a" stroke-width="1"/>
+        <text x="46" y="122" fill="#252525" font-size="6.5" font-family="Helvetica Neue,Arial" text-anchor="end">70%</text>
+        <line x1="50" y1="85" x2="360" y2="85" stroke="#181818" stroke-width=".5"/>
+        <text x="46" y="89" fill="#252525" font-size="6.5" font-family="Helvetica Neue,Arial" text-anchor="end">80%</text>
+        <line x1="50" y1="51" x2="360" y2="51" stroke="#181818" stroke-width=".5"/>
+        <text x="46" y="55" fill="#252525" font-size="6.5" font-family="Helvetica Neue,Arial" text-anchor="end">90%</text>
+        <line x1="50" y1="18" x2="360" y2="18" stroke="#181818" stroke-width=".5"/>
+        <text x="46" y="22" fill="#252525" font-size="6.5" font-family="Helvetica Neue,Arial" text-anchor="end">100%</text>
+
+        <!-- GROUP 1: LINEOUT (bars w=35, gap=6, center x=130) -->
+        <!-- TR 84.2%: (84.2-70)*3.333=47px, y=118-47=71 -->
+        <rect x="112" y="71" width="35" height="47" fill="#2a6496" rx="2"/>
+        <text x="129" y="68" fill="#6699bb" font-size="7.5" font-family="Helvetica Neue,Arial" font-weight="700" text-anchor="middle">84.2%</text>
+        <!-- Others 94.5%: (94.5-70)*3.333=82px, y=118-82=36 -->
+        <rect x="151" y="36" width="35" height="82" fill="#484848" rx="2"/>
+        <text x="168" y="33" fill="#888" font-size="7.5" font-family="Helvetica Neue,Arial" text-anchor="middle">94.5%</text>
+
+        <!-- Target line LO 90% (y=51) — yellow dashed -->
+        <line x1="100" y1="51" x2="197" y2="51" stroke="#F5C518" stroke-width="1.2" stroke-dasharray="4,3"/>
+        <text x="200" y="55" fill="#F5C518" font-size="7" font-family="Helvetica Neue,Arial" font-weight="700">Target: 90%</text>
+
+        <!-- Gap bracket: TR top y=71 → target y=51 (&#8722;5.8pp) -->
+        <rect x="105" y="50" width="7" height="1.5" fill="#c0392b"/>
+        <line x1="108" y1="51" x2="108" y2="71" stroke="#c0392b" stroke-width="1.5"/>
+        <rect x="105" y="71" width="7" height="1.5" fill="#c0392b"/>
+        <text x="102" y="63" fill="#c0392b" font-size="7" font-family="Helvetica Neue,Arial" font-weight="700" text-anchor="end">&#8722;5.8pp</text>
+
+        <!-- GROUP 2: SCRUM (bars w=35, gap=6, center x=285) -->
+        <!-- TR 91.9%: (91.9-70)*3.333=73px, y=118-73=45 -->
+        <rect x="267" y="45" width="35" height="73" fill="#2a6496" rx="2"/>
+        <text x="284" y="42" fill="#6699bb" font-size="7.5" font-family="Helvetica Neue,Arial" font-weight="700" text-anchor="middle">91.9%</text>
+        <!-- Others 95.4%: (95.4-70)*3.333=85px, y=118-85=33 -->
+        <rect x="306" y="33" width="35" height="85" fill="#484848" rx="2"/>
+        <text x="323" y="30" fill="#888" font-size="7.5" font-family="Helvetica Neue,Arial" text-anchor="middle">95.4%</text>
+
+        <!-- Target line SCR 95% (y=35) — yellow dashed -->
+        <line x1="255" y1="35" x2="352" y2="35" stroke="#F5C518" stroke-width="1.2" stroke-dasharray="4,3"/>
+        <text x="355" y="39" fill="#F5C518" font-size="7" font-family="Helvetica Neue,Arial" font-weight="700">Target: 95%</text>
+
+        <!-- Gap bracket: SCR TR top y=45 → target y=35 (&#8722;3.1pp) -->
+        <rect x="260" y="34" width="7" height="1.5" fill="#c0392b"/>
+        <line x1="263" y1="35" x2="263" y2="45" stroke="#c0392b" stroke-width="1.5"/>
+        <rect x="260" y="45" width="7" height="1.5" fill="#c0392b"/>
+        <text x="257" y="42" fill="#c0392b" font-size="7" font-family="Helvetica Neue,Arial" font-weight="700" text-anchor="end">&#8722;3.1pp</text>
+
+        <!-- Group labels below baseline -->
+        <text x="145" y="128" fill="#888" font-size="8.5" font-family="Helvetica Neue,Arial" font-weight="700" text-anchor="middle">LINEOUT</text>
+        <text x="303" y="128" fill="#888" font-size="8.5" font-family="Helvetica Neue,Arial" font-weight="700" text-anchor="middle">SCRUM</text>
+
+        <!-- ─── SEPARATOR ─── -->
+        <line x1="0" y1="133" x2="420" y2="133" stroke="#1e1e1e" stroke-width=".8"/>
+
+        <!-- ─── SECTION 2: OPP BALL PRESSURE ─── -->
+        <!-- Horizontal bars | 20%=160px factor=8.0 | labels x=0-85, bars x=90-250 -->
+        <text x="0" y="143" fill="#555" font-size="7.5" font-family="Helvetica Neue,Arial" font-weight="700" letter-spacing="1.5">OPP BALL PRESSURE</text>
+
+        <!-- Sub A: OPP LINEOUT DISRUPTION -->
+        <text x="0" y="153" fill="#444" font-size="7" font-family="Helvetica Neue,Arial" letter-spacing=".8">OPP LINEOUT</text>
+        <!-- TR 10.3%: 10.3*8=82px -->
+        <rect x="90" y="156" width="82" height="13" fill="#555" rx="2"/>
+        <text x="86" y="166" fill="#666" font-size="8" font-family="Helvetica Neue,Arial" font-weight="700" text-anchor="end">Title Rivals</text>
+        <text x="176" y="166" fill="#888" font-size="8" font-family="Helvetica Neue,Arial" font-weight="700">10.3%</text>
+        <!-- Others 14.7%: 14.7*8=118px -->
+        <rect x="90" y="173" width="118" height="10" fill="#3a3a3a" rx="2"/>
+        <text x="86" y="181" fill="#555" font-size="7.5" font-family="Helvetica Neue,Arial" text-anchor="end">Others</text>
+        <text x="212" y="181" fill="#555" font-size="7.5" font-family="Helvetica Neue,Arial">14.7%</text>
+        <!-- Separator + Diff -->
+        <line x1="338" y1="154" x2="338" y2="186" stroke="#1e1e1e" stroke-width=".5"/>
+        <text x="378" y="171" fill="#c0392b" font-size="8.5" font-family="Helvetica Neue,Arial" font-weight="700" text-anchor="middle">&#8722;4.4pp</text>
+        <!-- Subtext -->
+        <text x="90" y="192" fill="#3a3a3a" font-size="7" font-family="Helvetica Neue,Arial" font-style="italic">Title Rivals&#39; lineout is strong</text>
+
+        <!-- Thin sub-separator -->
+        <line x1="0" y1="197" x2="420" y2="197" stroke="#161616" stroke-width=".5"/>
+
+        <!-- Sub B: OPP SCRUM PRESSURE (orange — weapon) -->
+        <text x="0" y="207" fill="#E8521A" font-size="7" font-family="Helvetica Neue,Arial" letter-spacing=".8" font-weight="700">OPP SCRUM</text>
+        <!-- TR 14.6%: 14.6*8=117px (orange highlight) -->
+        <rect x="90" y="210" width="117" height="13" fill="#E8521A" rx="2"/>
+        <text x="86" y="220" fill="#E8521A" font-size="8" font-family="Helvetica Neue,Arial" font-weight="700" text-anchor="end">Title Rivals</text>
+        <text x="211" y="220" fill="#E8521A" font-size="8" font-family="Helvetica Neue,Arial" font-weight="700">14.6%</text>
+        <!-- Others 7.4%: 7.4*8=59px -->
+        <rect x="90" y="227" width="59" height="10" fill="#3a3a3a" rx="2"/>
+        <text x="86" y="235" fill="#555" font-size="7.5" font-family="Helvetica Neue,Arial" text-anchor="end">Others</text>
+        <text x="153" y="235" fill="#555" font-size="7.5" font-family="Helvetica Neue,Arial">7.4%</text>
+        <!-- Separator + Diff -->
+        <line x1="338" y1="207" x2="338" y2="240" stroke="#1e1e1e" stroke-width=".5"/>
+        <text x="378" y="224" fill="#E8521A" font-size="8.5" font-family="Helvetica Neue,Arial" font-weight="700" text-anchor="middle">+7.2pp</text>
+        <!-- Subtext -->
+        <text x="90" y="249" fill="#E8521A" font-size="7" font-family="Helvetica Neue,Arial" font-style="italic">&#34;Scrum is our weapon vs Title Rivals&#34;</text>
+
+        <!-- Footnote -->
+        <text x="0" y="266" fill="#1a1a1a" font-size="6.5" font-family="Helvetica Neue,Arial">7G vs Title Rivals / 14G vs Others &#183; 2025-26 D1 &#183; Excl. resets</text>
+      </svg>
     </div>
+
+    <!-- Right: Message box -->
+    <div style="width:clamp(192px,22vw,248px);display:flex;flex-direction:column;background:#0c0c0c;border:1px solid #252525;border-radius:4px;padding:clamp(9px,1.3vw,13px) clamp(10px,1.4vw,14px);font-family:var(--ef);flex-shrink:0;align-self:stretch">
+
+      <!-- MY BALL section -->
+      <div style="font-size:clamp(.4rem,.6vw,.55rem);color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px">MY BALL</div>
+      <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:9px">
+        <div style="display:flex;align-items:center;font-size:clamp(.44rem,.66vw,.62rem);gap:4px">
+          <div style="flex:0 0 clamp(44px,4.4vw,56px);color:#555;font-weight:700">Lineout</div>
+          <div style="flex:0 0 clamp(30px,3vw,38px);color:#6699bb;font-weight:700">84.2%</div>
+          <div style="color:#3a3a3a;font-size:.9em">&#8594;&nbsp;90%</div>
+          <div style="margin-left:auto;color:#F5C518;font-size:clamp(.6rem,.9vw,.84rem)">&#9888;</div>
+        </div>
+        <div style="display:flex;align-items:center;font-size:clamp(.44rem,.66vw,.62rem);gap:4px">
+          <div style="flex:0 0 clamp(44px,4.4vw,56px);color:#555;font-weight:700">Scrum</div>
+          <div style="flex:0 0 clamp(30px,3vw,38px);color:#6699bb;font-weight:700">91.9%</div>
+          <div style="color:#3a3a3a;font-size:.9em">&#8594;&nbsp;95%</div>
+          <div style="margin-left:auto;color:#F5C518;font-size:clamp(.6rem,.9vw,.84rem)">&#9888;</div>
+        </div>
+      </div>
+
+      <!-- OPP BALL section -->
+      <div style="font-size:clamp(.4rem,.6vw,.55rem);color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px">OPP BALL PRESSURE</div>
+      <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:9px">
+        <div style="display:flex;align-items:center;font-size:clamp(.44rem,.66vw,.62rem);gap:4px">
+          <div style="flex:0 0 clamp(44px,4.4vw,56px);color:#555;font-weight:700">vs LO</div>
+          <div style="flex:0 0 clamp(30px,3vw,38px);color:#666;font-weight:700">10.3%</div>
+          <div style="color:#3a3a3a;font-size:.9em;flex:1">(their LO is strong)</div>
+        </div>
+        <div style="display:flex;align-items:center;font-size:clamp(.44rem,.66vw,.62rem);gap:4px">
+          <div style="flex:0 0 clamp(44px,4.4vw,56px);color:#555;font-weight:700">vs SCR</div>
+          <div style="flex:0 0 clamp(30px,3vw,38px);color:#E8521A;font-weight:700">14.6%</div>
+          <div style="color:#E8521A;font-size:.9em;flex:1">&#10003; Weapon</div>
+        </div>
+      </div>
+
+      <!-- Divider 1 -->
+      <div style="height:1px;background:#222;margin-bottom:8px"></div>
+
+      <!-- Body text -->
+      <div style="font-size:clamp(.44rem,.66vw,.62rem);color:#888;line-height:1.65;margin-bottom:6px">
+        We are at a <span style="color:#fff;font-weight:700">high level.</span><br>
+        Consistency is the difference.<br>
+        <span style="font-family:var(--ja);font-size:.9em;color:#3a3a3a;line-height:1.5;display:block;margin-top:2px">高い水準にいる。一貫性が次のステージを決める。</span>
+      </div>
+
+      <!-- Divider 2 -->
+      <div style="height:1px;background:#222;margin-bottom:8px"></div>
+
+      <!-- Closing quote -->
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end">
+        <div style="font-size:clamp(.62rem,.96vw,.88rem);font-weight:700;color:#fff;line-height:1.4">
+          "Consistency is<br>the next level."
+        </div>
+        <div style="font-size:clamp(.38rem,.56vw,.52rem);color:#555;font-family:var(--ja);margin-top:4px;line-height:1.55">
+          「高い水準にいる。<br>あとは一貫性。」
+        </div>
+      </div>
+
+      <!-- Bottom divider -->
+      <div style="height:1px;background:#222;margin-top:7px"></div>
+    </div>
+
   </div>
-  <div style="flex:1;width:100%;display:flex;align-items:center;min-height:0">
-    <svg viewBox="0 0 920 196" style="width:100%;height:100%;max-height:44vh">
-      <!-- Groups x=10..895. Group w=42. Bars: LO x=gx+2 w=17, SC x=gx+21 w=17 -->
-      <!-- Baseline y=168. Max h=138 (100%→138). y=168-(pct*1.38) -->
-
-      <!-- i=0 R1 W: LO=86,SC=100 -->
-      <rect x="12"  y="50"  width="17" height="118" fill="var(--gold)" rx="1"/>
-      <rect x="31"  y="30"  width="17" height="138" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=1 R2 W: LO=93,SC=75 -->
-      <rect x="54"  y="40"  width="17" height="128" fill="var(--gold)" rx="1"/>
-      <rect x="73"  y="65"  width="17" height="103" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=2 R3 W: LO=90,SC=75 -->
-      <rect x="96"  y="44"  width="17" height="124" fill="var(--gold)" rx="1"/>
-      <rect x="115" y="65"  width="17" height="103" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=3 R4 W: LO=94,SC=100 -->
-      <rect x="138" y="38"  width="17" height="130" fill="var(--gold)" rx="1"/>
-      <rect x="157" y="30"  width="17" height="138" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=4 R5 W: LO=100,SC=100 -->
-      <rect x="180" y="30"  width="17" height="138" fill="var(--gold)" rx="1"/>
-      <rect x="199" y="30"  width="17" height="138" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=5 R6 LOSS: highlight -->
-      <rect x="218" y="18"  width="44" height="6" fill="var(--red)" opacity=".55" rx="1"/>
-      <rect x="222" y="30"  width="17" height="138" fill="var(--gold)" rx="1" opacity=".55"/>
-      <rect x="241" y="30"  width="17" height="138" fill="var(--red)" rx="1" opacity=".45"/>
-      <text x="230" y="187" fill="var(--red)" font-size="10" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">L</text>
-
-      <!-- i=6 R7 W: LO=77,SC=100 -->
-      <rect x="264" y="62"  width="17" height="106" fill="var(--gold)" rx="1"/>
-      <rect x="283" y="30"  width="17" height="138" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=7 R8 W: LO=88,SC=100 -->
-      <rect x="306" y="47"  width="17" height="121" fill="var(--gold)" rx="1"/>
-      <rect x="325" y="30"  width="17" height="138" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=8 R9 W: LO=100,SC=60 -->
-      <rect x="348" y="30"  width="17" height="138" fill="var(--gold)" rx="1"/>
-      <rect x="367" y="85"  width="17" height="83"  fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=9 R10 W: LO=100,SC=94 -->
-      <rect x="390" y="30"  width="17" height="138" fill="var(--gold)" rx="1"/>
-      <rect x="409" y="38"  width="17" height="130" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=10 R11 LOSS: LO=83,SC=100 -->
-      <rect x="428" y="18"  width="44" height="6" fill="var(--red)" opacity=".55" rx="1"/>
-      <rect x="432" y="55"  width="17" height="113" fill="var(--gold)" rx="1" opacity=".55"/>
-      <rect x="451" y="30"  width="17" height="138" fill="var(--red)" rx="1" opacity=".45"/>
-      <text x="441" y="187" fill="var(--red)" font-size="10" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">L</text>
-
-      <!-- i=11 R12 W: LO=100,SC=100 -->
-      <rect x="474" y="30"  width="17" height="138" fill="var(--gold)" rx="1"/>
-      <rect x="493" y="30"  width="17" height="138" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=12 R13 W: LO=100,SC=100 -->
-      <rect x="516" y="30"  width="17" height="138" fill="var(--gold)" rx="1"/>
-      <rect x="535" y="30"  width="17" height="138" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=13 R14 LOSS: LO=83,SC=100 -->
-      <rect x="554" y="18"  width="44" height="6" fill="var(--red)" opacity=".55" rx="1"/>
-      <rect x="558" y="55"  width="17" height="113" fill="var(--gold)" rx="1" opacity=".55"/>
-      <rect x="577" y="30"  width="17" height="138" fill="var(--red)" rx="1" opacity=".45"/>
-      <text x="567" y="187" fill="var(--red)" font-size="10" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">L</text>
-
-      <!-- i=14 R15 W: LO=82,SC=100 -->
-      <rect x="600" y="56"  width="17" height="112" fill="var(--gold)" rx="1"/>
-      <rect x="619" y="30"  width="17" height="138" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=15 R16 W: LO=100,SC=100 -->
-      <rect x="642" y="30"  width="17" height="138" fill="var(--gold)" rx="1"/>
-      <rect x="661" y="30"  width="17" height="138" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=16 R17 W: LO=89,SC=91 -->
-      <rect x="684" y="45"  width="17" height="123" fill="var(--gold)" rx="1"/>
-      <rect x="703" y="43"  width="17" height="125" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=17 R18 LOSS: LO=79,SC=89 -->
-      <rect x="722" y="18"  width="44" height="6" fill="var(--red)" opacity=".55" rx="1"/>
-      <rect x="726" y="60"  width="17" height="108" fill="var(--gold)" rx="1" opacity=".55"/>
-      <rect x="745" y="46"  width="17" height="122" fill="var(--red)" rx="1" opacity=".45"/>
-      <text x="735" y="187" fill="var(--red)" font-size="10" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">L</text>
-
-      <!-- i=18 R19 W: LO=100,SC=100 -->
-      <rect x="768" y="30"  width="17" height="138" fill="var(--gold)" rx="1"/>
-      <rect x="787" y="30"  width="17" height="138" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=19 R20 W: LO=94,SC=75 -->
-      <rect x="810" y="38"  width="17" height="130" fill="var(--gold)" rx="1"/>
-      <rect x="829" y="65"  width="17" height="103" fill="var(--red)" rx="1" opacity=".75"/>
-
-      <!-- i=20 R22 LOSS: LO=75,SC=100 -->
-      <rect x="852" y="18"  width="44" height="6" fill="var(--red)" opacity=".55" rx="1"/>
-      <rect x="856" y="64"  width="17" height="104" fill="var(--gold)" rx="1" opacity=".55"/>
-      <rect x="875" y="30"  width="17" height="138" fill="var(--red)" rx="1" opacity=".45"/>
-      <text x="864" y="187" fill="var(--red)" font-size="10" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">L</text>
-
-      <!-- Opponent labels above loss rounds -->
-      <text x="240" y="13" fill="var(--red)" font-size="7" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">↓ vs BraveLupus</text>
-      <text x="450" y="13" fill="var(--red)" font-size="7" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">↓ vs W.Knights</text>
-      <text x="576" y="13" fill="var(--red)" font-size="7" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">↓ vs Verblitz</text>
-      <text x="744" y="13" fill="var(--red)" font-size="7" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">↓ vs Steelers</text>
-      <text x="874" y="13" fill="var(--red)" font-size="7" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">↓ vs Steelers</text>
-
-      <!-- Baseline -->
-      <line x1="10" y1="168" x2="902" y2="168" stroke="#222" stroke-width="1.5"/>
-      <!-- Ref lines -->
-      <line x1="10" y1="30"  x2="902" y2="30"  stroke="#1e1e1e" stroke-width=".8" stroke-dasharray="4,4"/>
-      <text x="5"  y="33" fill="#383838" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end" font-weight="700">100%</text>
-      <line x1="10" y1="82"  x2="902" y2="82"  stroke="#181818" stroke-width=".8" stroke-dasharray="4,4"/>
-      <text x="5"  y="85" fill="#2e2e2e" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">80%</text>
-      <!-- Round labels -->
-      <text x="20"  y="196" fill="#555" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="middle">R1</text>
-      <text x="188" y="196" fill="#555" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="middle">R5</text>
-      <text x="356" y="196" fill="#555" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="middle">R9</text>
-      <text x="482" y="196" fill="#555" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="middle">R12</text>
-      <text x="650" y="196" fill="#555" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="middle">R16</text>
-      <text x="818" y="196" fill="#555" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="middle">R20</text>
-      <text x="864" y="196" fill="var(--red)" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="middle" font-weight="700">R22</text>
-    </svg>
-  </div>
-  <div style="font-family:var(--ja);font-size:clamp(.5rem,.72vw,.66rem);color:#2e2e2e;margin-top:2px">「セットピースを制す者が試合を制す。」</div>
 </div>
 
 <!-- SLIDE 5: KICKING -->
