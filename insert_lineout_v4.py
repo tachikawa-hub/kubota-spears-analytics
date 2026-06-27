@@ -446,10 +446,57 @@ _NUM_CAT_MAP = {
 }
 
 
+def _lo_ball_query(conn, team_name):
+    """Total/won count for non-team_name throws in games involving team_name."""
+    r = conn.execute("""
+        SELECT
+          SUM(CASE WHEN e.action_result_name LIKE 'Won%' THEN 1 ELSE 0 END) AS won,
+          SUM(CASE WHEN e.action_result_name != 'Reset' THEN 1 ELSE 0 END)  AS total
+        FROM events e
+        JOIN matches m ON e.fxid = m.fxid
+        WHERE m.league = 'd1' AND m.season = 2026
+          AND (m.home_team_name = ? OR m.away_team_name = ?)
+          AND e.team_name != ?
+          AND e.action_name = 'Lineout Throw'
+    """, (team_name, team_name, team_name)).fetchone()
+    return (r["total"] or 0, r["won"] or 0)
+
+
+def _lo_nums_query(conn, team_name):
+    """Numbers breakdown {cat: [total, won]} for non-team_name throws in games involving team_name."""
+    rows = conn.execute("""
+        SELECT
+          e.qualifier4_name AS num,
+          SUM(CASE WHEN e.action_result_name LIKE 'Won%' THEN 1 ELSE 0 END) AS won,
+          SUM(CASE WHEN e.action_result_name != 'Reset' THEN 1 ELSE 0 END)  AS total
+        FROM events e
+        JOIN matches m ON e.fxid = m.fxid
+        WHERE m.league = 'd1' AND m.season = 2026
+          AND (m.home_team_name = ? OR m.away_team_name = ?)
+          AND e.team_name != ?
+          AND e.action_name = 'Lineout Throw'
+          AND e.action_result_name != 'Reset'
+        GROUP BY e.qualifier4_name
+        ORDER BY total DESC
+    """, (team_name, team_name, team_name)).fetchall()
+    nums = {}
+    for row in rows:
+        cat = _NUM_CAT_MAP.get(row["num"] or "", "")
+        if not cat:
+            continue
+        if cat not in nums:
+            nums[cat] = [0, 0]
+        nums[cat][0] += row["total"]
+        nums[cat][1] += row["won"]
+    return nums
+
+
 def _load_lo_db_stats():
     """
-    Upper section (_ALL_OPP_LO): aggregate all opponents across all 21 Kubota D1 games.
-    Lower section (_SCOUT_OPP_LO): Kubota's throws in games vs each specific opponent.
+    Identical SQL logic for upper and lower sections — only the focal team changes.
+
+    Upper (_ALL_OPP_LO): focal team = 'Kubota Spears' (all 21 D1 games)
+    Lower (_SCOUT_OPP_LO): focal team = each scouting target
 
     Both return {"ball": (total, won), "nums": {cat: [total, won]}}.
     """
@@ -458,87 +505,19 @@ def _load_lo_db_stats():
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
 
-        # ── Upper: ALL opponents combined, all 21 D1 games ──────────────────
-        r = conn.execute("""
-            SELECT COUNT(*) AS total,
-                   SUM(CASE WHEN e.action_result_name LIKE 'Won%' THEN 1 ELSE 0 END) AS won
-            FROM events e
-            JOIN matches m ON e.fxid = m.fxid
-            WHERE m.league = 'd1' AND m.season = 2026
-              AND e.team_name != 'Kubota Spears'
-              AND e.action_name = 'Lineout Throw'
-        """).fetchone()
-        all_ball = (r["total"], r["won"])
+        # Upper: OPP = non-Kubota teams in Kubota's games
+        all_opp = {
+            "ball": _lo_ball_query(conn, "Kubota Spears"),
+            "nums": _lo_nums_query(conn, "Kubota Spears"),
+        }
 
-        rows = conn.execute("""
-            SELECT e.qualifier4_name AS num,
-                   COUNT(*) AS total,
-                   SUM(CASE WHEN e.action_result_name LIKE 'Won%' THEN 1 ELSE 0 END) AS won
-            FROM events e
-            JOIN matches m ON e.fxid = m.fxid
-            WHERE m.league = 'd1' AND m.season = 2026
-              AND e.team_name != 'Kubota Spears'
-              AND e.action_name = 'Lineout Throw'
-            GROUP BY e.qualifier4_name
-        """).fetchall()
-        all_nums = {}
-        for row in rows:
-            cat = _NUM_CAT_MAP.get(row["num"] or "", "")
-            if not cat:
-                continue
-            if cat not in all_nums:
-                all_nums[cat] = [0, 0]
-            all_nums[cat][0] += row["total"]
-            all_nums[cat][1] += row["won"]
-
-        all_opp = {"ball": all_ball, "nums": all_nums}
-
-        # ── Lower: Kubota throws in games vs each scouting target ───────────
-        ball_rows = conn.execute("""
-            SELECT m.opponent_name,
-                   COUNT(*) AS total,
-                   SUM(CASE WHEN e.action_result_name LIKE 'Won%' THEN 1 ELSE 0 END) AS won
-            FROM events e
-            JOIN matches m ON e.fxid = m.fxid
-            WHERE e.team_name = 'Kubota Spears'
-              AND e.action_name = 'Lineout Throw'
-            GROUP BY m.opponent_name
-        """).fetchall()
-
-        num_rows = conn.execute("""
-            SELECT m.opponent_name,
-                   e.qualifier4_name AS num,
-                   COUNT(*) AS total,
-                   SUM(CASE WHEN e.action_result_name LIKE 'Won%' THEN 1 ELSE 0 END) AS won
-            FROM events e
-            JOIN matches m ON e.fxid = m.fxid
-            WHERE e.team_name = 'Kubota Spears'
-              AND e.action_name = 'Lineout Throw'
-            GROUP BY m.opponent_name, e.qualifier4_name
-        """).fetchall()
-
-        scout_ball = {r["opponent_name"]: (r["total"], r["won"]) for r in ball_rows}
-
-        scout_nums = {}
-        for row in num_rows:
-            opp_nm = row["opponent_name"]
-            cat    = _NUM_CAT_MAP.get(row["num"] or "", "")
-            if not cat:
-                continue
-            if opp_nm not in scout_nums:
-                scout_nums[opp_nm] = {}
-            if cat not in scout_nums[opp_nm]:
-                scout_nums[opp_nm][cat] = [0, 0]
-            scout_nums[opp_nm][cat][0] += row["total"]
-            scout_nums[opp_nm][cat][1] += row["won"]
-
-        all_opps = set(scout_ball) | set(scout_nums)
+        # Lower: OPP = non-SCOUT_TEAM in each team's games (identical logic)
         scout_opp = {
-            nm: {
-                "ball": scout_ball.get(nm, (0, 0)),
-                "nums": scout_nums.get(nm, {}),
+            db_name: {
+                "ball": _lo_ball_query(conn, db_name),
+                "nums": _lo_nums_query(conn, db_name),
             }
-            for nm in all_opps
+            for db_name in _DB_TEAM_NAME.values()
         }
 
         conn.close()
