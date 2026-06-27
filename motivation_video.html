@@ -117,9 +117,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
     <div class="cstat">
       <div style="font-family:var(--ef);font-size:clamp(.48rem,.72vw,.66rem);letter-spacing:.1em;color:#555;text-transform:uppercase">Contest Retention Rate</div>
       <div style="font-family:var(--ja);font-size:clamp(.44rem,.62vw,.57rem);color:#333;opacity:.8;margin-top:1px">コンテスト保持率</div>
-      <div class="bnum">31.3%</div>
+      <div class="bnum">31.8%</div>
       <div class="nlabel">#1 Full Season · 21 Games</div>
-      <div style="font-family:var(--ja);font-size:clamp(.44rem,.62vw,.57rem);color:#555;opacity:.8;margin-top:2px">リーグ1位 · フルシーズン · 61本 / 195本</div>
+      <div style="font-family:var(--ja);font-size:clamp(.44rem,.62vw,.57rem);color:#555;opacity:.8;margin-top:2px">リーグ1位 · フルシーズン · スカウトレポート実数値</div>
       <!-- Flow -->
       <div style="margin-top:14px;padding:8px 10px;border:1px solid #1a2a1a;background:#090f09">
         <div style="font-family:var(--ef);font-size:clamp(.5rem,.78vw,.72rem);color:#4a8a4a;letter-spacing:.04em;font-weight:700">Contest Game → Momentum → Unstructured Attack ↑</div>
@@ -131,80 +131,83 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
     <div class="cchart">
       <svg viewBox="0 0 460 265" style="width:100%;height:100%;max-height:61vh">
         <text x="0" y="12" fill="#666" font-size="9.5" font-family="Helvetica Neue, Arial" letter-spacing="2" font-weight="700">CONTEST RETENTION RATE — ALL 12 TEAMS (D1 2025-26)</text>
-        <text x="0" y="23" fill="#2e2e2e" font-size="8" font-family="Helvetica Neue, Arial">OPC + Pressure Error + Pressure in Touch ÷ Contest Kicks · Gold = Spears (21G) · Grey = small sample</text>
-        <!-- Scale: max 41.7% → 320px. factor=7.67 -->
+        <text x="0" y="23" fill="#2e2e2e" font-size="8" font-family="Helvetica Neue, Arial">Scout report values · Orange = Spears #1 · Red = Steelers · Yellow dashed = League avg (24.2%)</text>
+        <!-- Scale: max 31.8% → 280px. factor=8.805 -->
 
-        <!-- 1 Heat 41.7% → 320 (2G small sample) -->
-        <rect x="100" y="30" width="320" height="15" fill="#252525" rx="2"/>
-        <text x="94"  y="42" fill="#555" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Heat*</text>
-        <text x="424" y="42" fill="#555" font-size="8.5" font-family="Helvetica Neue, Arial">41.7% <tspan fill="#2a2a2a">(2G)</tspan></text>
+        <!-- League avg line at 24.2% → x=313 -->
+        <line x1="313" y1="26" x2="313" y2="256" stroke="#F5C518" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <text x="313" y="24" fill="#F5C518" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="middle">avg 24.2%</text>
 
-        <!-- 2 SPEARS 31.3% → 240 (21G) GOLD #1 full-season -->
-        <rect x="100" y="48" width="240" height="22" fill="var(--gold)" rx="2"/>
-        <text x="94"  y="63" fill="var(--gold)" font-size="11" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">SPEARS</text>
-        <text x="344" y="63" fill="#0a0a0a" font-size="11" font-family="Helvetica Neue, Arial" font-weight="700">31.3%</text>
-        <text x="388" y="63" fill="#5a4a10" font-size="8" font-family="Helvetica Neue, Arial">★#1 Full-Season · 21G</text>
+        <!-- 1 SPEARS 31.8% → 280 #E8521A -->
+        <rect x="100" y="30" width="280" height="22" fill="#E8521A" rx="2"/>
+        <text x="94"  y="45" fill="#E8521A" font-size="11" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">SPEARS</text>
+        <text x="384" y="45" fill="#fff" font-size="11" font-family="Helvetica Neue, Arial" font-weight="700">31.8%  #1</text>
 
-        <!-- 3 Sungoliath 30.0% → 230 (2G) -->
-        <rect x="100" y="74" width="230" height="15" fill="#222" rx="2"/>
-        <text x="94"  y="86" fill="#444" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Sungoliath</text>
-        <text x="334" y="86" fill="#444" font-size="8.5" font-family="Helvetica Neue, Arial">30.0% <tspan fill="#2a2a2a">(2G)</tspan></text>
+        <!-- 2 Steelers 30.7% → 270 #C0392B -->
+        <rect x="100" y="55" width="270" height="20" fill="#C0392B" rx="2"/>
+        <text x="94"  y="68" fill="#C0392B" font-size="10" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">Steelers</text>
+        <text x="374" y="68" fill="#fff" font-size="10" font-family="Helvetica Neue, Arial" font-weight="700">30.7%</text>
 
-        <!-- 4 W.Knights 30.0% → 230 (2G) -->
-        <rect x="100" y="92" width="230" height="15" fill="#1e1e1e" rx="2"/>
-        <text x="94"  y="104" fill="#3a3a3a" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">W.Knights</text>
-        <text x="334" y="104" fill="#3a3a3a" font-size="8.5" font-family="Helvetica Neue, Arial">30.0% <tspan fill="#2a2a2a">(2G)</tspan></text>
+        <!-- 3 Verblitz 27.6% → 243 -->
+        <rect x="100" y="78" width="243" height="15" fill="#3a3a3a" rx="2"/>
+        <text x="94"  y="89" fill="#666" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Verblitz</text>
+        <text x="347" y="89" fill="#666" font-size="8.5" font-family="Helvetica Neue, Arial">27.6%</text>
 
-        <!-- 5 Eagles 28.6% → 219 (1G) -->
-        <rect x="100" y="110" width="219" height="15" fill="#1e1e1e" rx="2"/>
-        <text x="94"  y="122" fill="#333" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Eagles</text>
-        <text x="323" y="122" fill="#333" font-size="8.5" font-family="Helvetica Neue, Arial">28.6% <tspan fill="#1a1a1a">(1G)</tspan></text>
+        <!-- 4 WildKnights 26.8% → 236 -->
+        <rect x="100" y="96" width="236" height="15" fill="#363636" rx="2"/>
+        <text x="94"  y="107" fill="#606060" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">W.Knights</text>
+        <text x="340" y="107" fill="#606060" font-size="8.5" font-family="Helvetica Neue, Arial">26.8%</text>
 
-        <!-- 6 BraveLupus 23.5% → 180 (3G) -->
-        <rect x="100" y="128" width="180" height="15" fill="#1a1a1a" rx="2"/>
-        <text x="94"  y="140" fill="#2e2e2e" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">BraveLupus</text>
-        <text x="284" y="140" fill="#2e2e2e" font-size="8.5" font-family="Helvetica Neue, Arial">23.5% <tspan fill="#1a1a1a">(3G)</tspan></text>
+        <!-- 5 Dynaboars 25.5% → 225 -->
+        <rect x="100" y="114" width="225" height="15" fill="#323232" rx="2"/>
+        <text x="94"  y="125" fill="#5a5a5a" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Dynaboars</text>
+        <text x="329" y="125" fill="#5a5a5a" font-size="8.5" font-family="Helvetica Neue, Arial">25.5%</text>
 
-        <!-- 7 Verblitz 21.1% → 162 (2G) -->
-        <rect x="100" y="146" width="162" height="15" fill="#1a1a1a" rx="2"/>
-        <text x="94"  y="158" fill="#2a2a2a" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Verblitz</text>
-        <text x="266" y="158" fill="#2a2a2a" font-size="8.5" font-family="Helvetica Neue, Arial">21.1% <tspan fill="#1a1a1a">(2G)</tspan></text>
+        <!-- 6 Sungoliath 24.5% → 216 -->
+        <rect x="100" y="132" width="216" height="15" fill="#2e2e2e" rx="2"/>
+        <text x="94"  y="143" fill="#555" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Sungoliath</text>
+        <text x="320" y="143" fill="#555" font-size="8.5" font-family="Helvetica Neue, Arial">24.5%</text>
 
-        <!-- 8 Steelers 14.8% → 113 (3G) -->
-        <rect x="100" y="164" width="113" height="15" fill="#181818" rx="2"/>
-        <text x="94"  y="176" fill="#242424" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Steelers</text>
-        <text x="217" y="176" fill="#242424" font-size="8.5" font-family="Helvetica Neue, Arial">14.8% <tspan fill="#181818">(3G)</tspan></text>
+        <!-- 7 BraveLupus 23.9% → 210 -->
+        <rect x="100" y="150" width="210" height="15" fill="#2a2a2a" rx="2"/>
+        <text x="94"  y="161" fill="#505050" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">BraveLupus</text>
+        <text x="314" y="161" fill="#505050" font-size="8.5" font-family="Helvetica Neue, Arial">23.9%</text>
 
-        <!-- 9 BlackRams 14.3% → 110 (2G) -->
-        <rect x="100" y="182" width="110" height="15" fill="#181818" rx="2"/>
-        <text x="94"  y="194" fill="#222" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlackRams</text>
-        <text x="214" y="194" fill="#222" font-size="8.5" font-family="Helvetica Neue, Arial">14.3% <tspan fill="#181818">(2G)</tspan></text>
+        <!-- 8 D-Rocks 23.7% → 209 -->
+        <rect x="100" y="168" width="209" height="15" fill="#282828" rx="2"/>
+        <text x="94"  y="179" fill="#4c4c4c" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">D-Rocks</text>
+        <text x="313" y="179" fill="#4c4c4c" font-size="8.5" font-family="Helvetica Neue, Arial">23.7%</text>
 
-        <!-- 10 Dynaboars 7.7% → 59 (1G) -->
-        <rect x="100" y="200" width="59"  height="15" fill="#161616" rx="2"/>
-        <text x="94"  y="212" fill="#1e1e1e" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Dynaboars</text>
-        <text x="163" y="212" fill="#1e1e1e" font-size="8.5" font-family="Helvetica Neue, Arial">7.7% <tspan fill="#141414">(1G)</tspan></text>
+        <!-- 9 Heat 22.9% → 202 -->
+        <rect x="100" y="186" width="202" height="15" fill="#252525" rx="2"/>
+        <text x="94"  y="197" fill="#484848" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Heat</text>
+        <text x="306" y="197" fill="#484848" font-size="8.5" font-family="Helvetica Neue, Arial">22.9%</text>
 
-        <!-- 11 D-Rocks 0.0% (2G) -->
-        <rect x="100" y="218" width="2"   height="15" fill="#141414" rx="0"/>
-        <text x="94"  y="230" fill="#1c1c1c" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">D-Rocks</text>
-        <text x="106" y="230" fill="#1c1c1c" font-size="8.5" font-family="Helvetica Neue, Arial">0.0% <tspan fill="#131313">(2G)</tspan></text>
+        <!-- 10 BlackRams 18.7% → 165 -->
+        <rect x="100" y="204" width="165" height="15" fill="#222" rx="2"/>
+        <text x="94"  y="215" fill="#444" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlackRams</text>
+        <text x="269" y="215" fill="#444" font-size="8.5" font-family="Helvetica Neue, Arial">18.7%</text>
 
-        <!-- 12 BlueRevs 0.0% (1G) -->
-        <rect x="100" y="236" width="2"   height="15" fill="#111" rx="0"/>
-        <text x="94"  y="248" fill="#181818" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlueRevs</text>
-        <text x="106" y="248" fill="#181818" font-size="8.5" font-family="Helvetica Neue, Arial">0.0% <tspan fill="#111">(1G)</tspan></text>
+        <!-- 11 Eagles 17.1% → 151 -->
+        <rect x="100" y="222" width="151" height="15" fill="#1e1e1e" rx="2"/>
+        <text x="94"  y="233" fill="#404040" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Eagles</text>
+        <text x="255" y="233" fill="#404040" font-size="8.5" font-family="Helvetica Neue, Arial">17.1%</text>
+
+        <!-- 12 BlueRevs 16.7% → 147 -->
+        <rect x="100" y="240" width="147" height="15" fill="#1c1c1c" rx="2"/>
+        <text x="94"  y="251" fill="#3c3c3c" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlueRevs</text>
+        <text x="251" y="251" fill="#3c3c3c" font-size="8.5" font-family="Helvetica Neue, Arial">16.7%</text>
 
         <!-- Axis -->
         <line x1="100" y1="26" x2="100" y2="256" stroke="#1e1e1e" stroke-width="1"/>
         <text x="100" y="25" fill="#252525" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="middle">0</text>
-        <text x="177" y="25" fill="#252525" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="middle">10%</text>
-        <text x="253" y="25" fill="#252525" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="middle">20%</text>
-        <text x="330" y="25" fill="#252525" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="middle">30%</text>
-        <line x1="177" y1="26" x2="177" y2="256" stroke="#181818" stroke-width=".5" stroke-dasharray="3,4"/>
-        <line x1="253" y1="26" x2="253" y2="256" stroke="#181818" stroke-width=".5" stroke-dasharray="3,4"/>
-        <line x1="330" y1="26" x2="330" y2="256" stroke="#181818" stroke-width=".5" stroke-dasharray="3,4"/>
-        <text x="0" y="265" fill="#282828" font-size="7.5" font-family="Helvetica Neue, Arial">Season total ÷ total contest kicks method · * Heat: 2G · Spears: 21G full season #1 among meaningful samples</text>
+        <text x="188" y="25" fill="#252525" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="middle">10%</text>
+        <text x="276" y="25" fill="#252525" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="middle">20%</text>
+        <text x="364" y="25" fill="#252525" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="middle">30%</text>
+        <line x1="188" y1="26" x2="188" y2="256" stroke="#181818" stroke-width=".5" stroke-dasharray="3,4"/>
+        <line x1="276" y1="26" x2="276" y2="256" stroke="#181818" stroke-width=".5" stroke-dasharray="3,4"/>
+        <line x1="364" y1="26" x2="364" y2="256" stroke="#181818" stroke-width=".5" stroke-dasharray="3,4"/>
+        <text x="0" y="265" fill="#282828" font-size="7.5" font-family="Helvetica Neue, Arial">Scout report values (hardcoded) · Orange = Spears #1 · Red = Steelers #2 · Avg line = 24.2%</text>
       </svg>
     </div>
   </div>
@@ -301,78 +304,82 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
     <div class="dcol">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
         <div class="daxis">Dominant</div>
-        <div style="background:var(--gold);color:#0a0a0a;font-family:var(--ef);font-size:.58rem;font-weight:700;padding:2px 5px;line-height:1.4">#4 / #1 Full-Szn</div>
+        <div style="background:#E8521A;color:#fff;font-family:var(--ef);font-size:.58rem;font-weight:700;padding:2px 5px;line-height:1.4">#1 D1</div>
       </div>
-      <div class="dval">58.9%</div>
-      <div class="dsub">Dom Tackle Rate · (Complete + Sack) ÷ Total<br>#4 overall · #1 among full-season teams</div>
-      <div class="dja" style="opacity:.8">ドミナントタックル率 全シーズン1位水準</div>
+      <div class="dval">6.1</div>
+      <div class="dsub">Dominant Tackle Score / Phase<br>#1 in D1 League</div>
+      <div class="dja" style="opacity:.8">ドミナントタックルスコア リーグ1位</div>
       <!-- 12-team ranking chart -->
-      <svg viewBox="0 0 195 198" style="width:100%;margin-top:6px;flex:1;min-height:0">
-        <text x="0" y="11" fill="#555" font-size="8.5" font-family="Helvetica Neue, Arial" font-weight="700" letter-spacing="1">DOM TACKLE RATE — D1 (higher = better)</text>
-        <!-- Scale: 65% → 155px. factor=2.38 -->
+      <svg viewBox="0 0 195 200" style="width:100%;margin-top:6px;flex:1;min-height:0">
+        <text x="0" y="11" fill="#555" font-size="8.5" font-family="Helvetica Neue, Arial" font-weight="700" letter-spacing="1">DOM TACKLE SCORE — D1 (higher = better)</text>
+        <!-- Scale: 6.1max → 155px. factor=25.41. avg=4.9→x=193 -->
 
-        <!-- 1 Steelers 65.0% → 155 (3G) -->
-        <rect x="68" y="15" width="155" height="12" fill="#1e1e1e" rx="2"/>
-        <text x="62" y="24" fill="#3a3a3a" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Steelers</text>
-        <text x="227" y="24" fill="#3a3a3a" font-size="7.5" font-family="Helvetica Neue, Arial">65.0%</text>
+        <!-- avg line -->
+        <line x1="193" y1="13" x2="193" y2="187" stroke="#F5C518" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="193" y="11" fill="#F5C518" font-size="6.5" font-family="Helvetica Neue, Arial" text-anchor="middle">avg 4.9</text>
 
-        <!-- 2 Eagles 63.6% → 152 (1G) -->
-        <rect x="68" y="29" width="152" height="12" fill="#1a1a1a" rx="2"/>
-        <text x="62" y="38" fill="#333" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Eagles</text>
-        <text x="224" y="38" fill="#333" font-size="7.5" font-family="Helvetica Neue, Arial">63.6%</text>
+        <!-- 1 SPEARS 6.1 → 155 #E8521A -->
+        <rect x="68" y="15" width="155" height="16" fill="#E8521A" rx="2"/>
+        <text x="62" y="26" fill="#E8521A" font-size="9.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">SPEARS</text>
+        <text x="227" y="26" fill="#fff" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700">6.1  #1</text>
 
-        <!-- 3 BraveLupus 62.4% → 149 (3G) -->
-        <rect x="68" y="43" width="149" height="12" fill="#1a1a1a" rx="2"/>
-        <text x="62" y="52" fill="#2e2e2e" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">BraveLupus</text>
-        <text x="221" y="52" fill="#2e2e2e" font-size="7.5" font-family="Helvetica Neue, Arial">62.4%</text>
+        <!-- 2 WildKnights 5.9 → 150 -->
+        <rect x="68" y="33" width="150" height="12" fill="#3a3a3a" rx="2"/>
+        <text x="62" y="42" fill="#666" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">W.Knights</text>
+        <text x="222" y="42" fill="#666" font-size="7.5" font-family="Helvetica Neue, Arial">5.9</text>
 
-        <!-- 4 SPEARS 58.9% → 140 (21G) GOLD -->
-        <rect x="68" y="57" width="140" height="16" fill="var(--gold)" rx="2"/>
-        <text x="62" y="68" fill="var(--gold)" font-size="9.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">SPEARS</text>
-        <text x="212" y="68" fill="#0a0a0a" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700">58.9% <tspan font-size="7">★21G</tspan></text>
+        <!-- 3 Verblitz 5.8 → 147 -->
+        <rect x="68" y="47" width="147" height="12" fill="#363636" rx="2"/>
+        <text x="62" y="56" fill="#606060" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Verblitz</text>
+        <text x="219" y="56" fill="#606060" font-size="7.5" font-family="Helvetica Neue, Arial">5.8</text>
 
-        <!-- 5 D-Rocks 58.9% → 140 (2G) -->
-        <rect x="68" y="75" width="140" height="12" fill="#1e1e1e" rx="2"/>
-        <text x="62" y="84" fill="#383838" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">D-Rocks</text>
-        <text x="212" y="84" fill="#383838" font-size="7.5" font-family="Helvetica Neue, Arial">58.9%</text>
+        <!-- 4 Heat 5.3 → 135 -->
+        <rect x="68" y="61" width="135" height="12" fill="#323232" rx="2"/>
+        <text x="62" y="70" fill="#5a5a5a" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Heat</text>
+        <text x="207" y="70" fill="#5a5a5a" font-size="7.5" font-family="Helvetica Neue, Arial">5.3</text>
 
-        <!-- 6 Verblitz 52.3% → 125 (2G) -->
-        <rect x="68" y="89" width="125" height="12" fill="#1a1a1a" rx="2"/>
-        <text x="62" y="98" fill="#2e2e2e" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Verblitz</text>
-        <text x="197" y="98" fill="#2e2e2e" font-size="7.5" font-family="Helvetica Neue, Arial">52.3%</text>
+        <!-- 5 Steelers 5.2 → 132 #C0392B -->
+        <rect x="68" y="75" width="132" height="14" fill="#C0392B" rx="2"/>
+        <text x="62" y="85" fill="#C0392B" font-size="8.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">Steelers</text>
+        <text x="204" y="85" fill="#fff" font-size="8.5" font-family="Helvetica Neue, Arial" font-weight="700">5.2</text>
 
-        <!-- 7 BlueRevs 48.9% → 117 (1G) -->
-        <rect x="68" y="103" width="117" height="12" fill="#181818" rx="2"/>
-        <text x="62" y="112" fill="#282828" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlueRevs</text>
-        <text x="189" y="112" fill="#282828" font-size="7.5" font-family="Helvetica Neue, Arial">48.9%</text>
+        <!-- 6 BraveLupus 4.7 → 119 -->
+        <rect x="68" y="91" width="119" height="12" fill="#2e2e2e" rx="2"/>
+        <text x="62" y="100" fill="#555" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">BraveLupus</text>
+        <text x="191" y="100" fill="#555" font-size="7.5" font-family="Helvetica Neue, Arial">4.7</text>
 
-        <!-- 8 Heat 47.3% → 113 (2G) -->
-        <rect x="68" y="117" width="113" height="12" fill="#181818" rx="2"/>
-        <text x="62" y="126" fill="#252525" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Heat</text>
-        <text x="185" y="126" fill="#252525" font-size="7.5" font-family="Helvetica Neue, Arial">47.3%</text>
+        <!-- 7 BlueRevs 4.5 → 114 -->
+        <rect x="68" y="105" width="114" height="12" fill="#2a2a2a" rx="2"/>
+        <text x="62" y="114" fill="#505050" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlueRevs</text>
+        <text x="186" y="114" fill="#505050" font-size="7.5" font-family="Helvetica Neue, Arial">4.5</text>
 
-        <!-- 9 Dynaboars 45.5% → 108 (1G) -->
-        <rect x="68" y="131" width="108" height="12" fill="#161616" rx="2"/>
-        <text x="62" y="140" fill="#222" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Dynaboars</text>
-        <text x="180" y="140" fill="#222" font-size="7.5" font-family="Helvetica Neue, Arial">45.5%</text>
+        <!-- 8 Eagles 4.4 → 112 -->
+        <rect x="68" y="119" width="112" height="12" fill="#282828" rx="2"/>
+        <text x="62" y="128" fill="#4c4c4c" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Eagles</text>
+        <text x="184" y="128" fill="#4c4c4c" font-size="7.5" font-family="Helvetica Neue, Arial">4.4</text>
 
-        <!-- 10 W.Knights 44.7% → 107 (2G) -->
-        <rect x="68" y="145" width="107" height="12" fill="#161616" rx="2"/>
-        <text x="62" y="154" fill="#202020" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">W.Knights</text>
-        <text x="179" y="154" fill="#202020" font-size="7.5" font-family="Helvetica Neue, Arial">44.7%</text>
+        <!-- 9 Sungoliath 4.3 → 109 -->
+        <rect x="68" y="133" width="109" height="12" fill="#252525" rx="2"/>
+        <text x="62" y="142" fill="#484848" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Sungoliath</text>
+        <text x="181" y="142" fill="#484848" font-size="7.5" font-family="Helvetica Neue, Arial">4.3</text>
 
-        <!-- 11 BlackRams 44.4% → 106 (2G) -->
-        <rect x="68" y="159" width="106" height="12" fill="#141414" rx="2"/>
-        <text x="62" y="168" fill="#1e1e1e" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlackRams</text>
-        <text x="178" y="168" fill="#1e1e1e" font-size="7.5" font-family="Helvetica Neue, Arial">44.4%</text>
+        <!-- 10 D-Rocks 4.3 → 109 -->
+        <rect x="68" y="147" width="109" height="12" fill="#222" rx="2"/>
+        <text x="62" y="156" fill="#444" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">D-Rocks</text>
+        <text x="181" y="156" fill="#444" font-size="7.5" font-family="Helvetica Neue, Arial">4.3</text>
 
-        <!-- 12 Sungoliath 36.2% → 86 (2G) -->
-        <rect x="68" y="173" width="86"  height="12" fill="#111" rx="2"/>
-        <text x="62" y="182" fill="#181818" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Sungoliath</text>
-        <text x="158" y="182" fill="#181818" font-size="7.5" font-family="Helvetica Neue, Arial">36.2%</text>
+        <!-- 11 Dynaboars 4.2 → 107 -->
+        <rect x="68" y="161" width="107" height="12" fill="#1e1e1e" rx="2"/>
+        <text x="62" y="170" fill="#404040" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Dynaboars</text>
+        <text x="179" y="170" fill="#404040" font-size="7.5" font-family="Helvetica Neue, Arial">4.2</text>
+
+        <!-- 12 BlackRams 4.0 → 102 -->
+        <rect x="68" y="175" width="102" height="12" fill="#1c1c1c" rx="2"/>
+        <text x="62" y="184" fill="#3c3c3c" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlackRams</text>
+        <text x="174" y="184" fill="#3c3c3c" font-size="7.5" font-family="Helvetica Neue, Arial">4.0</text>
 
         <line x1="68" y1="12" x2="68" y2="188" stroke="#1e1e1e" stroke-width="1"/>
-        <text x="0" y="198" fill="#1e1e1e" font-size="7" font-family="Helvetica Neue, Arial">Spears: 21G · Steelers/BraveLupus: 3G · Others: 1-2G</text>
+        <text x="0" y="198" fill="#1e1e1e" font-size="7" font-family="Helvetica Neue, Arial">Scout report values · Orange = Spears #1 · Red = Steelers · Avg line = 4.9</text>
       </svg>
       <div class="tline" style="font-size:clamp(.72rem,1.35vw,1.3rem)">"Stop them<br>at the source."</div>
       <div class="dja" style="opacity:.8">「止めることが、勝利の始まり。」</div>
@@ -382,102 +389,158 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
     <div class="dcol">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
         <div class="daxis">Relentless</div>
-        <div style="background:var(--gold);color:#0a0a0a;font-family:var(--ef);font-size:.58rem;font-weight:700;padding:2px 5px;line-height:1.4">#2 D1</div>
+        <div style="background:#E8521A;color:#fff;font-family:var(--ef);font-size:.58rem;font-weight:700;padding:2px 5px;line-height:1.4">#2 D1</div>
       </div>
       <div class="dval">54</div>
       <div class="dsub">Tries Conceded · Season · 2.6/G<br>#2 in D1 · 21 games</div>
       <div class="dja" style="opacity:.8">被トライ数 リーグ2位 / 全21試合</div>
-      <!-- Combined SVG: tries/G ranking + defensive sub-stats -->
-      <svg viewBox="0 0 195 225" style="width:100%;margin-top:6px;flex:1;min-height:0">
-        <text x="0" y="11" fill="#555" font-size="8.5" font-family="Helvetica Neue, Arial" font-weight="700" letter-spacing="1">TRIES CONCEDED / G — D1 (lower = better)</text>
-        <!-- Scale: 8.5/G → 125px. factor=14.71 -->
+      <!-- Two charts side by side -->
+      <div style="display:flex;gap:4px;flex:1;min-height:0;margin-top:5px">
+        <!-- Left: Tries Conceded (ascending) -->
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+          <div style="font-family:var(--ef);font-size:clamp(.38rem,.56vw,.52rem);letter-spacing:.06em;color:#555;text-transform:uppercase;font-weight:700;margin-bottom:2px">Tries Conceded</div>
+          <svg viewBox="0 0 100 200" style="width:100%;flex:1;min-height:0">
+            <!-- Scale: 103max → 56px. factor=0.544. avg=83→45. Bar x=39 -->
+            <line x1="84" y1="14" x2="84" y2="152" stroke="#F5C518" stroke-width="1" stroke-dasharray="3,2"/>
+            <text x="84" y="12" fill="#F5C518" font-size="6" font-family="Helvetica Neue, Arial" text-anchor="middle">avg 83</text>
 
-        <!-- 1 W.Knights 2.5/G → 37 (2G) -->
-        <rect x="68" y="15" width="37"  height="10" fill="#252525" rx="2"/>
-        <text x="62" y="23" fill="#444" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">W.Knights</text>
-        <text x="109" y="23" fill="#444" font-size="7.5" font-family="Helvetica Neue, Arial">2.5</text>
+            <!-- 1 WK 48 → 26 -->
+            <rect x="39" y="16" width="26" height="9" fill="#3a3a3a" rx="1"/>
+            <text x="37" y="23" fill="#666" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">W.Knights</text>
+            <text x="67" y="23" fill="#666" font-size="7" font-family="Helvetica Neue, Arial">48</text>
 
-        <!-- 2 SPEARS 2.6/G → 38 (21G) GOLD -->
-        <rect x="68" y="27" width="38"  height="14" fill="var(--gold)" rx="2"/>
-        <text x="62" y="37" fill="var(--gold)" font-size="9.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">SPEARS</text>
-        <text x="110" y="37" fill="#0a0a0a" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700">2.6 <tspan font-size="6.5">★21G</tspan></text>
+            <!-- 2 SPEARS 54 → 29 #E8521A -->
+            <rect x="39" y="27" width="29" height="12" fill="#E8521A" rx="1"/>
+            <text x="37" y="36" fill="#E8521A" font-size="8" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">SPEARS</text>
+            <text x="70" y="36" fill="#fff" font-size="8" font-family="Helvetica Neue, Arial" font-weight="700">54</text>
 
-        <!-- 3 Steelers 2.7/G → 39 (3G) -->
-        <rect x="68" y="43" width="39"  height="10" fill="#1e1e1e" rx="2"/>
-        <text x="62" y="51" fill="#383838" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Steelers</text>
-        <text x="111" y="51" fill="#383838" font-size="7.5" font-family="Helvetica Neue, Arial">2.7</text>
+            <!-- 3 Steelers 67 → 36 #C0392B -->
+            <rect x="39" y="41" width="36" height="9" fill="#C0392B" rx="1"/>
+            <text x="37" y="48" fill="#C0392B" font-size="7" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">Steelers</text>
+            <text x="77" y="48" fill="#C0392B" font-size="7" font-family="Helvetica Neue, Arial">67</text>
 
-        <!-- 4 Verblitz 3.0/G → 44 (2G) -->
-        <rect x="68" y="55" width="44"  height="10" fill="#1a1a1a" rx="2"/>
-        <text x="62" y="63" fill="#2e2e2e" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Verblitz</text>
-        <text x="116" y="63" fill="#2e2e2e" font-size="7.5" font-family="Helvetica Neue, Arial">3.0</text>
+            <!-- 4 Verblitz 84 → 46 -->
+            <rect x="39" y="52" width="46" height="9" fill="#2e2e2e" rx="1"/>
+            <text x="37" y="59" fill="#555" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">Verblitz</text>
+            <text x="87" y="59" fill="#555" font-size="7" font-family="Helvetica Neue, Arial">84</text>
 
-        <!-- 5 Dynaboars 4.0/G → 59 (1G) -->
-        <rect x="68" y="67" width="59"  height="10" fill="#1a1a1a" rx="2"/>
-        <text x="62" y="75" fill="#282828" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Dynaboars</text>
-        <text x="131" y="75" fill="#282828" font-size="7.5" font-family="Helvetica Neue, Arial">4.0</text>
+            <!-- 5 BlackRams 87 → 47 -->
+            <rect x="39" y="63" width="47" height="9" fill="#2a2a2a" rx="1"/>
+            <text x="37" y="70" fill="#4c4c4c" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">B.Rams</text>
+            <text x="88" y="70" fill="#4c4c4c" font-size="7" font-family="Helvetica Neue, Arial">87</text>
 
-        <!-- 5= Eagles 4.0/G → 59 (1G) -->
-        <rect x="68" y="79" width="59"  height="10" fill="#1a1a1a" rx="2"/>
-        <text x="62" y="87" fill="#262626" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Eagles</text>
-        <text x="131" y="87" fill="#262626" font-size="7.5" font-family="Helvetica Neue, Arial">4.0</text>
+            <!-- 6 BraveLupus 87 → 47 -->
+            <rect x="39" y="74" width="47" height="9" fill="#282828" rx="1"/>
+            <text x="37" y="81" fill="#484848" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">B.Lupus</text>
+            <text x="88" y="81" fill="#484848" font-size="7" font-family="Helvetica Neue, Arial">87</text>
 
-        <!-- 7 BraveLupus 4.3/G → 64 (3G) -->
-        <rect x="68" y="91" width="64"  height="10" fill="#181818" rx="2"/>
-        <text x="62" y="99" fill="#242424" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">BraveLupus</text>
-        <text x="136" y="99" fill="#242424" font-size="7.5" font-family="Helvetica Neue, Arial">4.3</text>
+            <!-- 7 Heat 88 → 48 -->
+            <rect x="39" y="85" width="48" height="9" fill="#252525" rx="1"/>
+            <text x="37" y="92" fill="#444" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">Heat</text>
+            <text x="89" y="92" fill="#444" font-size="7" font-family="Helvetica Neue, Arial">88</text>
 
-        <!-- 8 BlueRevs 6.0/G → 88 (1G) -->
-        <rect x="68" y="103" width="88"  height="10" fill="#161616" rx="2"/>
-        <text x="62" y="111" fill="#202020" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlueRevs</text>
-        <text x="160" y="111" fill="#202020" font-size="7.5" font-family="Helvetica Neue, Arial">6.0</text>
+            <!-- 8 BlueRevs 89 → 48 -->
+            <rect x="39" y="96" width="48" height="9" fill="#222" rx="1"/>
+            <text x="37" y="103" fill="#404040" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">B.Revs</text>
+            <text x="89" y="103" fill="#404040" font-size="7" font-family="Helvetica Neue, Arial">89</text>
 
-        <!-- 9= BlackRams 7.5/G → 110 (2G) -->
-        <rect x="68" y="115" width="110" height="10" fill="#141414" rx="2"/>
-        <text x="62" y="123" fill="#1e1e1e" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlackRams</text>
-        <text x="182" y="123" fill="#1e1e1e" font-size="7.5" font-family="Helvetica Neue, Arial">7.5</text>
+            <!-- 9 Eagles 91 → 50 -->
+            <rect x="39" y="107" width="50" height="9" fill="#1e1e1e" rx="1"/>
+            <text x="37" y="114" fill="#3c3c3c" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">Eagles</text>
+            <text x="91" y="114" fill="#3c3c3c" font-size="7" font-family="Helvetica Neue, Arial">91</text>
 
-        <!-- 9= Sungoliath 7.5/G → 110 (2G) -->
-        <rect x="68" y="127" width="110" height="10" fill="#131313" rx="2"/>
-        <text x="62" y="135" fill="#1c1c1c" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Sungoliath</text>
-        <text x="182" y="135" fill="#1c1c1c" font-size="7.5" font-family="Helvetica Neue, Arial">7.5</text>
+            <!-- 10 Dynaboars 94 → 51 -->
+            <rect x="39" y="118" width="51" height="9" fill="#1c1c1c" rx="1"/>
+            <text x="37" y="125" fill="#383838" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">Dyna.</text>
+            <text x="92" y="125" fill="#383838" font-size="7" font-family="Helvetica Neue, Arial">94</text>
 
-        <!-- 11 Heat 8.0/G → 118 (2G) -->
-        <rect x="68" y="139" width="118" height="10" fill="#121212" rx="2"/>
-        <text x="62" y="147" fill="#1a1a1a" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Heat</text>
-        <text x="190" y="147" fill="#1a1a1a" font-size="7.5" font-family="Helvetica Neue, Arial">8.0</text>
+            <!-- 11 Sungoliath 97 → 53 -->
+            <rect x="39" y="129" width="53" height="9" fill="#1a1a1a" rx="1"/>
+            <text x="37" y="136" fill="#343434" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">Sungol.</text>
+            <text x="94" y="136" fill="#343434" font-size="7" font-family="Helvetica Neue, Arial">97</text>
 
-        <!-- 12 D-Rocks 8.5/G → 125 (2G) -->
-        <rect x="68" y="151" width="125" height="10" fill="#111" rx="2"/>
-        <text x="62" y="159" fill="#181818" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">D-Rocks</text>
-        <text x="197" y="159" fill="#181818" font-size="7.5" font-family="Helvetica Neue, Arial">8.5</text>
+            <!-- 12 D-Rocks 103 → 56 -->
+            <rect x="39" y="140" width="56" height="9" fill="#181818" rx="1"/>
+            <text x="37" y="147" fill="#303030" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">D-Rocks</text>
+            <text x="97" y="147" fill="#303030" font-size="7" font-family="Helvetica Neue, Arial">103</text>
 
-        <line x1="68" y1="12" x2="68" y2="163" stroke="#1e1e1e" stroke-width="1"/>
+            <line x1="39" y1="13" x2="39" y2="151" stroke="#1e1e1e" stroke-width=".8"/>
+            <text x="0" y="160" fill="#2a2a2a" font-size="5.5" font-family="Helvetica Neue, Arial">lower = better</text>
+          </svg>
+        </div>
+        <!-- Right: Conc from Kick Return (ascending) -->
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+          <div style="font-family:var(--ef);font-size:clamp(.38rem,.56vw,.52rem);letter-spacing:.06em;color:#555;text-transform:uppercase;font-weight:700;margin-bottom:2px">Conc from KR</div>
+          <svg viewBox="0 0 100 200" style="width:100%;flex:1;min-height:0">
+            <!-- Scale: 17max → 56px. factor=3.294. avg=9.2→30. Bar x=39 -->
+            <line x1="69" y1="14" x2="69" y2="152" stroke="#F5C518" stroke-width="1" stroke-dasharray="3,2"/>
+            <text x="69" y="12" fill="#F5C518" font-size="6" font-family="Helvetica Neue, Arial" text-anchor="middle">avg 9.2</text>
 
-        <!-- Divider + sub-stats -->
-        <line x1="0" y1="167" x2="195" y2="167" stroke="#1e1e1e" stroke-width=".5"/>
-        <text x="0" y="176" fill="#555" font-size="8" font-family="Helvetica Neue, Arial" font-weight="700" letter-spacing="1">DEFENSIVE STATS / SEASON</text>
-        <text x="0" y="184" fill="#2a2a2a" font-size="7" font-family="Helvetica Neue, Arial">ターンオーバーウォン数</text>
+            <!-- 1 SPEARS 3 → 10 #E8521A -->
+            <rect x="39" y="16" width="10" height="12" fill="#E8521A" rx="1"/>
+            <text x="37" y="25" fill="#E8521A" font-size="8" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">SPEARS</text>
+            <text x="51" y="25" fill="#fff" font-size="7.5" font-family="Helvetica Neue, Arial" font-weight="700">3</text>
 
-        <!-- TO Won 298 → 125px -->
-        <rect x="68" y="178" width="125" height="9" fill="var(--gold)" rx="1" opacity=".9"/>
-        <text x="62" y="186" fill="#888" font-size="8" font-family="Helvetica Neue, Arial" text-anchor="end">TO Won</text>
-        <text x="197" y="186" fill="var(--gold)" font-size="8" font-family="Helvetica Neue, Arial" font-weight="700">298</text>
-        <text x="0" y="197" fill="#2a2a2a" font-size="7" font-family="Helvetica Neue, Arial">セーブタックル数 / ジャッカル</text>
+            <!-- 2 BlueRevs 3 → 10 -->
+            <rect x="39" y="30" width="10" height="9" fill="#3a3a3a" rx="1"/>
+            <text x="37" y="37" fill="#666" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">B.Revs</text>
+            <text x="51" y="37" fill="#666" font-size="7" font-family="Helvetica Neue, Arial">3</text>
 
-        <!-- Tackle Sacks 173 → 73px -->
-        <rect x="68" y="190" width="73"  height="9" fill="#555" rx="1" opacity=".8"/>
-        <text x="62" y="198" fill="#666" font-size="8" font-family="Helvetica Neue, Arial" text-anchor="end">T.Sacks</text>
-        <text x="145" y="198" fill="#888" font-size="8" font-family="Helvetica Neue, Arial">173</text>
+            <!-- 3 WK 4 → 13 -->
+            <rect x="39" y="41" width="13" height="9" fill="#363636" rx="1"/>
+            <text x="37" y="48" fill="#606060" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">W.Knights</text>
+            <text x="54" y="48" fill="#606060" font-size="7" font-family="Helvetica Neue, Arial">4</text>
 
-        <!-- Jackal 76 → 32px -->
-        <rect x="68" y="202" width="32"  height="9" fill="#3a3a3a" rx="1"/>
-        <text x="62" y="210" fill="#555" font-size="8" font-family="Helvetica Neue, Arial" text-anchor="end">Jackal</text>
-        <text x="104" y="210" fill="#666" font-size="8" font-family="Helvetica Neue, Arial">76</text>
+            <!-- 4 BraveLupus 7 → 23 -->
+            <rect x="39" y="52" width="23" height="9" fill="#323232" rx="1"/>
+            <text x="37" y="59" fill="#5a5a5a" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">B.Lupus</text>
+            <text x="64" y="59" fill="#5a5a5a" font-size="7" font-family="Helvetica Neue, Arial">7</text>
 
-        <line x1="68" y1="176" x2="68" y2="213" stroke="#1e1e1e" stroke-width=".5"/>
-        <text x="0" y="224" fill="#1e1e1e" font-size="7" font-family="Helvetica Neue, Arial">Spears: 21G full season</text>
-      </svg>
+            <!-- 5 Dynaboars 8 → 26 -->
+            <rect x="39" y="63" width="26" height="9" fill="#2e2e2e" rx="1"/>
+            <text x="37" y="70" fill="#555" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">Dyna.</text>
+            <text x="67" y="70" fill="#555" font-size="7" font-family="Helvetica Neue, Arial">8</text>
+
+            <!-- 6 Eagles 8 → 26 -->
+            <rect x="39" y="74" width="26" height="9" fill="#2a2a2a" rx="1"/>
+            <text x="37" y="81" fill="#505050" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">Eagles</text>
+            <text x="67" y="81" fill="#505050" font-size="7" font-family="Helvetica Neue, Arial">8</text>
+
+            <!-- 7 Steelers 9 → 30 #C0392B -->
+            <rect x="39" y="85" width="30" height="9" fill="#C0392B" rx="1"/>
+            <text x="37" y="92" fill="#C0392B" font-size="7" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">Steelers</text>
+            <text x="71" y="92" fill="#C0392B" font-size="7" font-family="Helvetica Neue, Arial">9</text>
+
+            <!-- 8 Sungoliath 11 → 36 -->
+            <rect x="39" y="96" width="36" height="9" fill="#252525" rx="1"/>
+            <text x="37" y="103" fill="#484848" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">Sungol.</text>
+            <text x="77" y="103" fill="#484848" font-size="7" font-family="Helvetica Neue, Arial">11</text>
+
+            <!-- 9 BlackRams 13 → 43 -->
+            <rect x="39" y="107" width="43" height="9" fill="#222" rx="1"/>
+            <text x="37" y="114" fill="#444" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">B.Rams</text>
+            <text x="84" y="114" fill="#444" font-size="7" font-family="Helvetica Neue, Arial">13</text>
+
+            <!-- 10 Verblitz 13 → 43 -->
+            <rect x="39" y="118" width="43" height="9" fill="#1e1e1e" rx="1"/>
+            <text x="37" y="125" fill="#404040" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">Verblitz</text>
+            <text x="84" y="125" fill="#404040" font-size="7" font-family="Helvetica Neue, Arial">13</text>
+
+            <!-- 11 Heat 14 → 46 -->
+            <rect x="39" y="129" width="46" height="9" fill="#1c1c1c" rx="1"/>
+            <text x="37" y="136" fill="#3c3c3c" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">Heat</text>
+            <text x="87" y="136" fill="#3c3c3c" font-size="7" font-family="Helvetica Neue, Arial">14</text>
+
+            <!-- 12 D-Rocks 17 → 56 -->
+            <rect x="39" y="140" width="56" height="9" fill="#181818" rx="1"/>
+            <text x="37" y="147" fill="#303030" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="end">D-Rocks</text>
+            <text x="97" y="147" fill="#303030" font-size="7" font-family="Helvetica Neue, Arial">17</text>
+
+            <line x1="39" y1="13" x2="39" y2="151" stroke="#1e1e1e" stroke-width=".8"/>
+            <text x="0" y="160" fill="#2a2a2a" font-size="5.5" font-family="Helvetica Neue, Arial">lower = better</text>
+          </svg>
+        </div>
+      </div>
       <div class="tline" style="font-size:clamp(.72rem,1.35vw,1.3rem)">"Relentless.<br>No mercy."</div>
       <div class="dja" style="opacity:.8">「容赦なく、徹底的に。」</div>
     </div>
@@ -486,68 +549,82 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
     <div class="dcol">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
         <div class="daxis">Connected</div>
-        <div style="background:var(--gold);color:#0a0a0a;font-family:var(--ef);font-size:.58rem;font-weight:700;padding:2px 5px;line-height:1.4">#1 Full-Szn</div>
+        <div style="background:#E8521A;color:#fff;font-family:var(--ef);font-size:.58rem;font-weight:700;padding:2px 5px;line-height:1.4">#2 D1</div>
       </div>
-      <div class="dval" style="color:var(--gold)">17</div>
-      <div class="dsub">Unstructured Tries Conceded · Season<br>0.81/G · #1 among full-season teams</div>
-      <div class="dja" style="opacity:.8">アンストラクチャー被トライ数 リーグ最少水準（フルシーズン比較）</div>
-      <!-- 9-team per-game unstructured ranking (2+ game teams only) -->
-      <svg viewBox="0 0 195 170" style="width:100%;margin-top:6px;flex:1;min-height:0">
-        <text x="0" y="11" fill="#555" font-size="8.5" font-family="Helvetica Neue, Arial" font-weight="700" letter-spacing="1">UNSTRUCT TRIES CONCEDED / G (lower = better)</text>
-        <!-- Scale: 4.5/G → 113px. factor=25.0. 1G teams excluded. -->
+      <div class="dval" style="color:#E8521A">15</div>
+      <div class="dsub">Unstructured Tries Conceded · Season<br>#2 in League · Fewest among full-season teams</div>
+      <div class="dja" style="opacity:.8">アンストラクチャー被トライ数 リーグ2位</div>
+      <!-- 12-team absolute ranking (ascending) -->
+      <svg viewBox="0 0 195 200" style="width:100%;margin-top:6px;flex:1;min-height:0">
+        <text x="0" y="11" fill="#555" font-size="8.5" font-family="Helvetica Neue, Arial" font-weight="700" letter-spacing="1">UNSTRUCT TRIES CONCEDED (lower = better)</text>
+        <!-- Scale: 48max → 120px. factor=2.5. Bar x=68. -->
 
-        <!-- 1 BlackRams 0.5/G → 13 (2G) -->
-        <rect x="68" y="15" width="13"  height="12" fill="#222" rx="2"/>
-        <text x="62" y="24" fill="#3a3a3a" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlackRams</text>
-        <text x="85"  y="24" fill="#3a3a3a" font-size="7.5" font-family="Helvetica Neue, Arial">0.5</text>
+        <!-- 1 Wild Knights 13 → 33 -->
+        <rect x="68" y="15" width="33"  height="12" fill="#3a3a3a" rx="2"/>
+        <text x="62" y="24" fill="#666" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">W.Knights</text>
+        <text x="105" y="24" fill="#666" font-size="7.5" font-family="Helvetica Neue, Arial">13</text>
 
-        <!-- 2 W.Knights 0.5/G → 13 (2G) -->
-        <rect x="68" y="29" width="13"  height="12" fill="#1e1e1e" rx="2"/>
-        <text x="62" y="38" fill="#333" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">W.Knights</text>
-        <text x="85"  y="38" fill="#333" font-size="7.5" font-family="Helvetica Neue, Arial">0.5</text>
+        <!-- 2 SPEARS 15 → 38 #E8521A -->
+        <rect x="68" y="29" width="38"  height="16" fill="#E8521A" rx="2"/>
+        <text x="62" y="41" fill="#E8521A" font-size="9.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">SPEARS</text>
+        <text x="110" y="41" fill="#fff" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700">15  #2</text>
 
-        <!-- 3 SPEARS 0.81/G → 20 (21G) GOLD -->
-        <rect x="68" y="43" width="20"  height="16" fill="var(--gold)" rx="2"/>
-        <text x="62" y="54" fill="var(--gold)" font-size="9.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">SPEARS</text>
-        <text x="92"  y="54" fill="#0a0a0a" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700">0.81 <tspan font-size="6.5">★21G</tspan></text>
+        <!-- 3 Verblitz 26 → 65 -->
+        <rect x="68" y="47" width="65"  height="12" fill="#2e2e2e" rx="2"/>
+        <text x="62" y="56" fill="#555" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Verblitz</text>
+        <text x="137" y="56" fill="#555" font-size="7.5" font-family="Helvetica Neue, Arial">26</text>
 
-        <!-- 4 Steelers 1.0/G → 25 (3G) -->
-        <rect x="68" y="61" width="25"  height="12" fill="#1e1e1e" rx="2"/>
-        <text x="62" y="70" fill="#2e2e2e" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Steelers</text>
-        <text x="97"  y="70" fill="#2e2e2e" font-size="7.5" font-family="Helvetica Neue, Arial">1.0</text>
+        <!-- 4 Sungoliath 27 → 68 -->
+        <rect x="68" y="61" width="68"  height="12" fill="#2a2a2a" rx="2"/>
+        <text x="62" y="70" fill="#505050" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Sungoliath</text>
+        <text x="140" y="70" fill="#505050" font-size="7.5" font-family="Helvetica Neue, Arial">27</text>
 
-        <!-- 5 Verblitz 1.0/G → 25 (2G) -->
-        <rect x="68" y="75" width="25"  height="12" fill="#1a1a1a" rx="2"/>
-        <text x="62" y="84" fill="#282828" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Verblitz</text>
-        <text x="97"  y="84" fill="#282828" font-size="7.5" font-family="Helvetica Neue, Arial">1.0</text>
+        <!-- 5 Eagles 28 → 70 -->
+        <rect x="68" y="75" width="70"  height="12" fill="#282828" rx="2"/>
+        <text x="62" y="84" fill="#4c4c4c" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Eagles</text>
+        <text x="142" y="84" fill="#4c4c4c" font-size="7.5" font-family="Helvetica Neue, Arial">28</text>
 
-        <!-- 6 Heat 2.5/G → 63 (2G) -->
-        <rect x="68" y="89" width="63"  height="12" fill="#161616" rx="2"/>
-        <text x="62" y="98" fill="#202020" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Heat</text>
-        <text x="135" y="98" fill="#202020" font-size="7.5" font-family="Helvetica Neue, Arial">2.5</text>
+        <!-- 6 Steelers 28 → 70 #C0392B -->
+        <rect x="68" y="89" width="70"  height="12" fill="#C0392B" rx="2"/>
+        <text x="62" y="98" fill="#C0392B" font-size="8.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">Steelers</text>
+        <text x="142" y="98" fill="#fff" font-size="7.5" font-family="Helvetica Neue, Arial" font-weight="700">28</text>
 
-        <!-- 7 BraveLupus 2.67/G → 67 (3G) -->
-        <rect x="68" y="103" width="67"  height="12" fill="#141414" rx="2"/>
-        <text x="62" y="112" fill="#1e1e1e" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">BraveLupus</text>
-        <text x="139" y="112" fill="#1e1e1e" font-size="7.5" font-family="Helvetica Neue, Arial">2.7</text>
+        <!-- 7 Dynaboars 32 → 80 -->
+        <rect x="68" y="103" width="80"  height="12" fill="#252525" rx="2"/>
+        <text x="62" y="112" fill="#484848" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Dynaboars</text>
+        <text x="152" y="112" fill="#484848" font-size="7.5" font-family="Helvetica Neue, Arial">32</text>
 
-        <!-- 8 Sungoliath 3.0/G → 75 (2G) -->
-        <rect x="68" y="117" width="75"  height="12" fill="#121212" rx="2"/>
-        <text x="62" y="126" fill="#1c1c1c" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Sungoliath</text>
-        <text x="147" y="126" fill="#1c1c1c" font-size="7.5" font-family="Helvetica Neue, Arial">3.0</text>
+        <!-- 8 BraveLupus 35 → 88 -->
+        <rect x="68" y="117" width="88"  height="12" fill="#222" rx="2"/>
+        <text x="62" y="126" fill="#444" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">BraveLupus</text>
+        <text x="160" y="126" fill="#444" font-size="7.5" font-family="Helvetica Neue, Arial">35</text>
 
-        <!-- 9 D-Rocks 4.5/G → 113 (2G) -->
-        <rect x="68" y="131" width="113" height="12" fill="#111" rx="2"/>
-        <text x="62" y="140" fill="#191919" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">D-Rocks</text>
-        <text x="185" y="140" fill="#191919" font-size="7.5" font-family="Helvetica Neue, Arial">4.5</text>
+        <!-- 9 BlackRams 36 → 90 -->
+        <rect x="68" y="131" width="90"  height="12" fill="#1e1e1e" rx="2"/>
+        <text x="62" y="140" fill="#404040" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlackRams</text>
+        <text x="162" y="140" fill="#404040" font-size="7.5" font-family="Helvetica Neue, Arial">36</text>
 
-        <line x1="68" y1="12" x2="68" y2="147" stroke="#1e1e1e" stroke-width="1"/>
-        <text x="0" y="158" fill="#1e1e1e" font-size="6.5" font-family="Helvetica Neue, Arial">* Eagles(0/1G)·Dynaboars(2/1G)·BlueRevs(5/1G) excluded — 1G only</text>
-        <text x="0" y="168" fill="#1a1a1a" font-size="6.5" font-family="Helvetica Neue, Arial">Spears: 21G full season · Steelers/BraveLupus: 3G · Others: 2G</text>
+        <!-- 10 BlueRevs 37 → 93 -->
+        <rect x="68" y="145" width="93"  height="12" fill="#1c1c1c" rx="2"/>
+        <text x="62" y="154" fill="#3c3c3c" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlueRevs</text>
+        <text x="165" y="154" fill="#3c3c3c" font-size="7.5" font-family="Helvetica Neue, Arial">37</text>
+
+        <!-- 11 Heat 47 → 118 -->
+        <rect x="68" y="159" width="118" height="12" fill="#181818" rx="2"/>
+        <text x="62" y="168" fill="#333" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Heat</text>
+        <text x="190" y="168" fill="#333" font-size="7.5" font-family="Helvetica Neue, Arial">47</text>
+
+        <!-- 12 D-Rocks 48 → 120 -->
+        <rect x="68" y="173" width="120" height="12" fill="#161616" rx="2"/>
+        <text x="62" y="182" fill="#2e2e2e" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">D-Rocks</text>
+        <text x="192" y="182" fill="#2e2e2e" font-size="7.5" font-family="Helvetica Neue, Arial">48</text>
+
+        <line x1="68" y1="12" x2="68" y2="186" stroke="#1e1e1e" stroke-width="1"/>
+        <text x="0" y="198" fill="#1e1e1e" font-size="7" font-family="Helvetica Neue, Arial">Scout report values (season totals) · Orange = Spears #2 · Red = Steelers</text>
       </svg>
-      <div style="margin-top:6px;padding:5px 8px;border:1px solid #1a3a1a;background:#090f09">
-        <div style="font-family:var(--ef);font-size:clamp(.48rem,.7vw,.64rem);color:#4a8a4a;font-weight:700">LEAGUE LOWEST (FULL SEASON)</div>
-        <div style="font-family:var(--ja);font-size:clamp(.44rem,.62vw,.57rem);color:#3a6a3a;opacity:.8;margin-top:2px;line-height:1.4">リーグ最少水準。<br>コネクティッドディフェンスが機能した証明。</div>
+      <div style="margin-top:6px;padding:5px 8px;border:1px solid #3a1a1a;background:#0f0909">
+        <div style="font-family:var(--ef);font-size:clamp(.48rem,.7vw,.64rem);color:#E8521A;font-weight:700">#2 IN LEAGUE · 15 TRIES · FEWEST FULL-SEASON</div>
+        <div style="font-family:var(--ja);font-size:clamp(.44rem,.62vw,.57rem);color:#a05040;opacity:.8;margin-top:2px;line-height:1.4">コネクティッドディフェンスが機能した証明。</div>
       </div>
       <div class="tline" style="font-size:clamp(.72rem,1.35vw,1.3rem)">"Bend but<br>never break."</div>
       <div class="dja" style="opacity:.8">「繋がることで、崩れない守備を。」</div>
