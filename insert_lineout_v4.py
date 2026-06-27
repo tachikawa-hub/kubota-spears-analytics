@@ -435,46 +435,120 @@ def _load_all_takes_from_db():
 _all_db_takes = _load_all_takes_from_db()
 
 
-# ── Load Lineout Throw win stats for OPP Ball Won Rate sections ────────────
-def _load_lo_stats_from_db():
+# ── qualifier4_name → numbers category mapping ─────────────────────────────
+_NUM_CAT_MAP = {
+    "1": "Quick", "2+1": "Quick", "3": "Quick", "3+1": "Quick",
+    "4": "4Man", "4+1": "4+1Man",
+    "5": "5Man", "5+1": "5+1Man",
+    "6": "6Man", "6+1": "6+Man",
+    "7": "7Man", "7+1": "7Man",
+    "8+": "8Man+", "9+1": "8Man+",
+}
+
+
+def _load_lo_db_stats():
     """
-    Returns two dicts keyed by DB team name:
-      opp_stats  — opponent's LO throws in their games vs Kubota (upper section)
-      kub_stats  — Kubota's LO throws in games vs each opponent (lower section)
+    Upper section (_ALL_OPP_LO): aggregate all opponents across all 21 Kubota D1 games.
+    Lower section (_SCOUT_OPP_LO): Kubota's throws in games vs each specific opponent.
+
+    Both return {"ball": (total, won), "nums": {cat: [total, won]}}.
     """
+    empty = {"ball": (0, 0), "nums": {}}
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
-        opp_rows = conn.execute("""
-            SELECT team_name,
-                   COUNT(*) AS total,
-                   SUM(CASE WHEN action_result_name LIKE 'Won%' THEN 1 ELSE 0 END) AS won
-            FROM events
-            WHERE action_name = 'Lineout Throw'
-              AND team_name != 'Kubota Spears'
-            GROUP BY team_name
-        """).fetchall()
-        opp_stats = {r["team_name"]: (r["total"], r["won"]) for r in opp_rows}
 
-        kub_rows = conn.execute("""
+        # ── Upper: ALL opponents combined, all 21 D1 games ──────────────────
+        r = conn.execute("""
+            SELECT COUNT(*) AS total,
+                   SUM(CASE WHEN e.action_result_name LIKE 'Won%' THEN 1 ELSE 0 END) AS won
+            FROM events e
+            JOIN matches m ON e.fxid = m.fxid
+            WHERE m.league = 'd1' AND m.season = 2026
+              AND e.team_name != 'Kubota Spears'
+              AND e.action_name = 'Lineout Throw'
+        """).fetchone()
+        all_ball = (r["total"], r["won"])
+
+        rows = conn.execute("""
+            SELECT e.qualifier4_name AS num,
+                   COUNT(*) AS total,
+                   SUM(CASE WHEN e.action_result_name LIKE 'Won%' THEN 1 ELSE 0 END) AS won
+            FROM events e
+            JOIN matches m ON e.fxid = m.fxid
+            WHERE m.league = 'd1' AND m.season = 2026
+              AND e.team_name != 'Kubota Spears'
+              AND e.action_name = 'Lineout Throw'
+            GROUP BY e.qualifier4_name
+        """).fetchall()
+        all_nums = {}
+        for row in rows:
+            cat = _NUM_CAT_MAP.get(row["num"] or "", "")
+            if not cat:
+                continue
+            if cat not in all_nums:
+                all_nums[cat] = [0, 0]
+            all_nums[cat][0] += row["total"]
+            all_nums[cat][1] += row["won"]
+
+        all_opp = {"ball": all_ball, "nums": all_nums}
+
+        # ── Lower: Kubota throws in games vs each scouting target ───────────
+        ball_rows = conn.execute("""
             SELECT m.opponent_name,
                    COUNT(*) AS total,
                    SUM(CASE WHEN e.action_result_name LIKE 'Won%' THEN 1 ELSE 0 END) AS won
             FROM events e
             JOIN matches m ON e.fxid = m.fxid
-            WHERE e.action_name = 'Lineout Throw'
-              AND e.team_name = 'Kubota Spears'
+            WHERE e.team_name = 'Kubota Spears'
+              AND e.action_name = 'Lineout Throw'
             GROUP BY m.opponent_name
         """).fetchall()
-        kub_stats = {r["opponent_name"]: (r["total"], r["won"]) for r in kub_rows}
+
+        num_rows = conn.execute("""
+            SELECT m.opponent_name,
+                   e.qualifier4_name AS num,
+                   COUNT(*) AS total,
+                   SUM(CASE WHEN e.action_result_name LIKE 'Won%' THEN 1 ELSE 0 END) AS won
+            FROM events e
+            JOIN matches m ON e.fxid = m.fxid
+            WHERE e.team_name = 'Kubota Spears'
+              AND e.action_name = 'Lineout Throw'
+            GROUP BY m.opponent_name, e.qualifier4_name
+        """).fetchall()
+
+        scout_ball = {r["opponent_name"]: (r["total"], r["won"]) for r in ball_rows}
+
+        scout_nums = {}
+        for row in num_rows:
+            opp_nm = row["opponent_name"]
+            cat    = _NUM_CAT_MAP.get(row["num"] or "", "")
+            if not cat:
+                continue
+            if opp_nm not in scout_nums:
+                scout_nums[opp_nm] = {}
+            if cat not in scout_nums[opp_nm]:
+                scout_nums[opp_nm][cat] = [0, 0]
+            scout_nums[opp_nm][cat][0] += row["total"]
+            scout_nums[opp_nm][cat][1] += row["won"]
+
+        all_opps = set(scout_ball) | set(scout_nums)
+        scout_opp = {
+            nm: {
+                "ball": scout_ball.get(nm, (0, 0)),
+                "nums": scout_nums.get(nm, {}),
+            }
+            for nm in all_opps
+        }
+
         conn.close()
-        return opp_stats, kub_stats
+        return all_opp, scout_opp
     except Exception as e:
-        print(f"[WARN] LO throw stats load failed: {e}")
-        return {}, {}
+        print(f"[WARN] LO DB stats load failed: {e}")
+        return empty, {}
 
 
-_OPP_LO_VS_KUBOTA, _KUBOTA_LO_VS_OPP = _load_lo_stats_from_db()
+_ALL_OPP_LO, _SCOUT_OPP_LO = _load_lo_db_stats()
 
 # ── Apply DB data to SPEARS (DB has all 21 Spears games) ──────────────────
 _sp = _all_db_takes.get("Kubota Spears", {})
@@ -840,16 +914,18 @@ def opp_steal_card(sp_overall):
 
 # ── Opponent panel (same layout as Spears panel) ───────────────────────────
 def build_opp_panel(opp, abbr):
-    label   = opp["name"]
-    hc      = "#10B981"
-    db_name = _DB_TEAM_NAME.get(abbr, "")
-    # Lower section: Kubota's LO win rate from their games vs this team (DB)
-    kub_lo  = _KUBOTA_LO_VS_OPP.get(db_name) or (SPEARS["overall"][0], SPEARS["overall"][1])
+    label    = opp["name"]
+    hc       = "#10B981"
+    db_name  = _DB_TEAM_NAME.get(abbr, "")
+    # Lower section: Kubota's LO stats from their games vs this scouting target (DB)
+    scout    = _SCOUT_OPP_LO.get(db_name, {})
+    kub_lo   = scout.get("ball") or (SPEARS["overall"][0], SPEARS["overall"][1])
+    kub_nums = scout.get("nums") or SPEARS["nums"]
 
     top = (f'<div style="display:grid;grid-template-columns:0.65fr 0.85fr 1.5fr;gap:10px;margin-bottom:10px">'
            + delivery_col(opp)
            + winloss_col(opp, opp_ball=kub_lo)
-           + f'<div>{numbers_col(opp["nums"], SPEARS["nums"], label)}</div>'
+           + f'<div>{numbers_col(opp["nums"], kub_nums, label)}</div>'
            + f'</div>')
 
     bottom = (f'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">'
@@ -874,16 +950,14 @@ def build_opp_panel(opp, abbr):
 
 # ── Full section ─────────────────────────────────────────────────────────────
 def build_section(abbr, opp):
-    db_name  = _DB_TEAM_NAME.get(abbr, "")
-    # Upper section: opp's LO win rate from their games vs Kubota (DB)
-    opp_lo   = _OPP_LO_VS_KUBOTA.get(db_name) or (opp["own"][0], opp["own"][1])
+    # Upper section: ALL opponents aggregate across all 21 D1 games (same for every scout report)
     sp_panel = build_panel(
         team             = SPEARS,
         label            = "Kubota Spears",
         header_color     = "#F97316",
         own_nums         = SPEARS["nums"],
-        opp_nums_for_def = opp["nums"],
-        opp_ball         = opp_lo,
+        opp_nums_for_def = _ALL_OPP_LO["nums"],
+        opp_ball         = _ALL_OPP_LO["ball"],
     )
     divider = (
         f'<div style="display:flex;align-items:center;gap:8px;margin:14px 0">'
