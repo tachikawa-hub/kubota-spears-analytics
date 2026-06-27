@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kubota Spears — Season 2025-26 | New Member Orientation</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --gold: #e8a13c;
+  --red:  #d6202b;
+  --bg:   #0a0a0a;
+  --dim:  #888;
+  --faint:#444;
+  --impact: 'Impact', 'Arial Black', Arial, sans-serif;
+  --ja: 'Hiragino Kaku Gothic Pro', 'Meiryo', 'Noto Sans JP', sans-serif;
+}
+
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: #fff; }
+
+/* ─── Deck ─── */
+.deck { position: relative; width: 100vw; height: 100vh; }
+
+.slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: flex-start;
+  padding: 4vh 7vw;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.slide.enter  { animation: slideIn  .55s ease forwards; }
+.slide.exit-l { animation: slideOutL .45s ease forwards; }
+.slide.exit-r { animation: slideOutR .45s ease forwards; }
+.slide.prev   { animation: slidePrev .55s ease forwards; }
+
+@keyframes slideIn   { from { opacity:0; transform:translateX(6vw); } to { opacity:1; transform:translateX(0); pointer-events:auto; } }
+@keyframes slideOutL { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(-6vw); } }
+@keyframes slideOutR { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(6vw); } }
+@keyframes slidePrev { from { opacity:0; transform:translateX(-6vw); } to { opacity:1; transform:translateX(0); pointer-events:auto; } }
+
+/* ─── Intro slide ─── */
+.intro-slide {
+  align-items: center;
+  text-align: center;
+  background: #0a0a0a;
+  overflow: hidden;
+}
+.intro-bg {
+  position: absolute; inset: 0;
+  background: url('hero.png') center/cover no-repeat;
+  opacity: .08;
+}
+.intro-logo-tag {
+  font-family: var(--impact);
+  font-size: clamp(0.6rem, 1vw, 0.9rem);
+  letter-spacing: .5em;
+  color: var(--gold);
+  text-transform: uppercase;
+  z-index: 1;
+}
+.intro-hero {
+  z-index: 1;
+  margin: 12px 0;
+}
+.intro-hero .h1 {
+  font-family: var(--impact);
+  font-size: clamp(4rem, 9vw, 9rem);
+  font-weight: 900;
+  line-height: .9;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.intro-hero .h2 {
+  font-family: var(--impact);
+  font-size: clamp(1rem, 2.2vw, 2.2rem);
+  color: var(--gold);
+  letter-spacing: .12em;
+  margin-top: 6px;
+}
+.season-badge {
+  z-index: 1;
+  background: var(--red);
+  padding: 6px 36px;
+  font-family: var(--impact);
+  font-size: clamp(0.7rem, 1.3vw, 1.2rem);
+  letter-spacing: .2em;
+  color: #fff;
+  margin-top: 16px;
+}
+.ja-welcome {
+  z-index: 1;
+  font-family: var(--ja);
+  font-size: clamp(0.6rem, 0.9vw, 0.85rem);
+  color: #555;
+  letter-spacing: .2em;
+  margin-top: 14px;
+}
+.press-hint {
+  z-index: 1;
+  font-family: var(--impact);
+  font-size: clamp(0.5rem, 0.75vw, 0.7rem);
+  color: #333;
+  letter-spacing: .2em;
+  margin-top: 32px;
+  animation: blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+/* ─── Content slide common ─── */
+.chapter-tag {
+  font-family: var(--impact);
+  font-size: clamp(0.55rem, 0.9vw, 0.8rem);
+  letter-spacing: .3em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.main-title {
+  font-family: var(--impact);
+  font-size: clamp(1.6rem, 3.5vw, 3.8rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 1.05;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.main-title .acc { color: var(--gold); }
+.main-title .red { color: var(--red); }
+
+.ja-sub {
+  font-family: var(--ja);
+  font-size: clamp(0.6rem, 0.85vw, 0.85rem);
+  color: var(--dim);
+  margin-bottom: 10px;
+  letter-spacing: .05em;
+}
+.red-line { width: 70px; height: 3px; background: var(--red); margin-bottom: 14px; }
+
+/* Two-column body */
+.body2col {
+  display: flex;
+  gap: 5vw;
+  width: 100%;
+  flex: 1;
+  align-items: flex-start;
+  max-height: 55vh;
+}
+.col-stat { display: flex; flex-direction: column; min-width: 200px; justify-content: flex-start; }
+.col-chart { flex: 1; display: flex; align-items: center; justify-content: flex-start; min-width: 0; }
+
+.big-num {
+  font-family: var(--impact);
+  font-size: clamp(3rem, 7vw, 7.5rem);
+  font-weight: 900;
+  color: var(--gold);
+  line-height: 1;
+}
+.big-num-sm { font-size: clamp(2rem, 4.5vw, 5rem); }
+.num-label {
+  font-size: clamp(0.55rem, 0.8vw, 0.75rem);
+  letter-spacing: .12em;
+  color: #777;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.stat-row { display: flex; gap: 40px; margin-bottom: 16px; align-items: baseline; }
+
+.tagline {
+  font-family: var(--impact);
+  font-size: clamp(1rem, 2.2vw, 2.2rem);
+  font-weight: 900;
+  font-style: italic;
+  color: var(--red);
+  text-transform: uppercase;
+  margin-top: 18px;
+  line-height: 1.1;
+}
+.ja-tagline {
+  font-family: var(--ja);
+  font-size: clamp(0.55rem, 0.8vw, 0.75rem);
+  color: #555;
+  margin-top: 4px;
+}
+
+/* Finale slide */
+.finale-slide {
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+}
+.finale-bg {
+  position: absolute; inset: 0;
+  background: url('hero.png') center/cover no-repeat;
+  opacity: .07;
+}
+.finale-record {
+  font-family: var(--impact);
+  font-size: clamp(1rem, 2.5vw, 2.5rem);
+  letter-spacing: .15em;
+  color: var(--dim);
+  z-index: 1;
+}
+.finale-hero {
+  font-family: var(--impact);
+  font-size: clamp(2rem, 5.5vw, 6rem);
+  font-weight: 900;
+  line-height: 1.1;
+  color: #fff;
+  z-index: 1;
+  margin: 12px 0;
+  text-transform: uppercase;
+}
+.finale-hero .gold { color: var(--gold); }
+.finale-sub {
+  font-family: var(--ja);
+  font-size: clamp(0.6rem, 0.9vw, 0.85rem);
+  color: var(--dim);
+  z-index: 1;
+  letter-spacing: .15em;
+  margin-top: 4px;
+}
+.finale-badge {
+  z-index: 1;
+  margin-top: 28px;
+  display: flex;
+  gap: 3px;
+}
+.fbadge {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  padding: 8px 20px;
+  font-family: var(--impact);
+  font-size: clamp(0.6rem, 1vw, 0.9rem);
+  letter-spacing: .12em;
+  color: #666;
+  text-transform: uppercase;
+}
+
+/* ─── Nav ─── */
+.nav-dots {
+  position: fixed;
+  bottom: 18px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 7px; z-index: 200;
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #2a2a2a; cursor: pointer;
+  transition: background .3s, transform .3s;
+}
+.dot.active { background: var(--gold); transform: scale(1.4); }
+
+.slide-num {
+  position: fixed;
+  bottom: 14px; right: 28px;
+  font-family: var(--impact);
+  font-size: 0.6rem;
+  letter-spacing: .15em;
+  color: #2a2a2a;
+  z-index: 200;
+  text-transform: uppercase;
+}
+
+/* ─── Chart helpers ─── */
+svg { overflow: visible; }
+.bar-kubota { fill: var(--gold); }
+.bar-other  { fill: #2c2c2c; }
+.bar-win    { fill: #2a6496; }
+.bar-loss   { fill: #8b2020; }
+.bar-red    { fill: var(--red); }
+
+.ct-label { font-family: Arial,sans-serif; }
+
+/* Challenge boxes */
+.chal-boxes { display: flex; gap: 20px; margin-bottom: 14px; width: 100%; }
+.chal-box {
+  flex:1;
+  border: 1px solid #2a2a2a;
+  padding: 10px 14px;
+}
+.chal-title {
+  font-family: var(--impact);
+  font-size: clamp(0.55rem, 0.85vw, 0.8rem);
+  letter-spacing: .15em;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.chal-val {
+  font-family: var(--impact);
+  font-size: clamp(1.5rem, 3vw, 3rem);
+  color: var(--red);
+}
+.chal-sub {
+  font-family: var(--ja);
+  font-size: clamp(0.5rem, 0.65vw, 0.62rem);
+  color: #555;
+  margin-top: 2px;
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 0 — INTRO
+═══════════════════════════════════════════ -->
+<div class="slide intro-slide enter" id="s0">
+  <div class="intro-bg"></div>
+  <div class="intro-logo-tag">Japan Rugby League One · Division 1 · 2025–26</div>
+  <div class="intro-hero">
+    <div class="h1">KUBOTA<br>SPEARS</div>
+    <div class="h2">FUNABASHI TOKYO-BAY</div>
+  </div>
+  <div class="season-badge">SEASON REVIEW &amp; NEW MEMBER ORIENTATION</div>
+  <div class="ja-welcome">新入団選手オリエンテーション / シーズンレビュー</div>
+  <div class="press-hint">→ KEY OR CLICK TO START</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 1 — CHAPTER 1: HIGH BALL
+═══════════════════════════════════════════ -->
+<div class="slide" id="s1">
+  <div class="chapter-tag">Chapter 1 — High Ball &amp; Contest Kick</div>
+  <div class="main-title">CONTEST RETENTION —<br><span class="acc">#1 IN THE LEAGUE</span></div>
+  <div class="ja-sub">コンテストキック保持率 リーグ1位</div>
+  <div class="red-line"></div>
+  <div class="body2col">
+    <div class="col-stat">
+      <div class="big-num">31.8%</div>
+      <div class="num-label">Season Contest Retention<br><span style="color:var(--gold)">21 Matches · 255 Contest Kicks</span></div>
+      <div class="tagline">"We own<br>the skies."</div>
+      <div class="ja-tagline">「ハイボールは俺たちのもの。」</div>
+    </div>
+    <div class="col-chart">
+      <!-- Horizontal bar: Contest Retention league ranking -->
+      <svg viewBox="0 0 440 265" style="width:100%;max-height:50vh;">
+        <text x="0" y="14" fill="#555" font-size="10" font-family="Arial" letter-spacing="1.5">CONTEST RETENTION RATE — ALL 12 TEAMS (D1)</text>
+        <!-- Scale: max 37.5 → width 320. factor = 320/37.5 = 8.533 -->
+        <!-- Row height 20, gap 2, startY 24 -->
+        <!-- Heat 37.5 -->
+        <rect x="94" y="22" width="320" height="18" fill="#222" rx="2"/>
+        <text x="88" y="35" fill="#555" font-size="10" font-family="Arial" text-anchor="end">Heat</text>
+        <text x="418" y="35" fill="#555" font-size="10" font-family="Arial">37.5%</text>
+        <!-- W.Knights 35.3 -->
+        <rect x="94" y="44" width="301" height="18" fill="#222" rx="2"/>
+        <text x="88" y="57" fill="#555" font-size="10" font-family="Arial" text-anchor="end">W.Knights</text>
+        <text x="399" y="57" fill="#555" font-size="10" font-family="Arial">35.3%</text>
+        <!-- KUBOTA 31.8 — GOLD -->
+        <rect x="94" y="66" width="271" height="22" fill="var(--gold)" rx="2"/>
+        <text x="88" y="81" fill="var(--gold)" font-size="11" font-family="Arial Black" font-weight="900" text-anchor="end">KUBOTA</text>
+        <text x="369" y="81" fill="#0a0a0a" font-size="11" font-family="Arial Black" font-weight="900"> 31.8%</text>
+        <text x="100" y="81" fill="#0a0a0a" font-size="9" font-family="Arial">★ #1 (21G · 255 kicks)</text>
+        <!-- Eagles 28.6 -->
+        <rect x="94" y="92" width="244" height="18" fill="#1e1e1e" rx="2"/>
+        <text x="88" y="105" fill="#444" font-size="10" font-family="Arial" text-anchor="end">Eagles</text>
+        <text x="342" y="105" fill="#444" font-size="10" font-family="Arial">28.6%</text>
+        <!-- Sungoliath 25.0 -->
+        <rect x="94" y="114" width="213" height="18" fill="#1e1e1e" rx="2"/>
+        <text x="88" y="127" fill="#444" font-size="10" font-family="Arial" text-anchor="end">Sungoliath</text>
+        <text x="311" y="127" fill="#444" font-size="10" font-family="Arial">25.0%</text>
+        <!-- Steelers 21.2 -->
+        <rect x="94" y="136" width="181" height="18" fill="#1a1a1a" rx="2"/>
+        <text x="88" y="149" fill="#3a3a3a" font-size="10" font-family="Arial" text-anchor="end">Steelers</text>
+        <text x="279" y="149" fill="#3a3a3a" font-size="10" font-family="Arial">21.2%</text>
+        <!-- Verblitz 20.0 -->
+        <rect x="94" y="158" width="171" height="18" fill="#1a1a1a" rx="2"/>
+        <text x="88" y="171" fill="#3a3a3a" font-size="10" font-family="Arial" text-anchor="end">Verblitz</text>
+        <text x="269" y="171" fill="#3a3a3a" font-size="10" font-family="Arial">20.0%</text>
+        <!-- BlackRams 17.6 -->
+        <rect x="94" y="180" width="150" height="18" fill="#181818" rx="2"/>
+        <text x="88" y="193" fill="#333" font-size="10" font-family="Arial" text-anchor="end">BlackRams</text>
+        <text x="248" y="193" fill="#333" font-size="10" font-family="Arial">17.6%</text>
+        <!-- BraveLupus 14.3 -->
+        <rect x="94" y="202" width="122" height="18" fill="#161616" rx="2"/>
+        <text x="88" y="215" fill="#2e2e2e" font-size="10" font-family="Arial" text-anchor="end">BraveLupus</text>
+        <text x="220" y="215" fill="#2e2e2e" font-size="10" font-family="Arial">14.3%</text>
+        <!-- Dynaboars 13.3 -->
+        <rect x="94" y="224" width="113" height="14" fill="#141414" rx="2"/>
+        <text x="88" y="235" fill="#2a2a2a" font-size="9" font-family="Arial" text-anchor="end">Dynaboars</text>
+        <text x="211" y="235" fill="#2a2a2a" font-size="9" font-family="Arial">13.3%</text>
+        <!-- D-Rocks 4.2 -->
+        <rect x="94" y="242" width="36" height="14" fill="#121212" rx="2"/>
+        <text x="88" y="253" fill="#2a2a2a" font-size="9" font-family="Arial" text-anchor="end">D-Rocks</text>
+        <text x="134" y="253" fill="#2a2a2a" font-size="9" font-family="Arial">4.2%</text>
+
+        <!-- League average line: 129/505 = 25.5% → x = 94+25.5*8.533 = 311.8 -->
+        <line x1="218" y1="18" x2="218" y2="248" stroke="#3a3a3a" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="219" y="262" fill="#3a3a3a" font-size="9" font-family="Arial">Avg 25.5%</text>
+
+        <!-- Axis -->
+        <line x1="94" y1="18" x2="94" y2="248" stroke="#2a2a2a" stroke-width="1"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 2 — CHAPTER 2: STRUCTURE ATTACK
+═══════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="chapter-tag">Chapter 2 — Structure Attack</div>
+  <div class="main-title">STRUCTURE —<br><span class="acc">WHERE TRIES BEGIN</span></div>
+  <div class="ja-sub">セットピースから始まる得点力</div>
+  <div class="red-line"></div>
+  <div class="body2col">
+    <div class="col-stat">
+      <div class="stat-row">
+        <div>
+          <div class="big-num big-num-sm">91%</div>
+          <div class="num-label">Lineout Win<br>285/312</div>
+        </div>
+        <div>
+          <div class="big-num big-num-sm">95%</div>
+          <div class="num-label">Scrum Win<br>150/158</div>
+        </div>
+      </div>
+      <div class="tagline">"Forwards build it.<br>Backs finish it."</div>
+      <div class="ja-tagline">「FWが作り、BKが仕留める。」</div>
+    </div>
+    <div class="col-chart">
+      <!-- Lineout delivery type horizontal bars -->
+      <svg viewBox="0 0 400 240" style="width:100%;max-height:48vh;">
+        <text x="0" y="14" fill="#555" font-size="10" font-family="Arial" letter-spacing="1.5">LINEOUT DELIVERY TYPE — KUBOTA (312 throws)</text>
+        <!-- Front 127 = 40.7% → scale: 280/127 = 2.205, max bar = 127*2.205 = 280 -->
+        <!-- Front -->
+        <rect x="80" y="22" width="280" height="22" fill="var(--gold)" rx="2"/>
+        <text x="74" y="37" fill="#999" font-size="10" font-family="Arial" text-anchor="end">FRONT</text>
+        <text x="364" y="37" fill="#fff" font-size="11" font-family="Arial Black">127 <tspan fill="#aaa" font-size="9">(40.7%)</tspan></text>
+        <!-- Middle 119 = 38.1% → 262 -->
+        <rect x="80" y="48" width="262" height="22" fill="#b87f30" rx="2"/>
+        <text x="74" y="63" fill="#999" font-size="10" font-family="Arial" text-anchor="end">MIDDLE</text>
+        <text x="346" y="63" fill="#fff" font-size="11" font-family="Arial Black">119 <tspan fill="#aaa" font-size="9">(38.1%)</tspan></text>
+        <!-- Back 29 = 9.3% → 64 -->
+        <rect x="80" y="74" width="64" height="22" fill="#555" rx="2"/>
+        <text x="74" y="89" fill="#666" font-size="10" font-family="Arial" text-anchor="end">BACK</text>
+        <text x="148" y="89" fill="#aaa" font-size="10" font-family="Arial">29 (9.3%)</text>
+        <!-- 15m+ 19 = 6.1% → 42 -->
+        <rect x="80" y="100" width="42" height="22" fill="#333" rx="2"/>
+        <text x="74" y="115" fill="#555" font-size="10" font-family="Arial" text-anchor="end">15m+</text>
+        <text x="126" y="115" fill="#555" font-size="10" font-family="Arial">19 (6.1%)</text>
+        <!-- Quick 18 = 5.8% → 40 -->
+        <rect x="80" y="126" width="40" height="22" fill="#2a2a2a" rx="2"/>
+        <text x="74" y="141" fill="#444" font-size="10" font-family="Arial" text-anchor="end">QUICK</text>
+        <text x="124" y="141" fill="#444" font-size="10" font-family="Arial">18 (5.8%)</text>
+
+        <!-- Axis -->
+        <line x1="80" y1="18" x2="80" y2="158" stroke="#2a2a2a" stroke-width="1"/>
+
+        <!-- Scrum breakdown mini-donut -->
+        <text x="0" y="178" fill="#555" font-size="10" font-family="Arial" letter-spacing="1.5">SCRUM OUTCOME BREAKDOWN (158 scrums)</text>
+        <!-- Won Outright 99 · Won Penalty 31 · Won FK 8 = 138 won -->
+        <!-- Reset 12 · Lost 8 = 20 not won -->
+        <!-- Visual: segmented bar -->
+        <!-- Total = 158, width = 360 -->
+        <!-- Won Outright 99/158*360=225.6 -->
+        <rect x="0" y="186" width="225" height="20" fill="#c8860f" rx="0"/>
+        <text x="112" y="200" fill="#0a0a0a" font-size="9" font-family="Arial Black" text-anchor="middle">Won Outright 99</text>
+        <!-- Won Pen+FK 39/158*360=88.9 -->
+        <rect x="225" y="186" width="89" height="20" fill="var(--gold)" rx="0"/>
+        <text x="270" y="200" fill="#0a0a0a" font-size="9" font-family="Arial" text-anchor="middle">Pen/FK 39</text>
+        <!-- Reset 12/158*360=27.3 -->
+        <rect x="314" y="186" width="27" height="20" fill="#444" rx="0"/>
+        <text x="328" y="200" fill="#888" font-size="8" font-family="Arial" text-anchor="middle">~</text>
+        <!-- Lost 8/158*360=18.2 -->
+        <rect x="341" y="186" width="19" height="20" fill="var(--red)" rx="0"/>
+        <text x="350" y="200" fill="#fff" font-size="7" font-family="Arial" text-anchor="middle">L</text>
+        <!-- Legend -->
+        <rect x="0" y="215" width="10" height="8" fill="var(--gold)"/><text x="14" y="223" fill="#666" font-size="9" font-family="Arial">Won 87.3%</text>
+        <rect x="85" y="215" width="10" height="8" fill="#444"/><text x="99" y="223" fill="#666" font-size="9" font-family="Arial">Reset 7.6%</text>
+        <rect x="165" y="215" width="10" height="8" fill="var(--red)"/><text x="179" y="223" fill="#666" font-size="9" font-family="Arial">Lost 5.1%  →  Win% incl. Reset = 95%</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 3 — CHAPTER 3: DEFENCE
+═══════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="chapter-tag">Chapter 3 — Defence</div>
+  <div class="main-title">DEFENCE —<br><span class="acc">RELENTLESS. CONNECTED. DOMINANT.</span></div>
+  <div class="ja-sub">タックル成功率 リーグ3位タイ — 被トライ数 リーグ2位</div>
+  <div class="red-line"></div>
+  <div class="body2col">
+    <div class="col-stat">
+      <div class="stat-row">
+        <div>
+          <div class="big-num big-num-sm">87.9%</div>
+          <div class="num-label">Tackle Success<br><span style="color:var(--gold)">3758 / 4276</span></div>
+        </div>
+      </div>
+      <div style="margin-top:4px;">
+        <div class="big-num" style="font-size:clamp(2.5rem,5vw,5rem);">2.6</div>
+        <div class="num-label">Tries Conceded / Game<br><span style="color:var(--gold)">54 total · #2 in D1</span></div>
+      </div>
+      <div class="tagline">"Like a tractor.<br>Never stops.<br>Never breaks."</div>
+      <div class="ja-tagline">「トラクターのように。止まらず、崩れない。」</div>
+    </div>
+    <div class="col-chart">
+      <!-- Tackle success rate per team - horizontal bars -->
+      <svg viewBox="0 0 420 268" style="width:100%;max-height:50vh;">
+        <text x="0" y="14" fill="#555" font-size="10" font-family="Arial" letter-spacing="1.5">TACKLE SUCCESS RATE — LEAGUE (D1)</text>
+        <!-- Scale: max=91.6, bar max=310, factor=310/91.6=3.384 -->
+        <!-- Show all 12, row h=19, gap=2 -->
+        <!-- #1 Steelers 91.6 → 310 -->
+        <rect x="80" y="20" width="310" height="17" fill="#222" rx="2"/>
+        <text x="74" y="32" fill="#444" font-size="9" font-family="Arial" text-anchor="end">Steelers</text>
+        <text x="394" y="32" fill="#444" font-size="9" font-family="Arial">91.6%</text>
+        <!-- #2 Eagles 89.5 → 303 -->
+        <rect x="80" y="40" width="303" height="17" fill="#222" rx="2"/>
+        <text x="74" y="52" fill="#444" font-size="9" font-family="Arial" text-anchor="end">Eagles</text>
+        <text x="387" y="52" fill="#444" font-size="9" font-family="Arial">89.5%</text>
+        <!-- #3 W.Knights 89.3 → 302 -->
+        <rect x="80" y="60" width="302" height="17" fill="#222" rx="2"/>
+        <text x="74" y="72" fill="#444" font-size="9" font-family="Arial" text-anchor="end">W.Knights</text>
+        <text x="386" y="72" fill="#444" font-size="9" font-family="Arial">89.3%</text>
+        <!-- #4 BraveLupus 88.4 → 299 -->
+        <rect x="80" y="80" width="299" height="17" fill="#1e1e1e" rx="2"/>
+        <text x="74" y="92" fill="#444" font-size="9" font-family="Arial" text-anchor="end">BraveLupus</text>
+        <text x="383" y="92" fill="#444" font-size="9" font-family="Arial">88.4%</text>
+        <!-- #5 KUBOTA 87.9 → 297 — GOLD -->
+        <rect x="80" y="100" width="297" height="21" fill="var(--gold)" rx="2"/>
+        <text x="74" y="115" fill="var(--gold)" font-size="10" font-family="Arial Black" font-weight="900" text-anchor="end">KUBOTA</text>
+        <text x="381" y="115" fill="#fff" font-size="10" font-family="Arial Black" font-weight="900">87.9%</text>
+        <text x="86" y="114" fill="#0a0a0a" font-size="8" font-family="Arial">3758 / 4276 tackles</text>
+        <!-- #6 D-Rocks 87.8 -->
+        <rect x="80" y="124" width="297" height="17" fill="#1e1e1e" rx="2"/>
+        <text x="74" y="136" fill="#3a3a3a" font-size="9" font-family="Arial" text-anchor="end">D-Rocks</text>
+        <text x="381" y="136" fill="#3a3a3a" font-size="9" font-family="Arial">87.8%</text>
+        <!-- #7 Verblitz 87.5 -->
+        <rect x="80" y="144" width="296" height="17" fill="#1a1a1a" rx="2"/>
+        <text x="74" y="156" fill="#333" font-size="9" font-family="Arial" text-anchor="end">Verblitz</text>
+        <text x="380" y="156" fill="#333" font-size="9" font-family="Arial">87.5%</text>
+        <!-- #8 BlueRevs 87.2 -->
+        <rect x="80" y="164" width="295" height="17" fill="#1a1a1a" rx="2"/>
+        <text x="74" y="176" fill="#333" font-size="9" font-family="Arial" text-anchor="end">BlueRevs</text>
+        <text x="379" y="176" fill="#333" font-size="9" font-family="Arial">87.2%</text>
+        <!-- #9 Sungoliath 87.2 -->
+        <rect x="80" y="184" width="295" height="17" fill="#1a1a1a" rx="2"/>
+        <text x="74" y="196" fill="#333" font-size="9" font-family="Arial" text-anchor="end">Sungoliath</text>
+        <text x="379" y="196" fill="#333" font-size="9" font-family="Arial">87.2%</text>
+        <!-- #10 Heat 85.3 -->
+        <rect x="80" y="204" width="289" height="15" fill="#171717" rx="2"/>
+        <text x="74" y="215" fill="#2c2c2c" font-size="9" font-family="Arial" text-anchor="end">Heat</text>
+        <text x="373" y="215" fill="#2c2c2c" font-size="9" font-family="Arial">85.3%</text>
+        <!-- #11 Dynaboars 84.1 -->
+        <rect x="80" y="222" width="285" height="15" fill="#141414" rx="2"/>
+        <text x="74" y="233" fill="#282828" font-size="9" font-family="Arial" text-anchor="end">Dynaboars</text>
+        <text x="369" y="233" fill="#282828" font-size="9" font-family="Arial">84.1%</text>
+        <!-- #12 BlackRams 83.1 -->
+        <rect x="80" y="240" width="281" height="15" fill="#121212" rx="2"/>
+        <text x="74" y="251" fill="#252525" font-size="9" font-family="Arial" text-anchor="end">BlackRams</text>
+        <text x="365" y="251" fill="#252525" font-size="9" font-family="Arial">83.1%</text>
+
+        <!-- Axis -->
+        <line x1="80" y1="16" x2="80" y2="258" stroke="#2a2a2a" stroke-width="1"/>
+        <!-- 80% reference line: 80*3.384=270.7 → x=80+270.7=350.7 -->
+        <line x1="351" y1="16" x2="351" y2="258" stroke="#333" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="352" y="264" fill="#333" font-size="8" font-family="Arial">80%</text>
+        <!-- 88% ref: 88*3.384=297.8 → x=377.8 -->
+        <line x1="378" y1="16" x2="378" y2="258" stroke="#3a3a0a" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="374" y="264" fill="#3a3a0a" font-size="8" font-family="Arial">88%</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 4 — CHAPTER 4: KICKING GAME
+═══════════════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="chapter-tag">Chapter 4 — Kicking Game</div>
+  <div class="main-title">KICKING —<br><span class="acc">TERRITORY THROUGH PRECISION</span></div>
+  <div class="ja-sub">キッキングゲームで陣地を支配する</div>
+  <div class="red-line"></div>
+  <div class="body2col">
+    <div class="col-stat">
+      <div class="stat-row">
+        <div>
+          <div class="big-num" style="font-size:clamp(2rem,4vw,4rem);">1,253</div>
+          <div class="num-label">Total Kicks<br>Season 2025–26</div>
+        </div>
+      </div>
+      <div class="stat-row" style="gap:24px;">
+        <div>
+          <div class="big-num" style="font-size:clamp(1.6rem,3vw,3rem);">25.1 m</div>
+          <div class="num-label">Avg Kick Distance</div>
+        </div>
+        <div>
+          <div class="big-num" style="font-size:clamp(1.6rem,3vw,3rem);">510</div>
+          <div class="num-label">Touch Kicks<br><span style="color:var(--gold)">#1 Weapon</span></div>
+        </div>
+      </div>
+      <div class="tagline">"Kick. Chase.<br>Dominate."</div>
+      <div class="ja-tagline">「蹴って走る。15人全員で。」</div>
+    </div>
+    <div class="col-chart">
+      <!-- Kick type: WIN vs LOSS per game grouped bar chart -->
+      <svg viewBox="0 0 420 260" style="width:100%;max-height:50vh;">
+        <text x="0" y="14" fill="#555" font-size="10" font-family="Arial" letter-spacing="1.5">KICK TYPE: WIN vs LOSS (per game average)</text>
+        <!-- Legend -->
+        <rect x="0" y="22" width="10" height="9" fill="#2a6496"/>
+        <text x="14" y="31" fill="#aaa" font-size="9" font-family="Arial">WIN (16G)</text>
+        <rect x="80" y="22" width="10" height="9" fill="var(--red)"/>
+        <text x="94" y="31" fill="#aaa" font-size="9" font-family="Arial">LOSS (5G)</text>
+
+        <!-- Groups: Touch, Box, Territorial, Low, Bomb, Chip -->
+        <!-- Scale: max=14.6, scale=180/14.6=12.33, bar starts at y=40 -->
+        <!-- Each group: x positions with bar width 28+5gap -->
+        <!-- Group x centers: 30, 100, 170, 240, 310, 380 - but that's too wide -->
+        <!-- Let me use compact: group width 60, gap 8, 6 groups, total = 6*60+5*8=400 -->
+
+        <!-- TOUCH KICK WIN=14.6→180 LOSS=10.2→125.7 -->
+        <g transform="translate(10,40)">
+          <!-- bar chart bottom reference y=180 -->
+          <!-- WIN bar: height=180, y=0 -->
+          <rect x="0" y="0" width="22" height="180" fill="#2a6496" rx="2"/>
+          <text x="11" y="-4" fill="#4a84b6" font-size="9" font-family="Arial" text-anchor="middle">14.6</text>
+          <!-- LOSS bar: height=125.7 -->
+          <rect x="25" y="54" width="22" height="126" fill="var(--red)" rx="2"/>
+          <text x="36" y="50" fill="#c05555" font-size="9" font-family="Arial" text-anchor="middle">10.2</text>
+          <text x="24" y="200" fill="#777" font-size="9" font-family="Arial" text-anchor="middle">Touch</text>
+        </g>
+
+        <!-- BOX WIN=4.7→57.9 LOSS=7.2→88.7 -->
+        <g transform="translate(75,40)">
+          <rect x="0" y="122" width="22" height="58" fill="#2a6496" rx="2"/>
+          <text x="11" y="118" fill="#4a84b6" font-size="9" font-family="Arial" text-anchor="middle">4.7</text>
+          <rect x="25" y="91" width="22" height="89" fill="var(--red)" rx="2"/>
+          <text x="36" y="87" fill="#c05555" font-size="9" font-family="Arial" text-anchor="middle">7.2</text>
+          <text x="24" y="200" fill="#777" font-size="9" font-family="Arial" text-anchor="middle">Box</text>
+        </g>
+
+        <!-- TERRITORIAL WIN=5.6→69 LOSS=6.6→81.4 -->
+        <g transform="translate(140,40)">
+          <rect x="0" y="111" width="22" height="69" fill="#2a6496" rx="2"/>
+          <text x="11" y="107" fill="#4a84b6" font-size="9" font-family="Arial" text-anchor="middle">5.6</text>
+          <rect x="25" y="99" width="22" height="81" fill="var(--red)" rx="2"/>
+          <text x="36" y="95" fill="#c05555" font-size="9" font-family="Arial" text-anchor="middle">6.6</text>
+          <text x="24" y="200" fill="#777" font-size="9" font-family="Arial" text-anchor="middle">Territ.</text>
+        </g>
+
+        <!-- LOW WIN=2.8→34.5 LOSS=3.2→39.5 -->
+        <g transform="translate(205,40)">
+          <rect x="0" y="146" width="22" height="34" fill="#2a6496" rx="2"/>
+          <text x="11" y="142" fill="#4a84b6" font-size="9" font-family="Arial" text-anchor="middle">2.8</text>
+          <rect x="25" y="140" width="22" height="40" fill="var(--red)" rx="2"/>
+          <text x="36" y="136" fill="#c05555" font-size="9" font-family="Arial" text-anchor="middle">3.2</text>
+          <text x="24" y="200" fill="#777" font-size="9" font-family="Arial" text-anchor="middle">Low</text>
+        </g>
+
+        <!-- BOMB WIN=1.8→22.2 LOSS=3.4→41.9 -->
+        <g transform="translate(270,40)">
+          <rect x="0" y="158" width="22" height="22" fill="#2a6496" rx="2"/>
+          <text x="11" y="154" fill="#4a84b6" font-size="9" font-family="Arial" text-anchor="middle">1.8</text>
+          <rect x="25" y="138" width="22" height="42" fill="var(--red)" rx="2"/>
+          <text x="36" y="134" fill="#c05555" font-size="9" font-family="Arial" text-anchor="middle">3.4</text>
+          <text x="24" y="200" fill="#777" font-size="9" font-family="Arial" text-anchor="middle">Bomb</text>
+        </g>
+
+        <!-- CHIP WIN=1.1→13.6 LOSS=0.6→7.4 -->
+        <g transform="translate(335,40)">
+          <rect x="0" y="166" width="22" height="14" fill="#2a6496" rx="2"/>
+          <text x="11" y="162" fill="#4a84b6" font-size="9" font-family="Arial" text-anchor="middle">1.1</text>
+          <rect x="25" y="173" width="22" height="7" fill="var(--red)" rx="2"/>
+          <text x="36" y="169" fill="#c05555" font-size="9" font-family="Arial" text-anchor="middle">0.6</text>
+          <text x="24" y="200" fill="#777" font-size="9" font-family="Arial" text-anchor="middle">Chip</text>
+        </g>
+
+        <!-- Baseline -->
+        <line x1="10" y1="220" x2="410" y2="220" stroke="#222" stroke-width="1"/>
+
+        <!-- Annotation -->
+        <text x="55" y="238" fill="#3a5a3a" font-size="9" font-family="Arial" text-anchor="middle">Touch↑ WIN</text>
+        <text x="97" y="238" fill="#6a2a2a" font-size="9" font-family="Arial" text-anchor="middle">Box↑ LOSS</text>
+        <text x="200" y="252" fill="#444" font-size="9" font-family="Arial">Touch r=+0.60 wins · Box r=−0.53 (more = losses)</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 5 — CHAPTER 5: SET PIECE
+═══════════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="chapter-tag">Chapter 5 — Set Piece</div>
+  <div class="main-title">SET PIECE —<br><span class="acc">THE FOUNDATION OF KUBOTA</span></div>
+  <div class="ja-sub">スクラム・ラインアウト。ここで勝つ。</div>
+  <div class="red-line"></div>
+  <div class="body2col">
+    <div class="col-stat">
+      <div class="stat-row" style="gap:20px;">
+        <div>
+          <div class="big-num" style="font-size:clamp(2rem,3.5vw,3.5rem);">91%</div>
+          <div class="num-label">Lineout Win<br>285/312</div>
+        </div>
+        <div>
+          <div class="big-num" style="font-size:clamp(2rem,3.5vw,3.5rem);">95%</div>
+          <div class="num-label">Scrum Win<br>(incl. Reset)</div>
+        </div>
+        <div>
+          <div class="big-num" style="font-size:clamp(2rem,3.5vw,3.5rem);">23</div>
+          <div class="num-label">LO Steals<br>Season</div>
+        </div>
+      </div>
+      <div class="tagline">"Win the set piece.<br>Win the game."</div>
+      <div class="ja-tagline">「セットピースを制す者が試合を制す。」</div>
+    </div>
+    <div class="col-chart">
+      <!-- Scrum Won per match - line chart -->
+      <svg viewBox="0 0 430 240" style="width:100%;max-height:48vh;">
+        <text x="0" y="14" fill="#555" font-size="10" font-family="Arial" letter-spacing="1.5">SCRUMS WON PER MATCH — SEASON PROGRESSION</text>
+        <!-- Rounds: 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,22 (21 matches) -->
+        <!-- Won (outright): 2,3,3,8,8,6,11,6,3,11,8,3,8,7,5,15,9,7,6,3,6 -->
+        <!-- Plot area: x 30..420, y 20..200. Width=390, Height=180 -->
+        <!-- Max=15 → scale y = 180/15 = 12 per unit -->
+        <!-- X: 21 points, step = 390/20 = 19.5 -->
+        <!-- Points: -->
+
+        <!-- Grid lines -->
+        <line x1="30" y1="200" x2="420" y2="200" stroke="#1e1e1e" stroke-width="1"/>
+        <line x1="30" y1="164" x2="420" y2="164" stroke="#1e1e1e" stroke-width="1"/><!-- y=3 -->
+        <line x1="30" y1="128" x2="420" y2="128" stroke="#1e1e1e" stroke-width="1"/><!-- y=6 -->
+        <line x1="30" y1="92"  x2="420" y2="92"  stroke="#1e1e1e" stroke-width="1"/><!-- y=9 -->
+        <line x1="30" y1="56"  x2="420" y2="56"  stroke="#1e1e1e" stroke-width="1"/><!-- y=12 -->
+        <line x1="30" y1="20"  x2="420" y2="20"  stroke="#1e1e1e" stroke-width="1"/><!-- y=15 -->
+
+        <!-- Y axis labels -->
+        <text x="26" y="204" fill="#333" font-size="8" font-family="Arial" text-anchor="end">0</text>
+        <text x="26" y="168" fill="#333" font-size="8" font-family="Arial" text-anchor="end">3</text>
+        <text x="26" y="132" fill="#333" font-size="8" font-family="Arial" text-anchor="end">6</text>
+        <text x="26" y="96"  fill="#333" font-size="8" font-family="Arial" text-anchor="end">9</text>
+        <text x="26" y="60"  fill="#333" font-size="8" font-family="Arial" text-anchor="end">12</text>
+        <text x="26" y="24"  fill="#333" font-size="8" font-family="Arial" text-anchor="end">15</text>
+
+        <!-- Axis label -->
+        <text x="8" y="115" fill="#333" font-size="8" font-family="Arial" text-anchor="middle" transform="rotate(-90 8 115)">Scrums Won</text>
+
+        <!-- Data points: x = 30 + i*19.5, y = 200 - won*12 -->
+        <!-- Polyline path: -->
+        <!-- R1(0):x=30,y=200-24=176 -->
+        <!-- R2(1):x=49.5,y=200-36=164 -->
+        <!-- R3(2):x=69,y=164 -->
+        <!-- R4(3):x=88.5,y=200-96=104 -->
+        <!-- R5(4):x=108,y=104 -->
+        <!-- R6(5):x=127.5,y=200-72=128 (L) -->
+        <!-- R7(6):x=147,y=200-132=68 -->
+        <!-- R8(7):x=166.5,y=200-72=128 -->
+        <!-- R9(8):x=186,y=200-36=164 -->
+        <!-- R10(9):x=205.5,y=200-132=68 -->
+        <!-- R11(10):x=225,y=200-96=104 (L) -->
+        <!-- R12(11):x=244.5,y=200-36=164 -->
+        <!-- R13(12):x=264,y=200-96=104 -->
+        <!-- R14(13):x=283.5,y=200-84=116 (L) -->
+        <!-- R15(14):x=303,y=200-60=140 -->
+        <!-- R16(15):x=322.5,y=200-180=20 -->
+        <!-- R17(16):x=342,y=200-108=92 -->
+        <!-- R18(17):x=361.5,y=200-84=116 (L) -->
+        <!-- R19(18):x=381,y=200-72=128 -->
+        <!-- R20(19):x=400.5,y=200-36=164 -->
+        <!-- R22(20):x=420,y=200-72=128 (L) -->
+
+        <!-- Area fill -->
+        <polygon points="
+          30,176 49.5,164 69,164 88.5,104 108,104
+          127.5,128 147,68 166.5,128 186,164
+          205.5,68 225,104 244.5,164 264,104
+          283.5,116 303,140 322.5,20 342,92
+          361.5,116 381,128 400.5,164 420,128
+          420,200 30,200"
+          fill="rgba(232,161,60,0.08)" stroke="none"/>
+
+        <!-- Line -->
+        <polyline points="
+          30,176 49.5,164 69,164 88.5,104 108,104
+          127.5,128 147,68 166.5,128 186,164
+          205.5,68 225,104 244.5,164 264,104
+          283.5,116 303,140 322.5,20 342,92
+          361.5,116 381,128 400.5,164 420,128"
+          fill="none" stroke="var(--gold)" stroke-width="2" stroke-linejoin="round"/>
+
+        <!-- WIN dots (gold) -->
+        <circle cx="30" cy="176" r="4" fill="var(--gold)"/>
+        <circle cx="49.5" cy="164" r="4" fill="var(--gold)"/>
+        <circle cx="69" cy="164" r="4" fill="var(--gold)"/>
+        <circle cx="88.5" cy="104" r="4" fill="var(--gold)"/>
+        <circle cx="108" cy="104" r="4" fill="var(--gold)"/>
+        <circle cx="147" cy="68" r="4" fill="var(--gold)"/>
+        <circle cx="166.5" cy="128" r="4" fill="var(--gold)"/>
+        <circle cx="186" cy="164" r="4" fill="var(--gold)"/>
+        <circle cx="205.5" cy="68" r="4" fill="var(--gold)"/>
+        <circle cx="244.5" cy="164" r="4" fill="var(--gold)"/>
+        <circle cx="264" cy="104" r="4" fill="var(--gold)"/>
+        <circle cx="303" cy="140" r="4" fill="var(--gold)"/>
+        <circle cx="322.5" cy="20" r="5" fill="var(--gold)" stroke="#fff" stroke-width="1.5"/><!-- R16=15! -->
+        <circle cx="342" cy="92" r="4" fill="var(--gold)"/>
+        <circle cx="381" cy="128" r="4" fill="var(--gold)"/>
+        <circle cx="400.5" cy="164" r="4" fill="var(--gold)"/>
+
+        <!-- LOSS dots (red) -->
+        <circle cx="127.5" cy="128" r="4" fill="var(--red)"/>
+        <circle cx="225" cy="104" r="4" fill="var(--red)"/>
+        <circle cx="283.5" cy="116" r="4" fill="var(--red)"/>
+        <circle cx="361.5" cy="116" r="4" fill="var(--red)"/>
+        <circle cx="420" cy="128" r="4" fill="var(--red)"/>
+
+        <!-- R16 annotation -->
+        <text x="322.5" y="15" fill="var(--gold)" font-size="8" font-family="Arial Black" text-anchor="middle">15!</text>
+
+        <!-- X axis labels (every 2 rounds) -->
+        <text x="30" y="215" fill="#333" font-size="8" font-family="Arial" text-anchor="middle">R1</text>
+        <text x="88.5" y="215" fill="#333" font-size="8" font-family="Arial" text-anchor="middle">R4</text>
+        <text x="147" y="215" fill="#333" font-size="8" font-family="Arial" text-anchor="middle">R7</text>
+        <text x="205.5" y="215" fill="#333" font-size="8" font-family="Arial" text-anchor="middle">R10</text>
+        <text x="264" y="215" fill="#333" font-size="8" font-family="Arial" text-anchor="middle">R13</text>
+        <text x="322.5" y="215" fill="#333" font-size="8" font-family="Arial" text-anchor="middle">R16</text>
+        <text x="381" y="215" fill="#333" font-size="8" font-family="Arial" text-anchor="middle">R19</text>
+        <text x="420" y="215" fill="#333" font-size="8" font-family="Arial" text-anchor="middle">R22</text>
+
+        <!-- Legend -->
+        <circle cx="240" cy="230" r="4" fill="var(--gold)"/>
+        <text x="248" y="234" fill="#666" font-size="9" font-family="Arial">WIN</text>
+        <circle cx="290" cy="230" r="4" fill="var(--red)"/>
+        <text x="298" y="234" fill="#666" font-size="9" font-family="Arial">LOSS</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 6 — CHAPTER 6: CHALLENGES
+═══════════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="chapter-tag">Chapter 6 — Challenges</div>
+  <div class="main-title">THE WALL<br><span class="red">WE MUST BREAK</span></div>
+  <div class="ja-sub">乗り越えるべき課題 — 22mエリアへの進入はリーグ1位。次は仕留め切る。</div>
+  <div class="red-line"></div>
+  <div class="chal-boxes">
+    <div class="chal-box">
+      <div class="chal-title">22m Conv%</div>
+      <div class="chal-val">45.1%</div>
+      <div class="chal-sub">#7 in D1<br>進入後の決定率</div>
+    </div>
+    <div class="chal-box">
+      <div class="chal-title">Turnover Rate (22m)</div>
+      <div class="chal-val">36.3%</div>
+      <div class="chal-sub">22m内ターンオーバー率<br>最大の課題</div>
+    </div>
+    <div class="chal-box">
+      <div class="chal-title">Own-Half Penalty</div>
+      <div class="chal-val">63.1%</div>
+      <div class="chal-sub">#1 worst in D1<br>自陣ペナルティ比率</div>
+    </div>
+  </div>
+  <div class="col-chart" style="flex:1;width:100%;max-height:44vh;">
+    <!-- 22m Entry outcomes stacked bar (horizontal single bar with segments) -->
+    <svg viewBox="0 0 820 180" style="width:100%;max-height:44vh;">
+      <text x="0" y="14" fill="#555" font-size="10" font-family="Arial" letter-spacing="1.5">22m ENTRY OUTCOMES — KUBOTA (264 entries, 21 matches)</text>
+      <!-- Total 264: Try=109, PGAtt=10, PenConc=21, TO=115, KickTO=9 -->
+      <!-- Bar total width = 780 -->
+      <!-- Scale: 780/264 = 2.955 per entry -->
+      <!-- Try: 109*2.955=322 -->
+      <!-- PGAtt: 10*2.955=29.5 -->
+      <!-- PenConc: 21*2.955=62 -->
+      <!-- TO: 115*2.955=339.8 -->
+      <!-- KickTO: 9*2.955=26.6 -->
+
+      <!-- Stacked bar -->
+      <!-- Try (gold) -->
+      <rect x="20" y="30" width="322" height="60" fill="var(--gold)" rx="0"/>
+      <text x="181" y="65" fill="#0a0a0a" font-size="13" font-family="Arial Black" text-anchor="middle" font-weight="900">TRY</text>
+      <text x="181" y="80" fill="#0a0a0a" font-size="11" font-family="Arial" text-anchor="middle">109 (41.3%)</text>
+
+      <!-- PG Att (blue-gray) -->
+      <rect x="342" y="30" width="30" height="60" fill="#3a6080" rx="0"/>
+      <text x="357" y="58" fill="#8ab8d8" font-size="8" font-family="Arial" text-anchor="middle">PG</text>
+      <text x="357" y="69" fill="#8ab8d8" font-size="8" font-family="Arial" text-anchor="middle">10</text>
+
+      <!-- Pen Conceded (orange) -->
+      <rect x="372" y="30" width="62" height="60" fill="#a05020" rx="0"/>
+      <text x="403" y="55" fill="#f0a060" font-size="9" font-family="Arial" text-anchor="middle">Pen</text>
+      <text x="403" y="67" fill="#f0a060" font-size="9" font-family="Arial" text-anchor="middle">Conc.</text>
+      <text x="403" y="79" fill="#f0a060" font-size="8" font-family="Arial" text-anchor="middle">21</text>
+
+      <!-- Turnover (red) -->
+      <rect x="434" y="30" width="340" height="60" fill="#8b1a1a" rx="0"/>
+      <text x="604" y="62" fill="#ffaaaa" font-size="13" font-family="Arial Black" text-anchor="middle" font-weight="900">TURNOVER</text>
+      <text x="604" y="78" fill="#ffaaaa" font-size="11" font-family="Arial" text-anchor="middle">115 (43.6%)</text>
+
+      <!-- Kick TO (dark red) -->
+      <rect x="774" y="30" width="26" height="60" fill="#5a0a0a" rx="0"/>
+      <text x="787" y="58" fill="#a05050" font-size="8" font-family="Arial" text-anchor="middle">Kick</text>
+      <text x="787" y="68" fill="#a05050" font-size="8" font-family="Arial" text-anchor="middle">TO</text>
+      <text x="787" y="78" fill="#a05050" font-size="8" font-family="Arial" text-anchor="middle">9</text>
+
+      <!-- Arrows/annotations -->
+      <text x="181" y="110" fill="var(--gold)" font-size="10" font-family="Arial" text-anchor="middle">← 41.3% →</text>
+      <text x="604" y="110" fill="var(--red)" font-size="10" font-family="Arial" text-anchor="middle">← 43.6% TURNOVER →</text>
+
+      <!-- Conv% highlight -->
+      <rect x="20" y="125" width="352" height="16" fill="rgba(232,161,60,0.15)" rx="2" stroke="var(--gold)" stroke-width="1"/>
+      <text x="186" y="137" fill="var(--gold)" font-size="9" font-family="Arial" text-anchor="middle">Strike Conv% = (Try + PG) / Total = 45.1%</text>
+
+      <!-- Tagline -->
+      <text x="0" y="162" fill="var(--red)" font-size="12" font-family="Impact" font-style="italic">"We entered the 22 more than anyone. Now we finish it."</text>
+      <text x="0" y="178" fill="#444" font-size="9" font-family="Arial">「進入1位。次は仕留め切る。」</text>
+    </svg>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 7 — CHAPTER 7: NEXT STAGE
+═══════════════════════════════════════════ -->
+<div class="slide finale-slide" id="s7">
+  <div class="finale-bg"></div>
+  <div class="finale-record">2025–26 · DIVISION 1 · 21 MATCHES</div>
+  <!-- Season record visual -->
+  <div style="display:flex;gap:4px;margin:14px 0;z-index:1;flex-wrap:wrap;max-width:700px;justify-content:center;">
+    <!-- 16 W + 5 L boxes -->
+    <span style="font-family:var(--impact);font-size:clamp(1.2rem,3vw,3rem);color:var(--gold);letter-spacing:.08em;">
+      16W &nbsp;
+      <span style="color:var(--red)">5L</span>
+    </span>
+  </div>
+  <!-- W/L visual blocks -->
+  <div style="display:flex;gap:3px;margin-bottom:20px;z-index:1;flex-wrap:wrap;max-width:600px;justify-content:center;">
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R1 W"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R2 W"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R3 W"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R4 W"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R5 W"></span>
+    <span style="background:var(--red);width:28px;height:20px;display:inline-block;" title="R6 L"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R7 W"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R8 W"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R9 W"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R10 W"></span>
+    <span style="background:var(--red);width:28px;height:20px;display:inline-block;" title="R11 L"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R12 W"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R13 W"></span>
+    <span style="background:var(--red);width:28px;height:20px;display:inline-block;" title="R14 L"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R15 W"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R16 W"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R17 W"></span>
+    <span style="background:var(--red);width:28px;height:20px;display:inline-block;" title="R18 L"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R19 W"></span>
+    <span style="background:var(--gold);width:28px;height:20px;display:inline-block;" title="R20 W"></span>
+    <span style="background:var(--red);width:28px;height:20px;display:inline-block;" title="R22 L"></span>
+  </div>
+  <div class="finale-hero">
+    THE WORK<br>CONTINUES.<br><span class="gold">WELCOME TO KUBOTA SPEARS.</span>
+  </div>
+  <div class="finale-sub">挑戦は続く。クボタスピアーズへようこそ。</div>
+  <div class="finale-badge">
+    <div class="fbadge">2026-27</div>
+    <div class="fbadge" style="background:var(--gold);color:#0a0a0a;border-color:var(--gold);">NEXT STAGE</div>
+    <div class="fbadge">次のステージへ</div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- Nav dots -->
+<div class="nav-dots" id="navDots">
+  <span class="dot active" data-idx="0" title="Intro"></span>
+  <span class="dot" data-idx="1" title="Chapter 1 — Contest Kick"></span>
+  <span class="dot" data-idx="2" title="Chapter 2 — Structure"></span>
+  <span class="dot" data-idx="3" title="Chapter 3 — Defence"></span>
+  <span class="dot" data-idx="4" title="Chapter 4 — Kicking"></span>
+  <span class="dot" data-idx="5" title="Chapter 5 — Set Piece"></span>
+  <span class="dot" data-idx="6" title="Chapter 6 — Challenges"></span>
+  <span class="dot" data-idx="7" title="Chapter 7 — Next Stage"></span>
+</div>
+<div class="slide-num" id="slideNum">0 / 7</div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const dots   = Array.from(document.querySelectorAll('.dot'));
+  const numEl  = document.getElementById('slideNum');
+  const N      = slides.length;
+  let cur = 0;
+  let busy = false;
+
+  // Preserve structural class names (intro-slide, finale-slide etc.)
+  const baseClasses = slides.map(s => {
+    const extra = ['intro-slide','finale-slide'].filter(c => s.classList.contains(c));
+    return 'slide' + (extra.length ? ' ' + extra.join(' ') : '');
+  });
+
+  const chapterLabels = [
+    'INTRO',
+    'CH.1 — HIGH BALL',
+    'CH.2 — STRUCTURE',
+    'CH.3 — DEFENCE',
+    'CH.4 — KICKING',
+    'CH.5 — SET PIECE',
+    'CH.6 — CHALLENGES',
+    'CH.7 — NEXT STAGE',
+  ];
+
+  function resetSlide(s, idx) {
+    s.className = baseClasses[idx];
+    s.style.opacity = '';
+    s.style.transform = '';
+    s.style.pointerEvents = 'none';
+  }
+
+  function show(next, dir) {
+    if (busy || next === cur || next < 0 || next >= N) return;
+    busy = true;
+    const prev = cur;
+    const outClass = dir > 0 ? 'exit-l' : 'exit-r';
+    const inClass  = dir > 0 ? 'enter'  : 'prev';
+
+    // Freeze all slides except prev and next
+    slides.forEach((s, i) => { if (i !== prev && i !== next) resetSlide(s, i); });
+
+    // Remove any inline style from next so CSS animation runs cleanly
+    slides[next].style.opacity = '';
+    slides[next].style.transform = '';
+    slides[next].style.pointerEvents = 'none';
+
+    // Start animations
+    slides[prev].className = baseClasses[prev] + ' ' + outClass;
+    slides[next].className = baseClasses[next] + ' ' + inClass;
+
+    cur = next;
+    dots.forEach((d,i) => d.classList.toggle('active', i===cur));
+    numEl.textContent = `${cur} / ${N-1}  ${chapterLabels[cur]}`;
+
+    setTimeout(() => {
+      // Settle: hide prev, lock next in visible state via inline style
+      resetSlide(slides[prev], prev);
+      slides[next].className = baseClasses[next];
+      slides[next].style.opacity = '1';
+      slides[next].style.transform = 'translateX(0)';
+      slides[next].style.pointerEvents = 'auto';
+      busy = false;
+    }, 580);
+  }
+
+  // Init: hide all, then reveal slide 0 (with page-load animation)
+  slides.forEach((s, i) => {
+    if (i === 0) {
+      // Already has 'enter' in HTML for page-load fade-in; lock in place after anim
+      setTimeout(() => {
+        s.className = baseClasses[0];
+        s.style.opacity = '1';
+        s.style.transform = 'translateX(0)';
+        s.style.pointerEvents = 'auto';
+      }, 600);
+    } else {
+      resetSlide(s, i);
+    }
+  });
+  numEl.textContent = `0 / ${N-1}  ${chapterLabels[0]}`;
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') show(cur+1, 1);
+    if (e.key === 'ArrowLeft')  show(cur-1, -1);
+    if (e.key === 'Home') show(0, -1);
+    if (e.key === 'End')  show(N-1, 1);
+  });
+
+  // Click slides
+  document.getElementById('deck').addEventListener('click', e => {
+    if (!e.target.closest('.dot')) show(cur+1, 1);
+  });
+
+  // Dots
+  dots.forEach(d => {
+    d.addEventListener('click', e => {
+      e.stopPropagation();
+      const idx = +d.dataset.idx;
+      show(idx, idx > cur ? 1 : -1);
+    });
+  });
+
+  // Touch swipe
+  let tsx = null;
+  document.addEventListener('touchstart', e => { tsx = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', e => {
+    if (tsx === null) return;
+    const dx = e.changedTouches[0].clientX - tsx;
+    if (Math.abs(dx) > 60) show(dx < 0 ? cur+1 : cur-1, dx < 0 ? 1 : -1);
+    tsx = null;
+  });
+
+})();
+</script>
+</body>
+</html>
