@@ -434,6 +434,48 @@ def _load_all_takes_from_db():
 
 _all_db_takes = _load_all_takes_from_db()
 
+
+# ── Load Lineout Throw win stats for OPP Ball Won Rate sections ────────────
+def _load_lo_stats_from_db():
+    """
+    Returns two dicts keyed by DB team name:
+      opp_stats  — opponent's LO throws in their games vs Kubota (upper section)
+      kub_stats  — Kubota's LO throws in games vs each opponent (lower section)
+    """
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        opp_rows = conn.execute("""
+            SELECT team_name,
+                   COUNT(*) AS total,
+                   SUM(CASE WHEN action_result_name LIKE 'Won%' THEN 1 ELSE 0 END) AS won
+            FROM events
+            WHERE action_name = 'Lineout Throw'
+              AND team_name != 'Kubota Spears'
+            GROUP BY team_name
+        """).fetchall()
+        opp_stats = {r["team_name"]: (r["total"], r["won"]) for r in opp_rows}
+
+        kub_rows = conn.execute("""
+            SELECT m.opponent_name,
+                   COUNT(*) AS total,
+                   SUM(CASE WHEN e.action_result_name LIKE 'Won%' THEN 1 ELSE 0 END) AS won
+            FROM events e
+            JOIN matches m ON e.fxid = m.fxid
+            WHERE e.action_name = 'Lineout Throw'
+              AND e.team_name = 'Kubota Spears'
+            GROUP BY m.opponent_name
+        """).fetchall()
+        kub_stats = {r["opponent_name"]: (r["total"], r["won"]) for r in kub_rows}
+        conn.close()
+        return opp_stats, kub_stats
+    except Exception as e:
+        print(f"[WARN] LO throw stats load failed: {e}")
+        return {}, {}
+
+
+_OPP_LO_VS_KUBOTA, _KUBOTA_LO_VS_OPP = _load_lo_stats_from_db()
+
 # ── Apply DB data to SPEARS (DB has all 21 Spears games) ──────────────────
 _sp = _all_db_takes.get("Kubota Spears", {})
 if _sp.get("takes"):
@@ -557,7 +599,7 @@ def winloss_col(team, opp_ball=None):
         ob_tot, ob_won = opp_ball
         ob_wp  = pct(ob_won, ob_tot)
         ob_lp  = 100 - ob_wp
-        opp_block = wl_block("OPP BALL WON RATE", ob_wp, ob_tot, ob_won, ob_lp)
+        opp_block = wl_block("OPP Ball Won Rate", ob_wp, ob_tot, ob_won, ob_lp)
     else:
         opp_block = ""
 
@@ -603,7 +645,7 @@ def numbers_col(own_nums, opp_nums_raw, label):
     own_max = max((v[0] for v in own_nums.values()), default=1)
     opp_max = max((v[0] for v in opp_nums_raw.values()), default=1)
     own_bars = num_bars_html(own_nums,    own_max, "own")
-    opp_bars = num_bars_html(opp_nums_raw, opp_max, "def")
+    opp_bars = num_bars_html(opp_nums_raw, opp_max, "own")
 
     def card(title, sub, bars):
         return (f'<div style="background:#fff;border:1px solid #DEE2E6;border-radius:6px;overflow:hidden;margin-bottom:6px">'
@@ -614,7 +656,7 @@ def numbers_col(own_nums, opp_nums_raw, label):
                 f'</div>')
 
     return card("OWN NUMBERS", f"{label} — blue=Won / red=Lost", own_bars) + \
-           card("OPP NUMBERS", "Steal rate — blue=stolen", opp_bars)
+           card("OPP Numbers Success %", "blue=Won / red=Lost", opp_bars)
 
 
 # ── Area breakdown ──────────────────────────────────────────────────────────
@@ -797,15 +839,16 @@ def opp_steal_card(sp_overall):
 
 
 # ── Opponent panel (same layout as Spears panel) ───────────────────────────
-def build_opp_panel(opp):
-    label = opp["name"]
-    hc    = "#10B981"
-
-    sp_tot, sp_won = SPEARS["overall"]
+def build_opp_panel(opp, abbr):
+    label   = opp["name"]
+    hc      = "#10B981"
+    db_name = _DB_TEAM_NAME.get(abbr, "")
+    # Lower section: Kubota's LO win rate from their games vs this team (DB)
+    kub_lo  = _KUBOTA_LO_VS_OPP.get(db_name) or (SPEARS["overall"][0], SPEARS["overall"][1])
 
     top = (f'<div style="display:grid;grid-template-columns:0.65fr 0.85fr 1.5fr;gap:10px;margin-bottom:10px">'
            + delivery_col(opp)
-           + winloss_col(opp, opp_ball=(sp_tot, sp_won))
+           + winloss_col(opp, opp_ball=kub_lo)
            + f'<div>{numbers_col(opp["nums"], SPEARS["nums"], label)}</div>'
            + f'</div>')
 
@@ -831,15 +874,16 @@ def build_opp_panel(opp):
 
 # ── Full section ─────────────────────────────────────────────────────────────
 def build_section(abbr, opp):
-    opp_own_tot, opp_own_won = opp["own"]
-    opp_ball_for_spears = (opp_own_tot, opp_own_won)  # opp own-ball won rate
+    db_name  = _DB_TEAM_NAME.get(abbr, "")
+    # Upper section: opp's LO win rate from their games vs Kubota (DB)
+    opp_lo   = _OPP_LO_VS_KUBOTA.get(db_name) or (opp["own"][0], opp["own"][1])
     sp_panel = build_panel(
         team             = SPEARS,
         label            = "Kubota Spears",
         header_color     = "#F97316",
         own_nums         = SPEARS["nums"],
         opp_nums_for_def = opp["nums"],
-        opp_ball         = opp_ball_for_spears,
+        opp_ball         = opp_lo,
     )
     divider = (
         f'<div style="display:flex;align-items:center;gap:8px;margin:14px 0">'
@@ -854,7 +898,7 @@ def build_section(abbr, opp):
         f'  <div style="padding:0 2px">\n'
         f'    {sp_panel}\n'
         f'    {divider}\n'
-        f'    {build_opp_panel(opp)}\n'
+        f'    {build_opp_panel(opp, abbr)}\n'
         f'  </div>\n'
         f'</div>\n'
     )
