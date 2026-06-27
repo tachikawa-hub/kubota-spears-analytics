@@ -110,21 +110,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 <!-- SLIDE 1: CONTEST GAME -->
 <div class="slide" id="s1">
   <div class="ctag">Chapter 1 — Contest Game</div>
-  <div class="mtitle">CONTEST GAME —<br><span class="acc">RETENTION RATE: LEAGUE #1</span></div>
-  <div class="jasub">コンテストキック保持率 リーグ1位 · 255本 (12.1本/試合) — フルシーズン最多出場</div>
+  <div class="mtitle">CONTEST GAME —<br><span class="acc">VOLUME: LEAGUE #1</span></div>
+  <div class="jasub">コンテストキック数 リーグ1位 · 255本(12.1本/G) — OPC保持率 19.2% (#2 フルシーズン比較)</div>
   <div class="rline"></div>
   <div class="body2">
     <div class="cstat">
-      <div class="bnum">31.8%</div>
-      <div class="nlabel">Retention Rate · 21 Games<br><span style="color:var(--gold)">255 kicks · 81 retained</span></div>
+      <div class="bnum">255</div>
+      <div class="nlabel">Contest Kicks · 21 Games · <span style="color:var(--gold)">リーグ1位</span><br>12.1 per game · フルシーズン最多</div>
       <div style="margin-top:14px;border-left:2px solid #1e1e1e;padding-left:12px">
         <div style="font-family:var(--ef);font-size:clamp(.7rem,1.3vw,1.2rem);font-weight:700;color:#fff">
-          vs Top4&nbsp;&nbsp;<span style="color:var(--red)">26.3%</span>
-          <span style="font-family:var(--ef);font-size:clamp(.48rem,.68vw,.62rem);color:#555;display:block">137 kicks · 36 ret</span>
+          OPC Ret.&nbsp;&nbsp;<span style="color:var(--gold)">19.2%</span>&nbsp;<span style="color:#555;font-size:.75em">#2 full-season</span>
+          <span style="font-family:var(--ef);font-size:clamp(.47rem,.67vw,.61rem);color:#444;display:block">Own Player Collected: 49 / 255 kicks</span>
         </div>
-        <div style="font-family:var(--ef);font-size:clamp(.7rem,1.3vw,1.2rem);font-weight:700;color:#fff;margin-top:7px">
-          vs Others&nbsp;&nbsp;<span style="color:var(--gold)">38.1%</span>
-          <span style="font-family:var(--ef);font-size:clamp(.48rem,.68vw,.62rem);color:#555;display:block">118 kicks · 45 ret</span>
+        <div style="font-family:var(--ef);font-size:clamp(.68rem,1.22vw,1.12rem);font-weight:700;color:#fff;margin-top:8px">
+          vs Top4&nbsp;&nbsp;<span style="color:var(--red)">137</span><span style="color:#555;font-size:.75em"> kicks</span>
+          &nbsp;vs Others&nbsp;&nbsp;<span style="color:var(--gold)">118</span><span style="color:#555;font-size:.75em"> kicks</span>
         </div>
       </div>
       <div class="tline">"We own<br>the contest."</div>
@@ -132,166 +132,160 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
     </div>
     <div class="cchart">
       <svg viewBox="0 0 460 265" style="width:100%;height:100%;max-height:61vh">
-        <text x="0" y="12" fill="#666" font-size="9.5" font-family="Helvetica Neue, Arial" letter-spacing="2" font-weight="700">CONTEST RETENTION % — ALL 12 TEAMS (D1 2025-26)</text>
-        <text x="0" y="23" fill="#2e2e2e" font-size="8" font-family="Helvetica Neue, Arial">Gold = Kubota (21G · reliable sample) · Grey = opponents (1-3G)</text>
-        <!-- Scale: max 37.5% → 310px. Factor=310/37.5=8.267 -->
+        <text x="0" y="12" fill="#666" font-size="9.5" font-family="Helvetica Neue, Arial" letter-spacing="2" font-weight="700">OWN PLAYER COLLECTED % — ALL 12 TEAMS (D1 2025-26)</text>
+        <text x="0" y="23" fill="#2e2e2e" font-size="8" font-family="Helvetica Neue, Arial">Gold = Kubota (21G full season) · Grey = opponents (1-3G small sample)</text>
+        <!-- Scale: max 31.3% → 320px. Factor=320/31.3=10.22 -->
         <!-- Row h=18, gap=3. Start y=30 -->
 
-        <!-- 1 Heat 37.5% → 310 (16k 2G) -->
-        <rect x="100" y="30" width="310" height="15" fill="#252525" rx="2"/>
-        <text x="94"  y="42" fill="#555" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Heat</text>
-        <text x="414" y="42" fill="#555" font-size="8.5" font-family="Helvetica Neue, Arial">37.5%  <tspan fill="#2a2a2a">(16k · 2G)</tspan></text>
+        <!-- 1 Heat 31.3% → 320 (16k 2G) small sample -->
+        <rect x="100" y="30" width="320" height="15" fill="#252525" rx="2"/>
+        <text x="94"  y="42" fill="#555" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Heat*</text>
+        <text x="424" y="42" fill="#555" font-size="8.5" font-family="Helvetica Neue, Arial">31.3%  <tspan fill="#2a2a2a">(16k · 2G)</tspan></text>
 
-        <!-- 2 WK 35.3% → 291 (34k 2G) -->
-        <rect x="100" y="48" width="291" height="15" fill="#252525" rx="2"/>
-        <text x="94"  y="60" fill="#555" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">W.Knights</text>
-        <text x="395" y="60" fill="#555" font-size="8.5" font-family="Helvetica Neue, Arial">35.3%  <tspan fill="#2a2a2a">(34k · 2G)</tspan></text>
+        <!-- 2 KUBOTA 19.2% → 196 (255k 21G) GOLD #2 -->
+        <rect x="100" y="48" width="196" height="22" fill="var(--gold)" rx="2"/>
+        <text x="94"  y="63" fill="var(--gold)" font-size="11" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">KUBOTA</text>
+        <text x="300" y="63" fill="#0a0a0a" font-size="11" font-family="Helvetica Neue, Arial" font-weight="700">19.2%</text>
+        <text x="345" y="63" fill="#5a4a10" font-size="8" font-family="Helvetica Neue, Arial">★#2 · 255k · 21G</text>
 
-        <!-- 3 KUBOTA 31.8% → 263 (255k 21G) GOLD -->
-        <rect x="100" y="66" width="263" height="20" fill="var(--gold)" rx="2"/>
-        <text x="94"  y="80" fill="var(--gold)" font-size="11" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">KUBOTA</text>
-        <text x="367" y="80" fill="#0a0a0a" font-size="11" font-family="Helvetica Neue, Arial" font-weight="700">31.8%</text>
-        <text x="415" y="80" fill="#5a4a10" font-size="8" font-family="Helvetica Neue, Arial">★ 255k / 21G</text>
+        <!-- 3 WK 14.7% → 150 (34k 2G) -->
+        <rect x="100" y="74" width="150" height="15" fill="#252525" rx="2"/>
+        <text x="94"  y="86" fill="#555" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">W.Knights</text>
+        <text x="254" y="86" fill="#555" font-size="8.5" font-family="Helvetica Neue, Arial">14.7%  <tspan fill="#2a2a2a">(34k · 2G)</tspan></text>
 
-        <!-- 4 Eagles 28.6% → 236 (7k 1G) -->
-        <rect x="100" y="89" width="236" height="15" fill="#1e1e1e" rx="2"/>
-        <text x="94"  y="101" fill="#444" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Eagles</text>
-        <text x="340" y="101" fill="#444" font-size="8.5" font-family="Helvetica Neue, Arial">28.6%  <tspan fill="#252525">(7k · 1G)</tspan></text>
+        <!-- 4 Eagles 14.3% → 146 (7k 1G) -->
+        <rect x="100" y="92" width="146" height="15" fill="#1e1e1e" rx="2"/>
+        <text x="94"  y="104" fill="#444" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Eagles</text>
+        <text x="250" y="104" fill="#444" font-size="8.5" font-family="Helvetica Neue, Arial">14.3%  <tspan fill="#252525">(7k · 1G)</tspan></text>
 
-        <!-- 5 Sungoliath 25.0% → 207 (24k 2G) -->
-        <rect x="100" y="107" width="207" height="15" fill="#1e1e1e" rx="2"/>
-        <text x="94"  y="119" fill="#3a3a3a" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Sungoliath</text>
-        <text x="311" y="119" fill="#3a3a3a" font-size="8.5" font-family="Helvetica Neue, Arial">25.0%  <tspan fill="#222">(24k · 2G)</tspan></text>
+        <!-- 5 Dynaboars 13.3% → 136 (15k 1G) -->
+        <rect x="100" y="110" width="136" height="15" fill="#1e1e1e" rx="2"/>
+        <text x="94"  y="122" fill="#3a3a3a" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Dynaboars</text>
+        <text x="240" y="122" fill="#3a3a3a" font-size="8.5" font-family="Helvetica Neue, Arial">13.3%  <tspan fill="#222">(15k · 1G)</tspan></text>
 
-        <!-- 6 Steelers 21.2% → 175 (33k 3G) -->
-        <rect x="100" y="125" width="175" height="15" fill="#1a1a1a" rx="2"/>
-        <text x="94"  y="137" fill="#333" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Steelers</text>
-        <text x="279" y="137" fill="#333" font-size="8.5" font-family="Helvetica Neue, Arial">21.2%  <tspan fill="#202020">(33k · 3G)</tspan></text>
+        <!-- 6 Sungoliath 12.5% → 128 (24k 2G) -->
+        <rect x="100" y="128" width="128" height="15" fill="#1a1a1a" rx="2"/>
+        <text x="94"  y="140" fill="#333" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Sungoliath</text>
+        <text x="232" y="140" fill="#333" font-size="8.5" font-family="Helvetica Neue, Arial">12.5%  <tspan fill="#202020">(24k · 2G)</tspan></text>
 
-        <!-- 7 Verblitz 20.0% → 165 (25k 2G) -->
-        <rect x="100" y="143" width="165" height="15" fill="#1a1a1a" rx="2"/>
-        <text x="94"  y="155" fill="#2e2e2e" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Verblitz</text>
-        <text x="269" y="155" fill="#2e2e2e" font-size="8.5" font-family="Helvetica Neue, Arial">20.0%</text>
+        <!-- 7 Steelers 12.1% → 124 (33k 3G) -->
+        <rect x="100" y="146" width="124" height="15" fill="#1a1a1a" rx="2"/>
+        <text x="94"  y="158" fill="#2e2e2e" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Steelers</text>
+        <text x="228" y="158" fill="#2e2e2e" font-size="8.5" font-family="Helvetica Neue, Arial">12.1%  <tspan fill="#1e1e1e">(33k · 3G)</tspan></text>
 
-        <!-- 8 BlackRams 17.6% → 145 (17k 2G) -->
-        <rect x="100" y="161" width="145" height="15" fill="#181818" rx="2"/>
-        <text x="94"  y="173" fill="#2a2a2a" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlackRams</text>
-        <text x="249" y="173" fill="#2a2a2a" font-size="8.5" font-family="Helvetica Neue, Arial">17.6%</text>
+        <!-- 8 Verblitz 12.0% → 123 (25k 2G) -->
+        <rect x="100" y="164" width="123" height="15" fill="#181818" rx="2"/>
+        <text x="94"  y="176" fill="#2a2a2a" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Verblitz</text>
+        <text x="227" y="176" fill="#2a2a2a" font-size="8.5" font-family="Helvetica Neue, Arial">12.0%</text>
 
-        <!-- 9 BraveLupus 14.3% → 118 (28k 3G) -->
-        <rect x="100" y="179" width="118" height="15" fill="#161616" rx="2"/>
-        <text x="94"  y="191" fill="#252525" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">BraveLupus</text>
-        <text x="222" y="191" fill="#252525" font-size="8.5" font-family="Helvetica Neue, Arial">14.3%  <tspan fill="#1a1a1a">(28k · 3G)</tspan></text>
+        <!-- 9 BlackRams 11.8% → 121 (17k 2G) -->
+        <rect x="100" y="182" width="121" height="15" fill="#181818" rx="2"/>
+        <text x="94"  y="194" fill="#252525" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlackRams</text>
+        <text x="225" y="194" fill="#252525" font-size="8.5" font-family="Helvetica Neue, Arial">11.8%</text>
 
-        <!-- 10 Dynaboars 13.3% → 110 (15k 1G) -->
-        <rect x="100" y="197" width="110" height="15" fill="#161616" rx="2"/>
-        <text x="94"  y="209" fill="#222" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Dynaboars</text>
-        <text x="214" y="209" fill="#222" font-size="8.5" font-family="Helvetica Neue, Arial">13.3%  <tspan fill="#181818">(15k · 1G)</tspan></text>
+        <!-- 10 BraveLupus 10.7% → 109 (28k 3G) -->
+        <rect x="100" y="200" width="109" height="15" fill="#161616" rx="2"/>
+        <text x="94"  y="212" fill="#222" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">BraveLupus</text>
+        <text x="213" y="212" fill="#222" font-size="8.5" font-family="Helvetica Neue, Arial">10.7%  <tspan fill="#181818">(28k · 3G)</tspan></text>
 
-        <!-- 11 D-Rocks 4.2% → 35 (24k 2G) -->
-        <rect x="100" y="215" width="35" height="15" fill="#141414" rx="2"/>
-        <text x="94"  y="227" fill="#1e1e1e" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">D-Rocks</text>
-        <text x="139" y="227" fill="#1e1e1e" font-size="8.5" font-family="Helvetica Neue, Arial">4.2%</text>
+        <!-- 11 D-Rocks 0.0% (24k 2G) -->
+        <rect x="100" y="218" width="2"   height="15" fill="#141414" rx="0"/>
+        <text x="94"  y="230" fill="#1e1e1e" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">D-Rocks</text>
+        <text x="106" y="230" fill="#1e1e1e" font-size="8.5" font-family="Helvetica Neue, Arial">0.0%  <tspan fill="#161616">(24k · 2G)</tspan></text>
 
         <!-- 12 BlueRevs 0.0% (7k 1G) -->
-        <rect x="100" y="233" width="2"   height="15" fill="#111" rx="0"/>
-        <text x="94"  y="245" fill="#181818" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlueRevs</text>
-        <text x="105" y="245" fill="#181818" font-size="8.5" font-family="Helvetica Neue, Arial">0.0%  <tspan fill="#141414">(7k · 1G)</tspan></text>
+        <rect x="100" y="236" width="2"   height="15" fill="#111" rx="0"/>
+        <text x="94"  y="248" fill="#181818" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlueRevs</text>
+        <text x="106" y="248" fill="#181818" font-size="8.5" font-family="Helvetica Neue, Arial">0.0%  <tspan fill="#141414">(7k · 1G)</tspan></text>
 
         <!-- Axis -->
-        <line x1="100" y1="26" x2="100" y2="252" stroke="#1e1e1e" stroke-width="1"/>
+        <line x1="100" y1="26" x2="100" y2="256" stroke="#1e1e1e" stroke-width="1"/>
         <text x="100" y="25" fill="#252525" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="middle">0</text>
-        <text x="183" y="25" fill="#252525" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="middle">10%</text>
-        <text x="266" y="25" fill="#252525" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="middle">20%</text>
-        <text x="349" y="25" fill="#252525" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="middle">30%</text>
-        <line x1="183" y1="26" x2="183" y2="252" stroke="#181818" stroke-width=".5" stroke-dasharray="3,4"/>
-        <line x1="266" y1="26" x2="266" y2="252" stroke="#181818" stroke-width=".5" stroke-dasharray="3,4"/>
-        <line x1="349" y1="26" x2="349" y2="252" stroke="#181818" stroke-width=".5" stroke-dasharray="3,4"/>
-        <text x="0" y="263" fill="#282828" font-size="7.5" font-family="Helvetica Neue, Arial">Retention = (Own Player Collected + Pressure Error + Pressure in Touch + Try Kick) / Total Contest Kicks</text>
+        <text x="202" y="25" fill="#252525" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="middle">10%</text>
+        <text x="304" y="25" fill="#252525" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="middle">20%</text>
+        <line x1="202" y1="26" x2="202" y2="256" stroke="#181818" stroke-width=".5" stroke-dasharray="3,4"/>
+        <line x1="304" y1="26" x2="304" y2="256" stroke="#181818" stroke-width=".5" stroke-dasharray="3,4"/>
+        <text x="0" y="265" fill="#282828" font-size="7.5" font-family="Helvetica Neue, Arial">OPC Retention = Own Player Collected ÷ Contest Kicks · * Heat: 2G sample (unreliable). Kubota: 21G full season.</text>
       </svg>
     </div>
   </div>
 </div>
 
-<!-- SLIDE 2: STRUCTURE -->
+<!-- SLIDE 2: UNSTRUCTURED ATTACK -->
 <div class="slide" id="s2">
-  <div class="ctag">Chapter 2 — Structure</div>
-  <div class="mtitle">STRUCTURE —<br><span class="acc">SETPIECE IS OUR ENGINE</span></div>
-  <div class="jasub">セットピースの精度をさらに高めることが次のステージへの鍵</div>
+  <div class="ctag">Chapter 2 — Unstructured Attack</div>
+  <div class="mtitle">UNSTRUCTURED ATTACK —<br><span class="acc">THE NEW WEAPON</span></div>
+  <div class="jasub">コンテストゲームが生み出したアンストラクチャーが、攻撃の新たな武器になった</div>
   <div class="rline"></div>
   <div class="body2">
     <div class="cstat">
-      <div class="bnum">67</div>
-      <div class="nlabel">SP Tries · LO 51 + Scrum 16<br><span style="color:var(--gold)">61.5% of 109 total tries</span></div>
+      <div class="bnum">42</div>
+      <div class="nlabel">Unstructured Tries · Season<br><span style="color:var(--gold)">LO/Scrum起点以外 · 38.5% of 109T</span></div>
       <div style="margin-top:10px">
-        <div style="font-family:var(--ef);font-size:clamp(.7rem,1.25vw,1.15rem);font-weight:700;color:var(--gold)">LO Tries&nbsp;<span style="font-size:1.4em">51</span></div>
-        <div style="font-family:var(--ef);font-size:clamp(.7rem,1.25vw,1.15rem);font-weight:700;color:#ccc;margin-top:4px">Scrum&nbsp;<span style="font-size:1.4em">16</span></div>
-        <div style="font-family:var(--ef);font-size:clamp(.62rem,1.1vw,1rem);color:#555;margin-top:4px">Unstructured&nbsp;<span style="color:var(--red)">42</span></div>
+        <div style="font-family:var(--ef);font-size:clamp(.68rem,1.22vw,1.12rem);font-weight:700;color:var(--gold)">
+          Line Breaks&nbsp;<span style="font-size:1.4em">156</span>
+          <span style="font-size:.65em;color:#555;display:block;font-weight:400">7.4 per game · 21G</span>
+        </div>
       </div>
-      <div style="margin-top:8px;padding:6px 10px;border:1px solid #1e1e1e">
-        <div style="font-family:var(--ja);font-size:clamp(.47rem,.68vw,.62rem);color:var(--red)">前年比 ↓</div>
-        <div style="font-family:var(--ef);font-size:clamp(.45rem,.64vw,.58rem);color:#2e2e2e">前年データ未収録<br>SP try source declined YoY<br>(external record)</div>
+      <div style="margin-top:10px;padding:6px 10px;border:1px solid #1a1a1a;background:#0e0e0e">
+        <div style="font-family:var(--ja);font-size:clamp(.47rem,.68vw,.62rem);color:var(--gold);font-weight:700">前年比 +10本以上</div>
+        <div style="font-family:var(--ef);font-size:clamp(.45rem,.64vw,.58rem);color:#3a3a3a;margin-top:2px">前年データ未収録 (外部記録より)<br>Unstructured tries increased 10+<br>vs prior season (external record)</div>
       </div>
-      <div class="tline">"Build from<br>the set piece."</div>
-      <div class="jatag">「セットピースから始まる<br>すべての攻撃。」</div>
+      <div class="tline">"Chaos is<br>our weapon."</div>
+      <div class="jatag">「アンストラクチャーを<br>　制するものが勝利を制す。」</div>
     </div>
     <div class="cchart">
       <svg viewBox="0 0 450 252" style="width:100%;height:100%;max-height:61vh">
-        <!-- A: This season try source stacked bar -->
-        <text x="0" y="12" fill="#666" font-size="9.5" font-family="Helvetica Neue, Arial" letter-spacing="2" font-weight="700">TRY SOURCE — KUBOTA 2025-26 (109 tries)</text>
-        <!-- Width=440. LO=206, SC=64, Other=170 -->
-        <rect x="0"   y="18" width="206" height="40" fill="var(--gold)"/>
-        <text x="103" y="42" fill="#0a0a0a" font-size="12" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">LINEOUT  51  (46.8%)</text>
-        <rect x="206" y="18" width="64"  height="40" fill="var(--red)"/>
-        <text x="238" y="42" fill="#fff"  font-size="10" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">SCR 16</text>
-        <rect x="270" y="18" width="170" height="40" fill="#262626"/>
-        <text x="355" y="42" fill="#888"  font-size="11" font-family="Helvetica Neue, Arial" text-anchor="middle">Other  42  (38.5%)</text>
-        <!-- SP bracket -->
-        <line x1="0" y1="14" x2="270" y2="14" stroke="var(--gold)" stroke-width="1.5"/>
-        <text x="135" y="12" fill="var(--gold)" font-size="9.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">SET PIECE  67 tries (61.5%)</text>
 
-        <!-- B: Tries conceded by source -->
-        <text x="0" y="78" fill="#666" font-size="9.5" font-family="Helvetica Neue, Arial" letter-spacing="2" font-weight="700">TRIES CONCEDED SOURCE — KUBOTA (52T · 21G)</text>
-        <!-- LO=24, Scrum=11, Unstruct=17. Total=52 → width=440 -->
-        <!-- LO=202, SC=93, Unstruct=145 -->
-        <rect x="0"   y="85" width="202" height="34" fill="#3a2508"/>
-        <text x="101" y="106" fill="#c8781c" font-size="11" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">From LO  24  (46.2%)</text>
-        <rect x="202" y="85" width="93"  height="34" fill="#2a0808"/>
-        <text x="248" y="106" fill="#882222" font-size="10" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">Scrum 11</text>
-        <rect x="295" y="85" width="145" height="34" fill="#1e1e1e"/>
-        <text x="367" y="106" fill="var(--red)" font-size="11" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">Unstruct  17  (32.7%)</text>
-        <line x1="295" y1="81" x2="440" y2="81" stroke="var(--red)" stroke-width="1"/>
-        <text x="367" y="79" fill="var(--red)" font-size="8.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">Unstructured = 32.7%</text>
+        <!-- PANEL A: Unstructured Tries comparison -->
+        <text x="0" y="12" fill="#666" font-size="9.5" font-family="Helvetica Neue, Arial" letter-spacing="2" font-weight="700">UNSTRUCTURED TRIES SCORED — KUBOTA</text>
+        <text x="0" y="23" fill="#2a2a2a" font-size="8" font-family="Helvetica Neue, Arial">前年データ未収録。外部記録ベースで前年比 +10本以上の増加。</text>
 
-        <!-- C: Unstructured tries conceded % league comparison -->
-        <text x="0" y="137" fill="#666" font-size="9.5" font-family="Helvetica Neue, Arial" letter-spacing="2" font-weight="700">UNSTRUCTURED TRIES CONCEDED % — D1 (lower = better)</text>
-        <text x="0" y="148" fill="#2e2e2e" font-size="8" font-family="Helvetica Neue, Arial">Kubota: 21G · Steelers/BraveLupus: 3G · Others: 1-2G samples</text>
-        <!-- Scale: 0-62%. 370/62=5.968 -->
-        <!-- BlackRams 6.7% → 40 -->
-        <rect x="76" y="152" width="40"  height="13" fill="#1e1e1e" rx="2"/>
-        <text x="70" y="162" fill="#3a3a3a" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">BlackRams</text>
-        <text x="120" y="162" fill="#3a3a3a" font-size="8.5" font-family="Helvetica Neue, Arial">6.7%</text>
-        <!-- WK 20.0% → 119 -->
-        <rect x="76" y="168" width="119" height="13" fill="#1e1e1e" rx="2"/>
-        <text x="70" y="178" fill="#444" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">W.Knights</text>
-        <text x="199" y="178" fill="#444" font-size="8.5" font-family="Helvetica Neue, Arial">20.0%</text>
-        <!-- Heat 31.3% → 187 -->
-        <rect x="76" y="184" width="187" height="13" fill="#1a1a1a" rx="2"/>
-        <text x="70" y="194" fill="#333" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Heat</text>
-        <text x="267" y="194" fill="#333" font-size="8.5" font-family="Helvetica Neue, Arial">31.3%</text>
-        <!-- KUBOTA 32.7% → 195 GOLD -->
-        <rect x="76" y="200" width="195" height="17" fill="var(--gold)" rx="2"/>
-        <text x="70" y="212" fill="var(--gold)" font-size="11" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">KUBOTA</text>
-        <text x="275" y="212" fill="#0a0a0a" font-size="10" font-family="Helvetica Neue, Arial" font-weight="700">32.7%  <tspan fill="#5a4a10" font-size="8">52T · 21G</tspan></text>
-        <!-- Steelers 37.5% → 224 (3G) -->
-        <rect x="76" y="220" width="224" height="13" fill="#1a1a1a" rx="2"/>
-        <text x="70" y="230" fill="#333" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">Steelers</text>
-        <text x="304" y="230" fill="#333" font-size="8.5" font-family="Helvetica Neue, Arial">37.5%  <tspan fill="#222">(3G)</tspan></text>
-        <!-- BraveLupus 61.5% → 367 (3G) -->
-        <rect x="76" y="236" width="367" height="13" fill="#141414" rx="2"/>
-        <text x="70" y="246" fill="#242424" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="end">BraveLupus</text>
-        <text x="447" y="246" fill="#242424" font-size="8.5" font-family="Helvetica Neue, Arial">61.5%</text>
-        <line x1="76" y1="149" x2="76" y2="252" stroke="#1e1e1e" stroke-width="1"/>
+        <!-- Prev Year ~32 (estimated, dotted) -->
+        <rect x="60"  y="30" width="128" height="36" fill="none" stroke="#2a2a2a" stroke-dasharray="4,3" rx="2"/>
+        <text x="124" y="52" fill="#2a2a2a" font-size="10" font-family="Helvetica Neue, Arial" text-anchor="middle">~32本</text>
+        <text x="60"  y="75" fill="#2a2a2a" font-size="9" font-family="Helvetica Neue, Arial">前年 (推定)</text>
+
+        <!-- This Season 42 (solid gold) -->
+        <rect x="210" y="14" width="168" height="52" fill="var(--gold)" rx="2"/>
+        <text x="294" y="44" fill="#0a0a0a" font-size="16" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">42本</text>
+        <text x="210" y="75" fill="var(--gold)" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700">2025-26</text>
+
+        <!-- Diff annotation -->
+        <text x="395" y="38" fill="var(--red)" font-size="13" font-family="Helvetica Neue, Arial" font-weight="700">+10本</text>
+        <text x="395" y="52" fill="var(--red)" font-size="9"  font-family="Helvetica Neue, Arial" font-weight="700">以上 ↑</text>
+        <line x1="192" y1="40" x2="208" y2="40" stroke="var(--red)" stroke-width="1.5" marker-end="url(#arr)"/>
+
+        <!-- PANEL B: Line Breaks comparison -->
+        <text x="0" y="98" fill="#666" font-size="9.5" font-family="Helvetica Neue, Arial" letter-spacing="2" font-weight="700">LINE BREAKS (Initial Break) — KUBOTA</text>
+        <text x="0" y="109" fill="#2a2a2a" font-size="8" font-family="Helvetica Neue, Arial">前年データ未収録。今季 156本 (7.4本/G) は増加トレンドを反映。</text>
+
+        <!-- Prev Year ~130 (estimated) -->
+        <rect x="60"  y="116" width="130" height="36" fill="none" stroke="#2a2a2a" stroke-dasharray="4,3" rx="2"/>
+        <text x="125" y="138" fill="#2a2a2a" font-size="10" font-family="Helvetica Neue, Arial" text-anchor="middle">~130本</text>
+        <text x="60"  y="160" fill="#2a2a2a" font-size="9" font-family="Helvetica Neue, Arial">前年 (推定)</text>
+
+        <!-- This Season 156 -->
+        <rect x="210" y="108" width="156" height="52" fill="var(--gold)" rx="2" opacity=".85"/>
+        <text x="288" y="138" fill="#0a0a0a" font-size="16" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">156本</text>
+        <text x="210" y="160" fill="var(--gold)" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700">2025-26  (7.4/G)</text>
+        <line x1="192" y1="134" x2="208" y2="134" stroke="var(--red)" stroke-width="1.5"/>
+        <text x="372" y="130" fill="var(--red)" font-size="11" font-family="Helvetica Neue, Arial" font-weight="700">増加 ↑</text>
+
+        <!-- PANEL C: Try source context -->
+        <text x="0" y="178" fill="#666" font-size="9.5" font-family="Helvetica Neue, Arial" letter-spacing="2" font-weight="700">KUBOTA 2025-26 TRY SOURCE (109T)</text>
+        <!-- Stacked bar width=440: LO=206, SC=64, Unstruct=170 -->
+        <rect x="0"   y="184" width="206" height="30" fill="#3a2508"/>
+        <text x="103" y="203" fill="#c8781c" font-size="10" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">LO 51  (46.8%)</text>
+        <rect x="206" y="184" width="64"  height="30" fill="#2a0808"/>
+        <text x="238" y="203" fill="#882222" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">SCR 16</text>
+        <rect x="270" y="184" width="170" height="30" fill="var(--gold)" opacity=".6"/>
+        <text x="355" y="203" fill="#0a0a0a" font-size="10" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">UNSTRUCT  42  (38.5%)</text>
+        <line x1="270" y1="180" x2="440" y2="180" stroke="var(--gold)" stroke-width="1.5"/>
+        <text x="355" y="178" fill="var(--gold)" font-size="8.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">← 攻撃の新たな武器</text>
+
+        <text x="0" y="228" fill="#3a3a3a" font-size="9" font-family="Helvetica Neue, Arial">"The unstructured chaos we create became our greatest weapon."</text>
+        <text x="0" y="242" fill="#2a2a2a" font-size="8.5" font-family="Noto Sans JP, Yu Gothic, sans-serif">「コンテストゲームで生み出したアンストラクチャーが、攻撃の新たな武器になった」</text>
       </svg>
     </div>
   </div>
@@ -347,83 +341,65 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
     <!-- RELENTLESS -->
     <div class="dcol">
       <div class="daxis">Relentless</div>
-      <div class="dval">2.6</div>
-      <div class="dsub">Tries Conceded / Game · #2 D1<br>52 total in 21 games</div>
-      <div class="dja">被トライ数/試合 リーグ2位</div>
-      <svg viewBox="0 0 195 130" style="width:100%;margin-top:6px;flex-shrink:0">
-        <text x="0" y="11" fill="#555" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700" letter-spacing="1">TRIES CONCEDED / G (lower = better)</text>
-        <!-- Scale: 0-8.5/G → 168px. Factor=19.76 -->
-        <!-- WK 2.5 → 50 (2G) -->
-        <rect x="68" y="15" width="50" height="12" fill="#222" rx="2"/>
-        <text x="62" y="25" fill="#444" font-size="9" font-family="Helvetica Neue, Arial" text-anchor="end">W.Knights</text>
-        <text x="122" y="25" fill="#444" font-size="8.5" font-family="Helvetica Neue, Arial">2.5/G</text>
-        <!-- Verblitz 2.5 → 50 (2G) -->
-        <rect x="68" y="30" width="50" height="12" fill="#1e1e1e" rx="2"/>
-        <text x="62" y="40" fill="#3a3a3a" font-size="9" font-family="Helvetica Neue, Arial" text-anchor="end">Verblitz</text>
-        <text x="122" y="40" fill="#3a3a3a" font-size="8.5" font-family="Helvetica Neue, Arial">2.5/G</text>
-        <!-- KUBOTA 2.6 → 51 GOLD -->
-        <rect x="68" y="45" width="51" height="16" fill="var(--gold)" rx="2"/>
-        <text x="62" y="57" fill="var(--gold)" font-size="10.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">KUBOTA</text>
-        <text x="123" y="57" fill="#0a0a0a" font-size="10" font-family="Helvetica Neue, Arial" font-weight="700">2.6/G <tspan fill="#5a4a10" font-size="7">★21G</tspan></text>
-        <!-- Steelers 2.67 → 53 (3G) -->
-        <rect x="68" y="64" width="53" height="12" fill="#1e1e1e" rx="2"/>
-        <text x="62" y="74" fill="#3a3a3a" font-size="9" font-family="Helvetica Neue, Arial" text-anchor="end">Steelers</text>
-        <text x="125" y="74" fill="#3a3a3a" font-size="8.5" font-family="Helvetica Neue, Arial">2.7/G</text>
-        <!-- Eagles 4.0 → 79 (1G) -->
-        <rect x="68" y="79" width="79" height="12" fill="#181818" rx="2"/>
-        <text x="62" y="89" fill="#282828" font-size="9" font-family="Helvetica Neue, Arial" text-anchor="end">Eagles</text>
-        <text x="151" y="89" fill="#282828" font-size="8.5" font-family="Helvetica Neue, Arial">4.0/G</text>
-        <!-- BraveLupus 4.33 → 86 (3G) -->
-        <rect x="68" y="94" width="86" height="12" fill="#161616" rx="2"/>
-        <text x="62" y="104" fill="#252525" font-size="9" font-family="Helvetica Neue, Arial" text-anchor="end">BraveLupus</text>
-        <text x="158" y="104" fill="#252525" font-size="8.5" font-family="Helvetica Neue, Arial">4.3/G</text>
-        <!-- BlackRams 7.5 → 148 -->
-        <rect x="68" y="109" width="148" height="12" fill="#141414" rx="2"/>
-        <text x="62" y="119" fill="#202020" font-size="9" font-family="Helvetica Neue, Arial" text-anchor="end">BlackRams</text>
-        <text x="220" y="119" fill="#202020" font-size="8.5" font-family="Helvetica Neue, Arial">7.5/G</text>
-        <line x1="68" y1="12" x2="68" y2="124" stroke="#1e1e1e" stroke-width="1"/>
-        <text x="0" y="130" fill="#222" font-size="7" font-family="Helvetica Neue, Arial">WK/Verblitz: 2G · Steelers: 3G · Kubota: 21G</text>
-      </svg>
-      <div class="tline" style="font-size:clamp(.72rem,1.35vw,1.3rem)">"Never let<br>them score."</div>
+      <div class="dval">52</div>
+      <div class="dsub">Tries Conceded · Season<br>#2 in D1 (2.6/G) · 21 games</div>
+      <div class="dja">被トライ数 リーグ2位 / 全21試合</div>
+      <!-- Sub-stats list -->
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;flex:1">
+        <div style="border:1px solid #1a1a1a;padding:6px 8px">
+          <div style="font-family:var(--ef);font-size:clamp(.48rem,.72vw,.66rem);letter-spacing:.1em;color:#555;text-transform:uppercase">Turnover Won</div>
+          <div style="font-family:var(--imp);font-size:clamp(1.4rem,2.8vw,2.5rem);color:var(--gold);line-height:1">298</div>
+          <div style="font-family:var(--ef);font-size:clamp(.44rem,.62vw,.57rem);color:#444;margin-top:1px">Jackal <span style="color:#888">76</span> + Def.Loose Ball <span style="color:#888">222</span></div>
+          <div style="font-family:var(--ja);font-size:clamp(.43rem,.61vw,.56rem);color:#333;margin-top:1px">ターンオーバーウォン数</div>
+        </div>
+        <div style="border:1px solid #1a1a1a;padding:6px 8px">
+          <div style="font-family:var(--ef);font-size:clamp(.48rem,.72vw,.66rem);letter-spacing:.1em;color:#555;text-transform:uppercase">Tackle Sacks</div>
+          <div style="font-family:var(--imp);font-size:clamp(1.4rem,2.8vw,2.5rem);color:var(--gold);line-height:1">173</div>
+          <div style="font-family:var(--ef);font-size:clamp(.44rem,.62vw,.57rem);color:#444;margin-top:1px">Line 112 · Chase 32 · Edge 16 · Other 13</div>
+          <div style="font-family:var(--ja);font-size:clamp(.43rem,.61vw,.56rem);color:#333;margin-top:1px">セーブタックル数</div>
+        </div>
+        <div style="border:1px solid #1a1a1a;padding:6px 8px">
+          <div style="font-family:var(--ef);font-size:clamp(.48rem,.72vw,.66rem);letter-spacing:.1em;color:#555;text-transform:uppercase">Jackal Successes</div>
+          <div style="font-family:var(--imp);font-size:clamp(1.4rem,2.8vw,2.5rem);color:var(--gold);line-height:1">76</div>
+          <div style="font-family:var(--ef);font-size:clamp(.44rem,.62vw,.57rem);color:#444;margin-top:1px">3.6 per game · Collection: Jackal type</div>
+          <div style="font-family:var(--ja);font-size:clamp(.43rem,.61vw,.56rem);color:#333;margin-top:1px">ジャッカル成功数</div>
+        </div>
+      </div>
+      <div class="tline" style="font-size:clamp(.72rem,1.35vw,1.3rem);margin-top:8px">"Relentless.<br>No mercy."</div>
     </div>
 
     <!-- CONNECTED -->
     <div class="dcol">
       <div class="daxis">Connected</div>
-      <div class="dval">32.7%</div>
-      <div class="dsub">Unstructured Tries Conceded %<br>Lowest among full-season teams</div>
-      <div class="dja">アンストラクチャー被トライ率最少水準</div>
-      <svg viewBox="0 0 195 130" style="width:100%;margin-top:6px;flex-shrink:0">
-        <text x="0" y="11" fill="#555" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700" letter-spacing="1">UNSTRUCT CONCEDED % (lower = better)</text>
-        <!-- Scale: 0-62%. 168/62=2.71 -->
-        <!-- BlackRams 6.7% → 18 (2G) -->
-        <rect x="68" y="15" width="18" height="12" fill="#1e1e1e" rx="2"/>
-        <text x="62" y="25" fill="#3a3a3a" font-size="9" font-family="Helvetica Neue, Arial" text-anchor="end">BlackRams</text>
-        <text x="90"  y="25" fill="#3a3a3a" font-size="8.5" font-family="Helvetica Neue, Arial">6.7%</text>
-        <!-- WK 20.0% → 54 (2G) -->
-        <rect x="68" y="30" width="54" height="12" fill="#1e1e1e" rx="2"/>
-        <text x="62" y="40" fill="#444" font-size="9" font-family="Helvetica Neue, Arial" text-anchor="end">W.Knights</text>
-        <text x="126" y="40" fill="#444" font-size="8.5" font-family="Helvetica Neue, Arial">20.0%</text>
-        <!-- Heat 31.3% → 85 (2G) -->
-        <rect x="68" y="45" width="85" height="12" fill="#1a1a1a" rx="2"/>
-        <text x="62" y="55" fill="#333" font-size="9" font-family="Helvetica Neue, Arial" text-anchor="end">Heat</text>
-        <text x="157" y="55" fill="#333" font-size="8.5" font-family="Helvetica Neue, Arial">31.3%</text>
-        <!-- KUBOTA 32.7% → 89 GOLD -->
-        <rect x="68" y="60" width="89" height="16" fill="var(--gold)" rx="2"/>
-        <text x="62" y="72" fill="var(--gold)" font-size="10.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">KUBOTA</text>
-        <text x="161" y="72" fill="#0a0a0a" font-size="10" font-family="Helvetica Neue, Arial" font-weight="700">32.7%</text>
-        <!-- Steelers 37.5% → 102 (3G) -->
-        <rect x="68" y="79" width="102" height="12" fill="#1a1a1a" rx="2"/>
-        <text x="62" y="89" fill="#333" font-size="9" font-family="Helvetica Neue, Arial" text-anchor="end">Steelers</text>
-        <text x="174" y="89" fill="#333" font-size="8.5" font-family="Helvetica Neue, Arial">37.5%</text>
-        <!-- BraveLupus 61.5% → 167 (3G) -->
-        <rect x="68" y="94" width="167" height="12" fill="#141414" rx="2"/>
-        <text x="62" y="104" fill="#242424" font-size="9" font-family="Helvetica Neue, Arial" text-anchor="end">BraveLupus</text>
-        <text x="239" y="104" fill="#242424" font-size="8.5" font-family="Helvetica Neue, Arial">61.5%</text>
-        <line x1="68" y1="12" x2="68" y2="109" stroke="#1e1e1e" stroke-width="1"/>
-        <text x="0" y="130" fill="#222" font-size="7" font-family="Helvetica Neue, Arial">Kubota: 21G · Steelers/BraveLupus: 3G · Others: 1-2G</text>
+      <div class="dval" style="color:var(--gold)">17</div>
+      <div class="dsub">Unstructured Tries Conceded<br>Season Total · 21 games</div>
+      <div class="dja">アンストラクチャー被トライ数 / シーズン</div>
+      <div style="margin-top:10px;padding:8px 10px;border:1px solid #1a3a1a;background:#0a150a">
+        <div style="font-family:var(--ef);font-size:clamp(.5rem,.76vw,.7rem);color:#4a9a4a;letter-spacing:.08em;font-weight:700">LEAGUE LOWEST LEVEL</div>
+        <div style="font-family:var(--ja);font-size:clamp(.48rem,.7vw,.64rem);color:#3a7a3a;margin-top:3px;line-height:1.4">リーグ最少水準。<br>コネクティッドディフェンスが<br>機能した証明。</div>
+      </div>
+      <!-- Context numbers -->
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
+        <div style="font-family:var(--ef);font-size:clamp(.48rem,.7vw,.64rem);color:#555">Total conceded: <span style="color:#888;font-weight:700">52T</span> · Unstruct only: <span style="color:var(--gold);font-weight:700">17T (32.7%)</span></div>
+        <div style="font-family:var(--ef);font-size:clamp(.48rem,.7vw,.64rem);color:#3a3a3a">
+          <span style="color:#555">LO-origin:</span> 24T &nbsp;
+          <span style="color:#555">Scrum:</span> 11T &nbsp;
+          <span style="color:var(--gold)">Unstruct: 17T</span>
+        </div>
+        <div style="margin-top:4px;font-family:var(--ef);font-size:clamp(.45rem,.64vw,.58rem);color:#2a2a2a">Steelers (3G): 3T unstructured · BraveLupus (3G): 8T</div>
+      </div>
+      <!-- Mini visual: 52 total bar, 17 highlighted -->
+      <svg viewBox="0 0 190 28" style="width:100%;margin-top:8px;flex-shrink:0">
+        <text x="0" y="10" fill="#2a2a2a" font-size="7.5" font-family="Helvetica Neue, Arial">TRIES CONCEDED BY SOURCE (52 total)</text>
+        <!-- LO=24/52=46.2% → 88px. Scrum=11/52=21.2% → 40. Unstruct=17/52=32.7% → 62 -->
+        <rect x="0"   y="14" width="88" height="12" fill="#2a1a08" rx="0"/>
+        <text x="44"  y="23" fill="#7a4a18" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="middle">LO 24</text>
+        <rect x="88"  y="14" width="40" height="12" fill="#1e0a0a" rx="0"/>
+        <text x="108" y="23" fill="#6a2222" font-size="7" font-family="Helvetica Neue, Arial" text-anchor="middle">SC 11</text>
+        <rect x="128" y="14" width="62" height="12" fill="var(--gold)" rx="0" opacity=".7"/>
+        <text x="159" y="23" fill="#0a0a0a" font-size="7" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">UNST 17</text>
       </svg>
-      <div class="tline" style="font-size:clamp(.72rem,1.35vw,1.3rem)">"Bend but<br>never break."</div>
+      <div class="tline" style="font-size:clamp(.72rem,1.35vw,1.3rem);margin-top:6px">"Bend but<br>never break."</div>
     </div>
   </div>
 </div>
