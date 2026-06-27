@@ -635,87 +635,125 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 <!-- SLIDE 4: KICKING -->
 <div class="slide" id="s4">
   <div class="ctag">Chapter 4 — Kicking Game</div>
-  <div class="mtitle">KICKING —<br><span class="acc">80 MINUTES, ONE GAME PLAN</span></div>
-  <div class="jasub">Top4対戦 vs その他 — キッキングメーター比較（/試合） · 80分間一貫した戦い方が次のステージへの条件</div>
+  <div class="mtitle">KICKING —<br><span class="acc">WIN WHAT WE KICK.</span></div>
+  <div class="jasub">「蹴った後を制する。80分のゲームコントロールへ。」</div>
   <div class="rline"></div>
   <div class="body2">
-    <div class="cstat">
-      <div class="bnum-sm bnum">851m</div>
-      <div class="nlabel">Kick Metres / Game vs Top4<br><span style="color:var(--gold)">+16% vs Others (731m/G)</span></div>
-      <div style="margin-top:12px">
-        <div style="font-family:var(--ef);font-size:clamp(.65rem,1.18vw,1.08rem);font-weight:700;color:#fff">
-          Territorial<span style="font-family:var(--ja);font-size:.75em;color:#444;display:block;font-weight:400">Touch + Box + Bomb</span>
-          <span style="color:var(--gold)">713m</span><span style="color:#555;font-size:.8em">/G vs Top4</span>
-          &nbsp;<span style="color:#888">628m</span><span style="color:#555;font-size:.8em">/G Others</span>
-        </div>
-        <div style="font-family:var(--ef);font-size:clamp(.65rem,1.18vw,1.08rem);font-weight:700;color:#fff;margin-top:7px">
-          Attacking<span style="font-family:var(--ja);font-size:.75em;color:#444;display:block;font-weight:400">Chip + Cross-pitch + Low</span>
-          <span style="color:var(--gold)">72m</span><span style="color:#555;font-size:.8em">/G vs Top4</span>
-          &nbsp;<span style="color:#888">68m</span><span style="color:#555;font-size:.8em">/G Others</span>
-        </div>
-      </div>
-      <div class="tline">"Kick further.<br>Win the field."</div>
-      <div class="jatag">「一貫した戦い方を<br>80分間継続せよ。」</div>
-    </div>
-    <div class="cchart">
-      <svg viewBox="0 0 450 250" style="width:100%;height:100%;max-height:61vh">
-        <text x="0" y="12" fill="#666" font-size="9.5" font-family="Helvetica Neue, Arial" font-weight="700" letter-spacing="2">KICKING METRES / GAME — vs TOP4 (10G) vs OTHERS (11G)</text>
+
+    <!-- Left: 3-metric horizontal bar charts -->
+    <div style="flex:1;min-width:0;display:flex;align-items:flex-start;height:100%">
+      <svg viewBox="0 0 420 240" style="width:100%;height:100%;max-height:62vh">
+
         <!-- Legend -->
-        <rect x="0"   y="19" width="12" height="9" fill="#2a6496"/>
-        <text x="16"  y="27" fill="#aaa" font-size="9" font-family="Helvetica Neue, Arial">vs Top4 (Wild Knights / Steelers / BraveLupus / Sungoliath)</text>
-        <rect x="0"   y="31" width="12" height="9" fill="#444"/>
-        <text x="16"  y="39" fill="#666" font-size="9" font-family="Helvetica Neue, Arial">vs Others (7 teams, 11 games)</text>
+        <rect x="0" y="4" width="10" height="10" fill="#2a6496" rx="1"/>
+        <text x="14" y="12" fill="#888" font-size="8.5" font-family="Helvetica Neue, Arial">vs Top3 (PAN/STL/SUN · 7G)</text>
+        <rect x="200" y="4" width="10" height="10" fill="#444" rx="1"/>
+        <text x="214" y="12" fill="#666" font-size="8.5" font-family="Helvetica Neue, Arial">vs Others (14G)</text>
 
-        <!-- Grouped bars. Scale: max=851 → h=170. Factor=0.1997 -->
-        <!-- Groups at: Territorial gx=20, Attacking gx=160, Total gx=310 -->
-        <!-- Bar w=42, gap=6. Baseline y=218 -->
+        <!-- ─── CHART 1: TERRITORY % ─── -->
+        <!-- Scale: 60% = 250px → factor 4.167  Top3:49.4→206px  Others:55.7→232px -->
+        <text x="0" y="33" fill="#555" font-size="7.5" font-family="Helvetica Neue, Arial" font-weight="700" letter-spacing="1.5">TERRITORY %</text>
+        <!-- vs Top3 -->
+        <rect x="92" y="37" width="206" height="14" fill="#2a6496" rx="2"/>
+        <text x="88" y="48" fill="#6699bb" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">Top3</text>
+        <text x="302" y="48" fill="#6699bb" font-size="9.5" font-family="Helvetica Neue, Arial" font-weight="700">49.4%</text>
+        <!-- vs Others -->
+        <rect x="92" y="55" width="232" height="10" fill="#3a3a3a" rx="2"/>
+        <text x="88" y="63" fill="#666" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Others</text>
+        <text x="328" y="63" fill="#666" font-size="8.5" font-family="Helvetica Neue, Arial">55.7%</text>
+        <!-- Diff label -->
+        <text x="385" y="51" fill="#c0392b" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">−6.3pp</text>
+        <line x1="345" y1="44" x2="345" y2="68" stroke="#1e1e1e" stroke-width=".5"/>
 
-        <!-- GROUP 1: TERRITORIAL (Touch+Box+Bomb) -->
-        <!-- Top4: 712.8m → h=142, y=76 -->
-        <rect x="20"  y="76"  width="42" height="142" fill="#2a6496" rx="2"/>
-        <text x="41"  y="72"  fill="#4a94c6" font-size="10" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">713m</text>
-        <!-- Others: 628.0m → h=125, y=93 -->
-        <rect x="66"  y="93"  width="42" height="125" fill="#444" rx="2"/>
-        <text x="87"  y="89"  fill="#888" font-size="10" font-family="Helvetica Neue, Arial" text-anchor="middle">628m</text>
-        <text x="64"  y="231" fill="#aaa" font-size="9.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">TERRITORIAL</text>
-        <text x="64"  y="242" fill="#555" font-size="8" font-family="Helvetica Neue, Arial" text-anchor="middle">Touch + Box + Bomb</text>
+        <!-- ─── CHART 2: KICKING m/G ─── -->
+        <!-- Scale: 900m = 250px → factor 0.2778  Top3:848→236px  Others:759→211px -->
+        <text x="0" y="103" fill="#555" font-size="7.5" font-family="Helvetica Neue, Arial" font-weight="700" letter-spacing="1.5">KICKING m/G</text>
+        <!-- vs Top3 (orange highlight) -->
+        <rect x="92" y="107" width="236" height="14" fill="#E8521A" rx="2"/>
+        <text x="88" y="118" fill="#E8521A" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">Top3</text>
+        <text x="332" y="118" fill="#E8521A" font-size="9.5" font-family="Helvetica Neue, Arial" font-weight="700">848m</text>
+        <!-- vs Others -->
+        <rect x="92" y="125" width="211" height="10" fill="#3a3a3a" rx="2"/>
+        <text x="88" y="133" fill="#666" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Others</text>
+        <text x="307" y="133" fill="#666" font-size="8.5" font-family="Helvetica Neue, Arial">759m</text>
+        <!-- Diff label (orange) -->
+        <text x="385" y="121" fill="#E8521A" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">+89m</text>
+        <line x1="345" y1="114" x2="345" y2="138" stroke="#1e1e1e" stroke-width=".5"/>
 
-        <!-- GROUP 2: ATTACKING (Chip+Cross-pitch+Low) -->
-        <!-- Top4: 71.6m → h=14, y=204 -->
-        <rect x="168" y="204" width="42" height="14" fill="#2a6496" rx="2"/>
-        <text x="189" y="200" fill="#4a94c6" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="middle">72m</text>
-        <!-- Others: 67.8m → h=14, y=204 -->
-        <rect x="214" y="205" width="42" height="13" fill="#444" rx="2"/>
-        <text x="235" y="201" fill="#888" font-size="9.5" font-family="Helvetica Neue, Arial" text-anchor="middle">68m</text>
-        <text x="212" y="231" fill="#aaa" font-size="9.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">ATTACKING</text>
-        <text x="212" y="242" fill="#555" font-size="8" font-family="Helvetica Neue, Arial" text-anchor="middle">Chip + Cross + Low</text>
+        <!-- ─── CHART 3: CONTEST RETENTION ─── -->
+        <!-- Scale: 45% = 250px → factor 5.556  Top3:26.3→146px  Others:38.1→212px -->
+        <text x="0" y="173" fill="#555" font-size="7.5" font-family="Helvetica Neue, Arial" font-weight="700" letter-spacing="1.5">CONTEST RETENTION</text>
+        <!-- vs Top3 -->
+        <rect x="92" y="177" width="146" height="14" fill="#2a6496" rx="2"/>
+        <text x="88" y="188" fill="#6699bb" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="end">Top3</text>
+        <text x="242" y="188" fill="#6699bb" font-size="9.5" font-family="Helvetica Neue, Arial" font-weight="700">26.3%</text>
+        <!-- vs Others -->
+        <rect x="92" y="195" width="212" height="10" fill="#3a3a3a" rx="2"/>
+        <text x="88" y="203" fill="#666" font-size="8.5" font-family="Helvetica Neue, Arial" text-anchor="end">Others</text>
+        <text x="308" y="203" fill="#666" font-size="8.5" font-family="Helvetica Neue, Arial">38.1%</text>
+        <!-- Diff label (red) -->
+        <text x="385" y="191" fill="#c0392b" font-size="9" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">−12pp</text>
+        <line x1="345" y1="184" x2="345" y2="208" stroke="#1e1e1e" stroke-width=".5"/>
 
-        <!-- GROUP 3: TOTAL -->
-        <!-- Top4: 851.4m → h=170, y=48 HIGHLIGHT -->
-        <rect x="315" y="48"  width="42" height="170" fill="#2a6496" rx="2" opacity=".9"/>
-        <text x="336" y="44"  fill="#fff" font-size="11" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">851m</text>
-        <!-- Others: 731.2m → h=146, y=72 -->
-        <rect x="361" y="72"  width="42" height="146" fill="#444" rx="2"/>
-        <text x="382" y="68"  fill="#bbb" font-size="10.5" font-family="Helvetica Neue, Arial" text-anchor="middle">731m</text>
-        <text x="359" y="231" fill="var(--gold)" font-size="9.5" font-family="Helvetica Neue, Arial" font-weight="700" text-anchor="middle">TOTAL +16%</text>
-        <text x="359" y="242" fill="#555" font-size="8" font-family="Helvetica Neue, Arial" text-anchor="middle">vs Top4 difference</text>
-
-        <!-- Annotation arrow -->
-        <line x1="315" y1="48" x2="261" y2="48" stroke="var(--gold)" stroke-width="1" stroke-dasharray="3,3"/>
-        <text x="258" y="48" fill="var(--gold)" font-size="8" font-family="Helvetica Neue, Arial" text-anchor="end">Top4 kicks further</text>
-
-        <!-- Baseline + y-axis -->
-        <line x1="10" y1="218" x2="420" y2="218" stroke="#222" stroke-width="1"/>
-        <line x1="10" y1="42"  x2="10"  y2="218" stroke="#1e1e1e" stroke-width="1"/>
-        <text x="8"  y="220"   fill="#2a2a2a" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="end">0</text>
-        <text x="8"  y="192"   fill="#2a2a2a" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="end">150m</text>
-        <text x="8"  y="168"   fill="#2a2a2a" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="end">300m</text>
-        <text x="8"  y="118"   fill="#2a2a2a" font-size="7.5" font-family="Helvetica Neue, Arial" text-anchor="end">600m</text>
-        <line x1="10" y1="192" x2="420" y2="192" stroke="#161616" stroke-width=".5" stroke-dasharray="3,4"/>
-        <line x1="10" y1="168" x2="420" y2="168" stroke="#161616" stroke-width=".5" stroke-dasharray="3,4"/>
-        <line x1="10" y1="118" x2="420" y2="118" stroke="#161616" stroke-width=".5" stroke-dasharray="3,4"/>
+        <!-- Footnote -->
+        <text x="0" y="236" fill="#1e1e1e" font-size="7" font-family="Helvetica Neue, Arial">Carry+Pass座標集計 · 7G vs Top3 / 14G vs Others · 2025-26 D1全21試合</text>
       </svg>
     </div>
+
+    <!-- Right: Causal flow box -->
+    <div style="width:clamp(185px,21vw,235px);display:flex;flex-direction:column;gap:0;background:#0c0c0c;border:1px solid #252525;border-radius:4px;padding:clamp(8px,1.2vw,12px) clamp(9px,1.3vw,13px);font-family:var(--ef);flex-shrink:0;align-self:stretch">
+
+      <div style="font-size:clamp(.4rem,.58vw,.53rem);letter-spacing:.18em;color:#555;font-weight:700;text-transform:uppercase;margin-bottom:6px">TOP3戦のサイクル</div>
+
+      <!-- Step 1 -->
+      <div style="background:#141414;border:1px solid #2a2a2a;border-radius:3px;padding:clamp(5px,.8vw,7px) clamp(6px,1vw,9px);text-align:center">
+        <div style="font-size:clamp(.54rem,.86vw,.8rem);font-weight:700;color:#fff">Territory ≈ 50/50</div>
+        <div style="font-size:clamp(.4rem,.58vw,.53rem);color:#555;margin-top:2px">49.4% · 均衡</div>
+      </div>
+
+      <!-- Arrow 1 -->
+      <div style="text-align:center;padding:2px 0">
+        <div style="font-size:clamp(.36rem,.52vw,.48rem);color:#3a3a3a;font-family:var(--ja)">陣地が取れない</div>
+        <div style="font-size:clamp(.9rem,1.6vw,1.4rem);color:#E8521A;line-height:1.1">↓</div>
+      </div>
+
+      <!-- Step 2 (orange highlight) -->
+      <div style="background:#150a00;border:1px solid #3a2000;border-left:3px solid #E8521A;border-radius:3px;padding:clamp(5px,.8vw,7px) clamp(6px,1vw,9px);text-align:center">
+        <div style="font-size:clamp(.54rem,.86vw,.8rem);font-weight:700;color:#E8521A">Kick More</div>
+        <div style="font-size:clamp(.48rem,.72vw,.66rem);font-weight:700;color:#fff;margin-top:2px">+89m/G → 848m</div>
+      </div>
+
+      <!-- Arrow 2 -->
+      <div style="text-align:center;padding:2px 0">
+        <div style="font-size:clamp(.36rem,.52vw,.48rem);color:#3a3a3a;font-family:var(--ja)">蹴って取り返そうとする</div>
+        <div style="font-size:clamp(.9rem,1.6vw,1.4rem);color:#E8521A;line-height:1.1">↓</div>
+      </div>
+
+      <!-- Step 3 -->
+      <div style="background:#141414;border:1px solid #2a2a2a;border-radius:3px;padding:clamp(5px,.8vw,7px) clamp(6px,1vw,9px);text-align:center">
+        <div style="font-size:clamp(.54rem,.86vw,.8rem);font-weight:700;color:#fff">Contest Retention ↓</div>
+        <div style="font-size:clamp(.47rem,.7vw,.65rem);font-weight:700;color:#c0392b;margin-top:2px">26.3% — −12pp vs Others</div>
+      </div>
+
+      <!-- Arrow 3 -->
+      <div style="text-align:center;padding:2px 0">
+        <div style="font-size:clamp(.36rem,.52vw,.48rem);color:#3a3a3a;font-family:var(--ja)">でも回収できない</div>
+        <div style="font-size:clamp(.9rem,1.6vw,1.4rem);color:#E8521A;line-height:1.1">↓</div>
+      </div>
+
+      <!-- Divider -->
+      <div style="height:1px;background:#252525;margin:3px 0"></div>
+
+      <!-- Bottom message -->
+      <div style="text-align:center;padding:clamp(5px,.8vw,8px) 0 clamp(3px,.5vw,5px)">
+        <div style="font-size:clamp(.62rem,.98vw,.92rem);font-weight:700;color:#E8521A">"Win what we kick."</div>
+        <div style="font-size:clamp(.4rem,.58vw,.53rem);color:#666;font-family:var(--ja);margin-top:3px;line-height:1.4">「蹴った後を制する80分へ。」</div>
+      </div>
+
+      <!-- Bottom divider -->
+      <div style="height:1px;background:#252525;margin-top:2px"></div>
+    </div>
+
   </div>
 </div>
 
