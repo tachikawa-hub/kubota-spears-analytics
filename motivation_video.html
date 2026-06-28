@@ -1222,164 +1222,90 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 
     <!-- BOTTOM: PCM grouped bar chart -->
     <div style="flex:1;min-height:0;display:flex;flex-direction:column">
-      <div style="display:flex;align-items:baseline;gap:1.2em;flex-shrink:0;margin-bottom:2px;flex-wrap:wrap">
-        <span style="font-family:var(--ef);font-size:clamp(.4rem,.6vw,.58rem);letter-spacing:.18em;color:#666;text-transform:uppercase;font-weight:700">Post-Contact Metres in 22m Zone &#8212; Where is the gap?</span>
-        <span style="font-family:var(--ja);font-size:clamp(.48rem,.7vw,.65rem);color:#444">&#12300;22m&#20869;&#12391;&#12398;&#12509;&#12473;&#12488;&#12467;&#12531;&#12479;&#12463;&#12488;&#12513;&#12540;&#12479;&#12540;&#12290;&#24046;&#12399;&#12393;&#12371;&#12395;&#12354;&#12427;&#65311;&#12301;</span>
+      <div style="flex-shrink:0;margin-bottom:3px">
+        <div style="font-family:var(--imp);font-size:clamp(1.1rem,1.9vw,1.7rem);letter-spacing:.1em;color:#fff;text-transform:uppercase;font-weight:900;line-height:1.1">POST-CONTACT METRES IN 22M ZONE</div>
+        <div style="font-family:var(--ja);font-size:clamp(.72rem,1.1vw,1rem);color:#aaa;margin-top:2px">&#12300;22m&#20869;&#12391;&#12398;&#12509;&#12473;&#12488;&#12467;&#12531;&#12479;&#12463;&#12488;&#12513;&#12540;&#12479;&#12540;&#12290;&#24046;&#12399;&#12393;&#12371;&#12395;&#12354;&#12427;&#65311;&#12301;</div>
       </div>
-      <div style="display:flex;gap:1.4em;align-items:center;flex-shrink:0;margin-bottom:2px">
-        <span style="font-size:clamp(.5rem,.65rem,.65rem);color:#888;font-family:var(--ef)"><span style="display:inline-block;width:9px;height:8px;background:#E8521A;vertical-align:middle;margin-right:3px;border-radius:1px"></span>Spears</span>
-        <span style="font-size:clamp(.5rem,.65rem,.65rem);color:#888;font-family:var(--ef)"><span style="display:inline-block;width:9px;height:8px;background:#1e4d8c;vertical-align:middle;margin-right:3px;border-radius:1px"></span>Wild Knights</span>
-        <span style="font-size:clamp(.5rem,.65rem,.65rem);color:#888;font-family:var(--ef)"><span style="display:inline-block;width:9px;height:8px;background:#6b6b6b;vertical-align:middle;margin-right:3px;border-radius:1px"></span>Steelers</span>
+      <div style="display:flex;gap:1.4em;align-items:center;flex-shrink:0;margin-bottom:3px">
+        <span style="font-size:clamp(.55rem,.75rem,.75rem);color:#aaa;font-family:var(--ef)"><span style="display:inline-block;width:9px;height:8px;background:#E8521A;vertical-align:middle;margin-right:3px;border-radius:1px"></span>Spears</span>
+        <span style="font-size:clamp(.55rem,.75rem,.75rem);color:#aaa;font-family:var(--ef)"><span style="display:inline-block;width:9px;height:8px;background:#1e4d8c;vertical-align:middle;margin-right:3px;border-radius:1px"></span>Wild Knights</span>
+        <span style="font-size:clamp(.55rem,.75rem,.75rem);color:#aaa;font-family:var(--ef)"><span style="display:inline-block;width:9px;height:8px;background:#6b6b6b;vertical-align:middle;margin-right:3px;border-radius:1px"></span>Steelers</span>
       </div>
       <svg viewBox="0 0 760 165" style="width:100%;flex:1;min-height:0;overflow:visible">
-        <!--
-          Scale 30px/m. Baseline y=140. Max h=120 (WK Centre 4.00m -> y=20).
-          Group centers: Props=54, Hooker=163, Lock=271, LooseFwd=380, InsideBacks=489, Centre=597, BackThree=706
-          Bar widths=14. KUB at cx-22, WK at cx-6, STL at cx+10.
-        -->
 
         <!-- PROPS (cx=54) KUB:1.45 WK:1.91 STL:1.43 -->
         <rect x="32" y="96" width="14" height="44" fill="#E8521A" rx="1"/>
         <rect x="48" y="83" width="14" height="57" fill="#1e4d8c" rx="1"/>
         <rect x="64" y="97" width="14" height="43" fill="#6b6b6b" rx="1"/>
-        <text x="39" y="93"  fill="#c06030" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.45</text>
-        <text x="55" y="80"  fill="#5a7aaa" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.91</text>
-        <text x="71" y="94"  fill="#888"    font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.43</text>
-        <text x="54" y="153" fill="#555"    font-size="8" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700">Props</text>
+        <text x="39" y="93"  fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.45</text>
+        <text x="55" y="80"  fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.91</text>
+        <text x="71" y="94"  fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.43</text>
+        <text x="54" y="153" fill="#aaa" font-size="8" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700">Props</text>
 
         <!-- HOOKER (cx=163) KUB:1.23 WK:2.00 STL:0.75 -->
         <rect x="141" y="103" width="14" height="37" fill="#E8521A" rx="1"/>
         <rect x="157" y="80"  width="14" height="60" fill="#1e4d8c" rx="1"/>
         <rect x="173" y="117" width="14" height="23" fill="#6b6b6b" rx="1"/>
-        <text x="148" y="100" fill="#c06030" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.23</text>
-        <text x="164" y="77"  fill="#5a7aaa" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">2.00</text>
-        <text x="180" y="114" fill="#888"    font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">0.75</text>
-        <text x="163" y="153" fill="#555"    font-size="8" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700">Hooker</text>
+        <text x="148" y="100" fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.23</text>
+        <text x="164" y="77"  fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">2.00</text>
+        <text x="180" y="114" fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">0.75</text>
+        <text x="163" y="153" fill="#aaa" font-size="8" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700">Hooker</text>
 
-        <!-- LOCK (cx=271) KUB:1.63 WK:2.56 STL:2.60 — GAP -->
+        <!-- LOCK (cx=271) KUB:1.63 WK:2.56 STL:2.60 GAP -->
         <rect x="249" y="91" width="14" height="49" fill="#E8521A" rx="1"/>
         <rect x="265" y="63" width="14" height="77" fill="#1e4d8c" rx="1"/>
         <rect x="281" y="62" width="14" height="78" fill="#6b6b6b" rx="1"/>
-        <text x="256" y="88"  fill="#c06030" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.63</text>
-        <text x="272" y="60"  fill="#5a7aaa" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">2.56</text>
-        <text x="288" y="59"  fill="#888"    font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">2.60</text>
-        <!-- red arrow annotation on Lock KUB -->
+        <text x="256" y="88"  fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.63</text>
+        <text x="272" y="60"  fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">2.56</text>
+        <text x="288" y="59"  fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">2.60</text>
         <polygon points="256,87 252,78 260,78" fill="#e53e3e"/>
         <text x="256" y="75" fill="#e53e3e" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700" letter-spacing=".4">GAP</text>
-        <text x="271" y="153" fill="#555" font-size="8" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700">Lock</text>
+        <text x="271" y="153" fill="#aaa" font-size="8" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700">Lock</text>
 
-        <!-- LOOSE FWD (cx=380) KUB:1.68 WK:1.70 STL:— -->
+        <!-- LOOSIES (cx=380) KUB:1.68 WK:1.70 STL:- -->
         <rect x="358" y="90" width="14" height="50" fill="#E8521A" rx="1"/>
         <rect x="374" y="89" width="14" height="51" fill="#1e4d8c" rx="1"/>
         <rect x="390" y="92" width="14" height="48" fill="#6b6b6b" rx="1"/>
-        <text x="365" y="87" fill="#c06030" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.68</text>
-        <text x="381" y="86" fill="#5a7aaa" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.70</text>
-        <text x="397" y="89" fill="#555"    font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">&#x2014;</text>
-        <text x="380" y="153" fill="#555" font-size="8" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700">Loose Fwd</text>
+        <text x="365" y="87" fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.68</text>
+        <text x="381" y="86" fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.70</text>
+        <text x="397" y="89" fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">&#x2014;</text>
+        <text x="380" y="153" fill="#aaa" font-size="8" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700">Loosies</text>
 
-        <!-- INSIDE BACKS (cx=489) KUB:1.66 WK:1.11 STL:0.25* -->
+        <!-- INSIDE (cx=489) KUB:1.66 WK:1.11 STL:0.25* -->
         <rect x="467" y="90" width="14" height="50" fill="#E8521A" rx="1"/>
         <rect x="483" y="107" width="14" height="33" fill="#1e4d8c" rx="1"/>
         <rect x="499" y="132" width="14" height="8"  fill="#6b6b6b" rx="1"/>
-        <text x="474" y="87"  fill="#c06030" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.66</text>
-        <text x="490" y="104" fill="#5a7aaa" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.11</text>
-        <text x="506" y="129" fill="#888"    font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">0.25*</text>
-        <text x="489" y="153" fill="#555" font-size="8" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700">Inside Backs</text>
+        <text x="474" y="87"  fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.66</text>
+        <text x="490" y="104" fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">1.11</text>
+        <text x="506" y="129" fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">0.25*</text>
+        <text x="489" y="153" fill="#aaa" font-size="8" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700">Inside</text>
 
-        <!-- CENTRE (cx=597) KUB:2.62 WK:4.00 STL:3.63 — GAP -->
+        <!-- CENTRE (cx=597) KUB:2.62 WK:4.00 STL:3.63 GAP -->
         <rect x="575" y="61" width="14" height="79" fill="#E8521A" rx="1"/>
         <rect x="591" y="20" width="14" height="120" fill="#1e4d8c" rx="1"/>
         <rect x="607" y="31" width="14" height="109" fill="#6b6b6b" rx="1"/>
-        <text x="582" y="58"  fill="#c06030" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">2.62</text>
-        <text x="598" y="17"  fill="#5a7aaa" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">4.00</text>
-        <text x="614" y="28"  fill="#888"    font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">3.63</text>
-        <!-- red arrow annotation on Centre KUB -->
+        <text x="582" y="58"  fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">2.62</text>
+        <text x="598" y="17"  fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">4.00</text>
+        <text x="614" y="28"  fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">3.63</text>
         <polygon points="582,57 578,48 586,48" fill="#e53e3e"/>
         <text x="582" y="45" fill="#e53e3e" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700" letter-spacing=".4">GAP</text>
-        <text x="597" y="153" fill="#555" font-size="8" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700">Centre</text>
+        <text x="597" y="153" fill="#aaa" font-size="8" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700">Centre</text>
 
-        <!-- BACK THREE (cx=706) KUB:2.94 WK:0.67* STL:3.91 -->
+        <!-- BACK 3 (cx=706) KUB:2.94 WK:0.67* STL:3.91 -->
         <rect x="684" y="52" width="14" height="88" fill="#E8521A" rx="1"/>
         <rect x="700" y="120" width="14" height="20" fill="#1e4d8c" rx="1"/>
         <rect x="716" y="23" width="14" height="117" fill="#6b6b6b" rx="1"/>
-        <text x="691" y="49"  fill="#c06030" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">2.94</text>
-        <text x="707" y="117" fill="#5a7aaa" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">0.67*</text>
-        <text x="723" y="20"  fill="#888"    font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">3.91</text>
-        <text x="706" y="153" fill="#555" font-size="8" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700">Back Three</text>
+        <text x="691" y="49"  fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">2.94</text>
+        <text x="707" y="117" fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">0.67*</text>
+        <text x="723" y="20"  fill="#fff" font-size="6" font-family="Helvetica Neue,Arial" text-anchor="middle">3.91</text>
+        <text x="706" y="153" fill="#aaa" font-size="8" font-family="Helvetica Neue,Arial" text-anchor="middle" font-weight="700">Back 3</text>
 
         <!-- Baseline -->
         <line x1="10" y1="140" x2="750" y2="140" stroke="#2a2a2a" stroke-width="1"/>
         <!-- 2.0m reference line -->
         <line x1="10" y1="80" x2="750" y2="80" stroke="#1e1e1e" stroke-width=".7" stroke-dasharray="3,4"/>
-        <text x="8" y="79" fill="#2e2e2e" font-size="6.5" font-family="Helvetica Neue,Arial" text-anchor="end">2m</text>
+        <text x="8" y="79" fill="#333" font-size="6.5" font-family="Helvetica Neue,Arial" text-anchor="end">2m</text>
       </svg>
-
-      <!-- Summary table -->
-      <div style="flex-shrink:0;margin-top:3px;overflow:hidden">
-        <table style="width:100%;border-collapse:collapse;font-family:var(--ef);font-size:clamp(.38rem,.56vw,.54rem);letter-spacing:.02em">
-          <thead>
-            <tr style="background:#1a1a1a">
-              <th style="padding:2px 6px;text-align:left;color:#E8521A;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid #E8521A;white-space:nowrap">Unit</th>
-              <th style="padding:2px 6px;text-align:center;color:#E8521A;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid #E8521A">Spears</th>
-              <th style="padding:2px 6px;text-align:center;color:#E8521A;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid #E8521A">Wild Knights</th>
-              <th style="padding:2px 6px;text-align:center;color:#E8521A;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid #E8521A">Steelers</th>
-              <th style="padding:2px 6px;text-align:center;color:#E8521A;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid #E8521A;white-space:nowrap">Gap (vs WK)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr style="background:#0d0d0d">
-              <td style="padding:2px 6px;color:#aaa;border-bottom:1px solid #181818">Props</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #181818">1.45</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #181818">1.91</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #181818">1.43</td>
-              <td style="padding:2px 6px;text-align:center;color:#777;border-bottom:1px solid #181818">&#x2212;0.46</td>
-            </tr>
-            <tr style="background:#0a0a0a">
-              <td style="padding:2px 6px;color:#aaa;border-bottom:1px solid #181818">Hooker</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #181818">1.23</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #181818">2.00</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #181818">0.75</td>
-              <td style="padding:2px 6px;text-align:center;color:#777;border-bottom:1px solid #181818">&#x2212;0.77</td>
-            </tr>
-            <tr style="background:#1c0a0a">
-              <td style="padding:2px 6px;color:#fff;font-weight:700;border-bottom:1px solid #2a1010">Lock</td>
-              <td style="padding:2px 6px;text-align:center;color:#E8521A;font-weight:700;border-bottom:1px solid #2a1010">1.63</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #2a1010">2.56</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #2a1010">2.60</td>
-              <td style="padding:2px 6px;text-align:center;color:#e53e3e;font-weight:700;border-bottom:1px solid #2a1010">&#x2212;0.93 &#x26A0;&#xFE0E;</td>
-            </tr>
-            <tr style="background:#0d0d0d">
-              <td style="padding:2px 6px;color:#aaa;border-bottom:1px solid #181818">Loose Fwd</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #181818">1.68</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #181818">1.70</td>
-              <td style="padding:2px 6px;text-align:center;color:#444;border-bottom:1px solid #181818">&#x2014;</td>
-              <td style="padding:2px 6px;text-align:center;color:#555;border-bottom:1px solid #181818">&#x2212;0.02</td>
-            </tr>
-            <tr style="background:#0a0a0a">
-              <td style="padding:2px 6px;color:#aaa;border-bottom:1px solid #181818">Inside Backs</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #181818">1.66</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #181818">1.11</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #181818">0.25*</td>
-              <td style="padding:2px 6px;text-align:center;color:#4a9a5a;border-bottom:1px solid #181818">+0.55</td>
-            </tr>
-            <tr style="background:#1c0a0a">
-              <td style="padding:2px 6px;color:#fff;font-weight:700;border-bottom:1px solid #2a1010">Centre</td>
-              <td style="padding:2px 6px;text-align:center;color:#E8521A;font-weight:700;border-bottom:1px solid #2a1010">2.62</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #2a1010">4.00</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc;border-bottom:1px solid #2a1010">3.63</td>
-              <td style="padding:2px 6px;text-align:center;color:#e53e3e;font-weight:700;border-bottom:1px solid #2a1010">&#x2212;1.38 &#x26A0;&#xFE0E;</td>
-            </tr>
-            <tr style="background:#0d0d0d">
-              <td style="padding:2px 6px;color:#aaa">Back Three</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc">2.94</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc">0.67*</td>
-              <td style="padding:2px 6px;text-align:center;color:#ccc">3.91</td>
-              <td style="padding:2px 6px;text-align:center;color:#4a9a5a">+2.27</td>
-            </tr>
-          </tbody>
-        </table>
-        <div style="font-family:var(--ef);font-size:clamp(.34rem,.48vw,.46rem);color:#333;margin-top:2px">* n&lt;5 (small sample) &nbsp;&#x7C;&nbsp; &#x26A0;&#xFE0E; = significant gap vs Wild Knights &nbsp;&#x7C;&nbsp; &#x2014; = insufficient data</div>
-      </div>
     </div>
 
   </div>
