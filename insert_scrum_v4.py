@@ -6,9 +6,103 @@ Changes vs v3:
   - Opponent panel: full-season match data (18 matches from all CSV)
   - Spears panel: 21 matches from DB
 """
-import os, re, math
+import os, re, math, csv, glob, sqlite3, collections
 
 BIOUT_DIR = "/Users/ktachikawa/Desktop/BIoutput"
+DB_PATH   = os.path.join(BIOUT_DIR, "rugby.db")
+CSV_DIR   = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
+
+# abbr → CSV/DB full team name
+_DB_TEAM_NAME = {
+    "BlackRams":   "BlackRams Tokyo",
+    "BlueRevs":    "Shizuoka BlueRevs",
+    "BraveLupus":  "Toshiba Brave Lupus Tokyo",
+    "D-Rocks":     "Urayasu D-Rocks",
+    "Dynaboars":   "Mitsubishi Sagamihara Dynaboars",
+    "Eagles":      "Yokohama Canon Eagles",
+    "Heat":        "Mie Honda Heat",
+    "Steelers":    "Kobelco Kobe Steelers",
+    "Sungoliath":  "Tokyo Sungoliath",
+    "Verblitz":    "Toyota Verblitz",
+    "WildKnights": "Saitama Wild Knights",
+}
+_FULL_TO_ABBR = {v: k for k, v in _DB_TEAM_NAME.items()}
+_D1_TEAM_SET  = set(_DB_TEAM_NAME.values()) | {"Kubota Spears"}
+
+# CSV/DB ActionResultName → internal key
+_SCRUM_RESULT_MAP = {
+    "Won Outright":  "WonOut",
+    "Won Penalty":   "WonPen",
+    "Won Free Kick": "WonFK",
+    "Reset":         "Reset",
+    "Lost Outright": "LostOut",
+    "Lost Free Kick":"LostFK",
+    "Lost Pen Con":  "LostPen",
+}
+
+
+def _load_spears_opp_scrum():
+    """OPP BALL for Spears panel: opponents' scrum results in all 21 Spears matches, from DB."""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.execute("""
+            SELECT e.action_result_name, COUNT(*) as n
+            FROM events e
+            JOIN matches m ON e.fxid = m.fxid
+            WHERE m.season = 2026
+              AND (m.home_team_name = 'Kubota Spears' OR m.away_team_name = 'Kubota Spears')
+              AND e.team_name != 'Kubota Spears'
+              AND e.action_name = 'Scrum'
+            GROUP BY e.action_result_name
+        """)
+        results, total = {}, 0
+        for row_name, n in cur.fetchall():
+            key = _SCRUM_RESULT_MAP.get(row_name)
+            if key is not None:
+                results[key] = results.get(key, 0) + n
+                total += n
+        conn.close()
+        return results, total
+    except Exception as e:
+        print(f"[WARN] Spears OPP scrum load failed: {e}")
+        return {}, 0
+
+
+def _load_opp_scrum_from_csvs():
+    """OPP BALL for each scout team: opponents' scrum results in all their D1 matches, from CSV."""
+    data = collections.defaultdict(lambda: {"results": {}, "total": 0})
+    for fpath in sorted(glob.glob(os.path.join(CSV_DIR, "*.csv"))):
+        try:
+            with open(fpath, encoding="utf-8-sig", newline="") as f:
+                for row in csv.DictReader(f):
+                    if row.get("actionName") != "Scrum":
+                        continue
+                    if "D1" not in (row.get("competitionName") or ""):
+                        continue
+                    tn   = row.get("teamName", "")
+                    home = row.get("homeTeamName", "")
+                    away = row.get("awayTeamName", "")
+                    if tn == home:
+                        focal_full = away
+                    elif tn == away:
+                        focal_full = home
+                    else:
+                        continue
+                    abbr = _FULL_TO_ABBR.get(focal_full)
+                    if abbr is None:
+                        continue  # Kubota Spears or non-D1
+                    key = _SCRUM_RESULT_MAP.get(row.get("ActionResultName", ""))
+                    if key is None:
+                        continue
+                    data[abbr]["results"][key] = data[abbr]["results"].get(key, 0) + 1
+                    data[abbr]["total"] += 1
+        except Exception:
+            continue
+    return dict(data)
+
+
+_SPEARS_OPP_SCRUM = _load_spears_opp_scrum()
+_SCOUT_OPP_SCRUM  = _load_opp_scrum_from_csvs()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # DATA
@@ -309,9 +403,12 @@ def _result_table_html(section_label, results, total_all):
         f'</table></div>'
     )
 
-def result_col(team_d, opp_d):
-    own  = _result_table_html("Own Ball Scrum Result", team_d["results"], team_d["own"][0])
-    opp  = _result_table_html("Opp Ball Won Rate",     opp_d["results"],  opp_d["own"][0])
+def result_col(team_d, opp_d, opp_results=None, opp_total=None):
+    own = _result_table_html("Own Ball Scrum Result", team_d["results"], team_d["own"][0])
+    if opp_results and opp_total:
+        opp = _result_table_html("Opp Ball Scrum Result", opp_results, opp_total)
+    else:
+        opp = _result_table_html("Opp Ball Scrum Result", opp_d["results"], opp_d["own"][0])
     return f'<div style="display:flex;flex-direction:column;gap:8px">{own}{opp}</div>'
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -583,8 +680,8 @@ def _line_chart(title, matches):
 # PANEL / SECTION
 # ─────────────────────────────────────────────────────────────────────────────
 
-def build_panel(team_d, opp_d, label, header_color, chart_title, matches):
-    col1 = result_col(team_d, opp_d)
+def build_panel(team_d, opp_d, label, header_color, chart_title, matches, opp_results=None, opp_total=None):
+    col1 = result_col(team_d, opp_d, opp_results=opp_results, opp_total=opp_total)
     col2 = stability_col(team_d["stability"], opp_d["stability"])
     col3 = attack_col(team_d)
     chart = _line_chart(chart_title, matches)
@@ -610,6 +707,11 @@ def build_panel(team_d, opp_d, label, header_color, chart_title, matches):
 def build_section(abbr):
     opp_d = TEAM_SCRUM_DATA[abbr]
 
+    sp_opp_results, sp_opp_total = _SPEARS_OPP_SCRUM
+    scout_opp = _SCOUT_OPP_SCRUM.get(abbr, {})
+    scout_opp_results = scout_opp.get("results", {})
+    scout_opp_total   = scout_opp.get("total", 0)
+
     sp_panel = build_panel(
         team_d       = SPEARS_SCRUM,
         opp_d        = opp_d,
@@ -617,6 +719,8 @@ def build_section(abbr):
         header_color = "#F97316",
         chart_title  = "Scrum by Match — Spears Own Ball (全21試合)",
         matches      = SPEARS_SCRUM["matches"],
+        opp_results  = sp_opp_results,
+        opp_total    = sp_opp_total,
     )
 
     divider = (
@@ -634,6 +738,8 @@ def build_section(abbr):
         header_color = "#10B981",
         chart_title  = f'Scrum by Match — {opp_d["name"]} 全シーズン',
         matches      = opp_d["matches"],
+        opp_results  = scout_opp_results,
+        opp_total    = scout_opp_total,
     )
 
     return (
