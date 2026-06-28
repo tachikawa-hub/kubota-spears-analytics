@@ -491,43 +491,88 @@ def _lo_nums_query(conn, team_name):
     return nums
 
 
+# D1 team full names (for CSV filtering)
+_D1_TEAM_SET = set(_DB_TEAM_NAME.values()) | {"Kubota Spears"}
+
+
 def _load_lo_db_stats():
-    """
-    Identical SQL logic for upper and lower sections — only the focal team changes.
-
-    Upper (_ALL_OPP_LO): focal team = 'Kubota Spears' (all 21 D1 games)
-    Lower (_SCOUT_OPP_LO): focal team = each scouting target
-
-    Both return {"ball": (total, won), "nums": {cat: [total, won]}}.
-    """
+    """Upper section only: OPP = non-Kubota throws in all 21 Kubota D1 games (from DB)."""
     empty = {"ball": (0, 0), "nums": {}}
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
-
-        # Upper: OPP = non-Kubota teams in Kubota's games
         all_opp = {
             "ball": _lo_ball_query(conn, "Kubota Spears"),
             "nums": _lo_nums_query(conn, "Kubota Spears"),
         }
-
-        # Lower: OPP = non-SCOUT_TEAM in each team's games (identical logic)
-        scout_opp = {
-            db_name: {
-                "ball": _lo_ball_query(conn, db_name),
-                "nums": _lo_nums_query(conn, db_name),
-            }
-            for db_name in _DB_TEAM_NAME.values()
-        }
-
         conn.close()
-        return all_opp, scout_opp
+        return all_opp
     except Exception as e:
         print(f"[WARN] LO DB stats load failed: {e}")
-        return empty, {}
+        return empty
 
 
-_ALL_OPP_LO, _SCOUT_OPP_LO = _load_lo_db_stats()
+def _load_lo_csv_stats():
+    """
+    Lower section: OPP LO stats for each D1 team across ALL their D1 games.
+    For each LO throw by team X in match X vs Y → contributes to Y's OPP stats.
+    Uses all CSVs (not just DB) to capture all 21 games per team.
+    """
+    ball_data = collections.defaultdict(lambda: [0, 0])
+    nums_data = collections.defaultdict(dict)
+
+    csv_files = glob.glob(os.path.join(CSV_DIR, "*.csv"))
+    for fpath in sorted(csv_files):
+        try:
+            with open(fpath, encoding="utf-8-sig", newline="") as f:
+                rows = list(csv.DictReader(f))
+        except Exception:
+            continue
+
+        for row in rows:
+            if row.get("actionName") != "Lineout Throw":
+                continue
+            if "D1" not in (row.get("competitionName") or ""):
+                continue
+            result = row.get("ActionResultName", "")
+            if result == "Reset":
+                continue
+
+            thrower = row.get("teamName", "")
+            home    = row.get("homeTeamName", "")
+            away    = row.get("awayTeamName", "")
+
+            if thrower == home:
+                focal = away
+            elif thrower == away:
+                focal = home
+            else:
+                continue
+
+            if thrower not in _D1_TEAM_SET or focal not in _D1_TEAM_SET:
+                continue
+
+            ball_data[focal][0] += 1
+            won = result.startswith("Won")
+            if won:
+                ball_data[focal][1] += 1
+
+            cat = _NUM_CAT_MAP.get(row.get("qualifier4Name") or "", "")
+            if cat:
+                if cat not in nums_data[focal]:
+                    nums_data[focal][cat] = [0, 0]
+                nums_data[focal][cat][0] += 1
+                if won:
+                    nums_data[focal][cat][1] += 1
+
+    return {
+        t: {"ball": (b[0], b[1]), "nums": nums_data[t]}
+        for t, b in ball_data.items()
+    }
+
+
+_ALL_OPP_LO  = _load_lo_db_stats()
+_SCOUT_OPP_LO = _load_lo_csv_stats()
 
 # ── Apply DB data to SPEARS (DB has all 21 Spears games) ──────────────────
 _sp = _all_db_takes.get("Kubota Spears", {})
