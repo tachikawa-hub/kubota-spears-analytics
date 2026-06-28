@@ -646,6 +646,69 @@ for _abbr, _db_name in _DB_TEAM_NAME.items():
     TAKE_ZONES.update(_td.get("zones", {}))
 
 
+# ── Load steal data from all 164 CSVs (full-season, all D1 teams) ──────────
+def _load_steal_csv_stats():
+    """
+    全164 CSVからラインアウトスティールを集計。
+    Kubota Spears上段・スカウティング対象下段の両方に使用。
+    Returns {team_name: {player_name: {zone: count}}}
+    """
+    _ZONE_MAP = {
+        "Lineout Steal Front":  "Front",
+        "Lineout Steal Middle": "Middle",
+        "Lineout Steal Back":   "Back",
+        "Lineout Steal 15m+":   "15M+",
+    }
+    steal_cnt = collections.defaultdict(lambda: collections.defaultdict(collections.Counter))
+
+    csv_files = glob.glob(os.path.join(CSV_DIR, "*.csv"))
+    if not csv_files:
+        print(f"[WARN] No CSVs found in {CSV_DIR}")
+        return {}
+
+    for fpath in sorted(csv_files):
+        try:
+            with open(fpath, encoding="utf-8-sig", newline="") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    if row.get("actionName") != "Lineout Take":
+                        continue
+                    if "D1" not in (row.get("competitionName") or ""):
+                        continue
+                    atn = row.get("ActionTypeName", "")
+                    if not atn.startswith("Lineout Steal"):
+                        continue
+                    tn = row.get("teamName", "")
+                    p  = row.get("playerName", "")
+                    if not tn or not p:
+                        continue
+                    zone = _ZONE_MAP.get(atn, atn.replace("Lineout Steal ", ""))
+                    steal_cnt[tn][p][zone] += 1
+        except Exception as e:
+            print(f"[WARN] Skipping {os.path.basename(fpath)}: {e}")
+            continue
+
+    return {tn: {p: dict(zones) for p, zones in players.items()}
+            for tn, players in steal_cnt.items()}
+
+
+_csv_steal_data = _load_steal_csv_stats()
+
+# Apply to Kubota Spears (upper panel) — full-season CSV data
+_kub_steals = _csv_steal_data.get("Kubota Spears", {})
+if _kub_steals:
+    SPEARS["steals"] = sorted(
+        [(p, zones) for p, zones in _kub_steals.items()],
+        key=lambda x: -sum(x[1].values()),
+    )
+
+# Apply to all opponent teams (lower panel) — full-season CSV data
+for _abbr, _db_name in _DB_TEAM_NAME.items():
+    _s = _csv_steal_data.get(_db_name, {})
+    if _s:
+        TEAM_DATA[_abbr]["steal_zones"] = _s
+
+
 # ── Delivery Type card ─────────────────────────────────────────────────────
 def delivery_col(team):
     dlv  = team["delivery"]
