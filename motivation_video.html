@@ -54,6 +54,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 .body2{display:flex;gap:3vw;width:100%;flex:1;min-height:0;align-items:flex-start}
 .cstat{display:flex;flex-direction:column;min-width:175px;max-width:205px}
 .cchart{flex:1;display:flex;align-items:flex-start;min-width:0;height:100%}
+#s1{overflow:hidden;background:#000}
+#s1 > :not(video){position:relative;z-index:1}
 
 /* Numbers */
 .bnum{font-family:var(--imp);font-size:clamp(3rem,6.5vw,6.5rem);font-weight:900;color:var(--gold);line-height:1}
@@ -109,6 +111,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 
 <!-- SLIDE 1: CONTEST GAME -->
 <div class="slide" id="s1">
+  <video autoplay muted loop playsinline
+    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.35;z-index:0;">
+    <source src="videos/Contest_Game.mov" type="video/mp4">
+  </video>
   <div class="ctag">Chapter 1 — Contest Game</div>
   <div class="mtitle">CONTEST GAME —<br><span class="acc">RETENTION: #1 FULL SEASON</span></div>
   <div class="jasub" style="opacity:1">コンテスト保持率 リーグ1位 (フルシーズン21G) · OPC + Pressure Error + Pressure in Touch ÷ Total Contest Kicks</div>
