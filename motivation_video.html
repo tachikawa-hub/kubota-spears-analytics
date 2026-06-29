@@ -112,7 +112,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 <!-- SLIDE 1: CONTEST GAME -->
 <div class="slide" id="s1">
   <video autoplay muted loop playsinline
-    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.35;z-index:0;">
+    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.35;z-index:0;"
+    onerror="console.error('動画読み込みエラー:', this.src)"
+    oncanplay="console.log('動画読み込み成功:', this.src)">
     <source src="videos/Contest_Game.mov" type="video/quicktime">
     <source src="videos/Contest_Game.mov" type="video/mp4">
   </video>
