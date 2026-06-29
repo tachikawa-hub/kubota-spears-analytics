@@ -34,6 +34,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 /* INTRO */
 .intro-slide{align-items:center;text-align:center;justify-content:center;overflow:hidden}
 .ibg{position:absolute;inset:0;background:url('hero.png') center/cover no-repeat;opacity:.07}
+#s0{background:#000}
+#s0 > :not(video):not(.ibg){position:relative;z-index:2}
 .itag{font-family:var(--ef);font-size:clamp(.55rem,.9vw,.8rem);letter-spacing:.5em;color:var(--gold);text-transform:uppercase;z-index:1;font-weight:700}
 .ihero{z-index:1;margin:12px 0}
 .ihero .h1{font-family:var(--imp);font-size:clamp(4rem,9vw,9rem);font-weight:900;line-height:.9;color:#fff;text-transform:uppercase;letter-spacing:.03em}
@@ -98,6 +100,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 
 <!-- SLIDE 0: INTRO -->
 <div class="slide intro-slide enter" id="s0">
+  <video autoplay muted loop playsinline
+    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.4;z-index:0;">
+    <source src="videos/Intro.mp4" type="video/mp4">
+  </video>
   <div class="ibg"></div>
   <div class="itag">Japan Rugby League One · Division 1 · 2025-26</div>
   <div class="ihero">
