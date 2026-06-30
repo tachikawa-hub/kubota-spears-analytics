@@ -1400,6 +1400,269 @@ def cmd_sr_match(args):
           f"(R{m['round_number']}, {m['date_played']}, {m['venue_name']})")
 
 
+def cmd_sr_index(args=None):
+    """Generate sr_index.html — hierarchical league/team/match index."""
+    import json as _json
+
+    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rugby.db")
+    con = sqlite3.connect(db_path)
+    con.row_factory = sqlite3.Row
+    rows = con.execute(
+        "SELECT fxid, round_number, date_played, home_team_name, away_team_name, "
+        "home_ft_score, away_ft_score, venue_name, competition_name "
+        "FROM matches WHERE league='super_rugby' ORDER BY round_number, fxid"
+    ).fetchall()
+    con.close()
+
+    matches = []
+    for r in rows:
+        hs = r["home_ft_score"]
+        as_ = r["away_ft_score"]
+        home_slug = r["home_team_name"].replace(" ", "_")
+        away_slug = r["away_team_name"].replace(" ", "_")
+        rn = r["round_number"]
+        fname = f"sr_R{rn:02d}_{home_slug}v{away_slug}.html"
+        matches.append({
+            "fxid": r["fxid"], "round": rn, "date": r["date_played"],
+            "home": r["home_team_name"], "away": r["away_team_name"],
+            "hs": hs, "as_": as_, "venue": r["venue_name"] or "",
+            "comp": r["competition_name"] or "Super Rugby Pacific",
+            "file": fname,
+        })
+
+    teams = sorted(set(m["home"] for m in matches) | set(m["away"] for m in matches))
+
+    # One league entry; extend DATA for future leagues
+    data = {
+        "Super Rugby Pacific": {
+            "id": "super_rugby",
+            "teams": teams,
+            "matches": matches,
+        }
+    }
+
+    leagues_js = _json.dumps(data, ensure_ascii=False)
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Super Rugby Pacific – Match Reports</title>
+<style>
+:root{{--navy:#1B2A4A;--navy-d:#0F1A2E;--navy-l:#EAF0FA;
+  --wine:#722F37;--wine-d:#5C1A1B;--wine-l:#F5E8EA;
+  --bg:#F5F5F7;--card:#fff;--ink:#1a1a1a;--mu:#6b6b6b;
+  --ru:#e0dcd4;--gd:#1a7a3c;--bad:#b03030;}}
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:'Helvetica Neue',Arial,sans-serif;background:var(--bg);
+  color:var(--ink);font-size:13px;min-height:100vh}}
+
+/* ── Header ── */
+.hd{{background:var(--navy-d);color:#fff;padding:18px 28px;
+  display:flex;align-items:baseline;gap:16px;
+  border-bottom:4px solid var(--wine)}}
+.hd h1{{font-size:20px;font-weight:900;letter-spacing:.04em}}
+.hd .sub{{font-size:11px;color:rgba(255,255,255,.6);letter-spacing:.08em;
+  text-transform:uppercase}}
+
+/* ── Selector bar ── */
+.sel-bar{{display:flex;gap:12px;padding:14px 28px;
+  background:var(--card);border-bottom:1px solid var(--ru);
+  flex-wrap:wrap;align-items:flex-end;box-shadow:0 1px 4px rgba(0,0,0,.08)}}
+.sel-group{{display:flex;flex-direction:column;gap:4px;min-width:200px}}
+.sel-group label{{font-size:10px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--mu)}}
+.sel-group select{{padding:7px 10px;border:1.5px solid var(--ru);
+  border-radius:5px;font-size:13px;background:#fff;color:var(--ink);
+  appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+  padding-right:28px;cursor:pointer;transition:border-color .15s}}
+.sel-group select:focus{{outline:none;border-color:var(--navy)}}
+
+/* ── Step indicator ── */
+.step-lbl{{font-size:9px;font-weight:900;background:var(--navy);color:#fff;
+  border-radius:50%;width:16px;height:16px;display:inline-flex;
+  align-items:center;justify-content:center;margin-right:4px;flex-shrink:0}}
+
+/* ── Match list ── */
+.ml-wrap{{padding:20px 28px;max-width:900px}}
+.ml-hdr{{display:flex;align-items:center;gap:8px;margin-bottom:14px}}
+.ml-hdr h2{{font-size:15px;font-weight:900;color:var(--navy-d)}}
+.ml-hdr .badge{{background:var(--navy);color:#fff;font-size:10px;
+  font-weight:700;padding:2px 8px;border-radius:20px}}
+
+.ml-table{{width:100%;border-collapse:collapse;background:var(--card);
+  border-radius:8px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.10)}}
+.ml-table thead tr{{background:var(--navy-d);color:#fff}}
+.ml-table th{{padding:8px 12px;font-size:10px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.06em;text-align:left;
+  white-space:nowrap}}
+.ml-table tbody tr{{border-bottom:1px solid var(--ru);transition:background .1s}}
+.ml-table tbody tr:last-child{{border-bottom:none}}
+.ml-table tbody tr:hover{{background:#f0f4fa;cursor:pointer}}
+.ml-table td{{padding:9px 12px;font-size:12px;vertical-align:middle}}
+
+.rnd{{font-weight:800;color:var(--mu);font-size:11px;white-space:nowrap}}
+.date{{color:var(--mu);font-size:11px;white-space:nowrap}}
+.opp{{font-weight:700;color:var(--ink)}}
+.venue-lbl{{font-size:10px;font-weight:800;padding:2px 7px;
+  border-radius:3px;margin-left:6px;vertical-align:middle}}
+.h-lbl{{background:var(--navy-l);color:var(--navy-d)}}
+.a-lbl{{background:var(--wine-l);color:var(--wine-d)}}
+.score{{font-weight:900;font-size:13px;white-space:nowrap;min-width:60px}}
+.res-W{{color:var(--gd)}}
+.res-L{{color:var(--bad)}}
+.res-D{{color:var(--mu)}}
+.view-btn{{display:inline-block;padding:5px 12px;background:var(--navy);
+  color:#fff;border-radius:4px;font-size:11px;font-weight:700;
+  text-decoration:none;transition:background .15s;white-space:nowrap}}
+.view-btn:hover{{background:var(--navy-d)}}
+.venue-txt{{font-size:10px;color:var(--mu);max-width:200px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+
+.empty{{padding:40px;text-align:center;color:var(--mu);font-size:13px}}
+.hidden{{display:none}}
+
+/* ── Stats bar ── */
+.stats-bar{{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap}}
+.stat-pill{{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700}}
+.sp-w{{background:#e8f5ed;color:#1a7a3c}}
+.sp-l{{background:#fde8e8;color:#b03030}}
+.sp-d{{background:#f0f0f0;color:#666}}
+.sp-all{{background:var(--navy-l);color:var(--navy-d)}}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <h1>Super Rugby Pacific</h1>
+  <span class="sub">Match Reports</span>
+</div>
+
+<div class="sel-bar">
+  <div class="sel-group">
+    <label><span class="step-lbl">1</span>League</label>
+    <select id="selLeague" onchange="onLeague()">
+      <option value="">— Select League —</option>
+    </select>
+  </div>
+  <div class="sel-group hidden" id="grpTeam">
+    <label><span class="step-lbl">2</span>Team</label>
+    <select id="selTeam" onchange="onTeam()">
+      <option value="">— Select Team —</option>
+    </select>
+  </div>
+</div>
+
+<div id="mlWrap" class="hidden">
+  <div class="ml-wrap">
+    <div class="ml-hdr">
+      <h2 id="mlTitle"></h2>
+      <span class="badge" id="mlCount"></span>
+    </div>
+    <div class="stats-bar" id="statsBar"></div>
+    <table class="ml-table">
+      <thead>
+        <tr>
+          <th>Round</th>
+          <th>Date</th>
+          <th>Opponent</th>
+          <th>Score</th>
+          <th>Venue</th>
+          <th>Report</th>
+        </tr>
+      </thead>
+      <tbody id="mlBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const DATA = {leagues_js};
+
+// Populate league dropdown
+const selLeague = document.getElementById('selLeague');
+Object.keys(DATA).forEach(lg => {{
+  const o = document.createElement('option');
+  o.value = lg; o.textContent = lg;
+  selLeague.appendChild(o);
+}});
+// Auto-select if only one league
+if (Object.keys(DATA).length === 1) {{
+  selLeague.value = Object.keys(DATA)[0];
+  onLeague();
+}}
+
+function onLeague() {{
+  const lg = selLeague.value;
+  const grpTeam = document.getElementById('grpTeam');
+  const selTeam = document.getElementById('selTeam');
+  document.getElementById('mlWrap').classList.add('hidden');
+  selTeam.innerHTML = '<option value="">— Select Team —</option>';
+  if (!lg) {{ grpTeam.classList.add('hidden'); return; }}
+  grpTeam.classList.remove('hidden');
+  DATA[lg].teams.forEach(t => {{
+    const o = document.createElement('option');
+    o.value = t; o.textContent = t;
+    selTeam.appendChild(o);
+  }});
+}}
+
+function onTeam() {{
+  const lg = selLeague.value;
+  const team = document.getElementById('selTeam').value;
+  const wrap = document.getElementById('mlWrap');
+  if (!team) {{ wrap.classList.add('hidden'); return; }}
+
+  const all = DATA[lg].matches.filter(m => m.home === team || m.away === team);
+  all.sort((a, b) => a.round - b.round || a.fxid - b.fxid);
+
+  let W=0, L=0, D=0;
+  const tbody = document.getElementById('mlBody');
+  tbody.innerHTML = '';
+  all.forEach(m => {{
+    const isHome = m.home === team;
+    const opp    = isHome ? m.away : m.home;
+    const ts     = isHome ? m.hs   : m.as_;
+    const os     = isHome ? m.as_  : m.hs;
+    const ha     = isHome ? 'H' : 'A';
+    const res    = ts > os ? 'W' : ts < os ? 'L' : 'D';
+    if(res==='W') W++; else if(res==='L') L++; else D++;
+    const tr = document.createElement('tr');
+    tr.onclick = () => {{ if(m.file) window.open(m.file,'_blank'); }};
+    tr.innerHTML = `
+      <td class="rnd">R${{m.round}}</td>
+      <td class="date">${{m.date}}</td>
+      <td class="opp">vs ${{opp}}<span class="venue-lbl ${{ha==='H'?'h-lbl':'a-lbl'}}">${{ha}}</span></td>
+      <td class="score res-${{res}}">${{ts}} – ${{os}}</td>
+      <td class="venue-txt">${{m.venue}}</td>
+      <td><a class="view-btn" href="${{m.file}}" target="_blank" onclick="event.stopPropagation()">View →</a></td>
+    `;
+    tbody.appendChild(tr);
+  }});
+
+  document.getElementById('mlTitle').textContent = team;
+  document.getElementById('mlCount').textContent = all.length + ' matches';
+  const sb = document.getElementById('statsBar');
+  sb.innerHTML = `
+    <span class="stat-pill sp-all">${{W+L+D}} Played</span>
+    <span class="stat-pill sp-w">W ${{W}}</span>
+    <span class="stat-pill sp-l">L ${{L}}</span>
+    ${{D?`<span class="stat-pill sp-d">D ${{D}}</span>`:''}}
+  `;
+  wrap.classList.remove('hidden');
+}}
+</script>
+</body>
+</html>"""
+
+    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sr_index.html")
+    with open(out, "w", encoding="utf-8") as fh:
+        fh.write(html)
+    print(f"Wrote {out}  ({len(matches)} matches, {len(teams)} teams)")
+
+
 # ═══════════════════════════════════════════════════════════════
 # SECTION 3: SEASON KPI
 # ═══════════════════════════════════════════════════════════════
@@ -5837,6 +6100,8 @@ def main():
     p_sr_match.add_argument("--home", help="Home team name (partial match)")
     p_sr_match.add_argument("--away", help="Away team name (partial match)")
 
+    sub.add_parser("sr-index", help="Generate Super Rugby match index page (sr_index.html)")
+
     p_kpi = sub.add_parser("kpi", help="Generate season KPI report")
 
     sub.add_parser("kpi-a4", help="Generate season KPI report (A4 portrait layout)")
@@ -5855,6 +6120,8 @@ def main():
         cmd_match(args)
     elif args.command == "sr-match":
         cmd_sr_match(args)
+    elif args.command == "sr-index":
+        cmd_sr_index()
     elif args.command == "scout":
         cmd_scout(args)
     elif args.command == "kpi":

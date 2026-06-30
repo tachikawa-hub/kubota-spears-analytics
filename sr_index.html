@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Super Rugby Pacific – Match Reports</title>
+<style>
+:root{--navy:#1B2A4A;--navy-d:#0F1A2E;--navy-l:#EAF0FA;
+  --wine:#722F37;--wine-d:#5C1A1B;--wine-l:#F5E8EA;
+  --bg:#F5F5F7;--card:#fff;--ink:#1a1a1a;--mu:#6b6b6b;
+  --ru:#e0dcd4;--gd:#1a7a3c;--bad:#b03030;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Helvetica Neue',Arial,sans-serif;background:var(--bg);
+  color:var(--ink);font-size:13px;min-height:100vh}
+
+/* ── Header ── */
+.hd{background:var(--navy-d);color:#fff;padding:18px 28px;
+  display:flex;align-items:baseline;gap:16px;
+  border-bottom:4px solid var(--wine)}
+.hd h1{font-size:20px;font-weight:900;letter-spacing:.04em}
+.hd .sub{font-size:11px;color:rgba(255,255,255,.6);letter-spacing:.08em;
+  text-transform:uppercase}
+
+/* ── Selector bar ── */
+.sel-bar{display:flex;gap:12px;padding:14px 28px;
+  background:var(--card);border-bottom:1px solid var(--ru);
+  flex-wrap:wrap;align-items:flex-end;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.sel-group{display:flex;flex-direction:column;gap:4px;min-width:200px}
+.sel-group label{font-size:10px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.08em;color:var(--mu)}
+.sel-group select{padding:7px 10px;border:1.5px solid var(--ru);
+  border-radius:5px;font-size:13px;background:#fff;color:var(--ink);
+  appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+  padding-right:28px;cursor:pointer;transition:border-color .15s}
+.sel-group select:focus{outline:none;border-color:var(--navy)}
+
+/* ── Step indicator ── */
+.step-lbl{font-size:9px;font-weight:900;background:var(--navy);color:#fff;
+  border-radius:50%;width:16px;height:16px;display:inline-flex;
+  align-items:center;justify-content:center;margin-right:4px;flex-shrink:0}
+
+/* ── Match list ── */
+.ml-wrap{padding:20px 28px;max-width:900px}
+.ml-hdr{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.ml-hdr h2{font-size:15px;font-weight:900;color:var(--navy-d)}
+.ml-hdr .badge{background:var(--navy);color:#fff;font-size:10px;
+  font-weight:700;padding:2px 8px;border-radius:20px}
+
+.ml-table{width:100%;border-collapse:collapse;background:var(--card);
+  border-radius:8px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.10)}
+.ml-table thead tr{background:var(--navy-d);color:#fff}
+.ml-table th{padding:8px 12px;font-size:10px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.06em;text-align:left;
+  white-space:nowrap}
+.ml-table tbody tr{border-bottom:1px solid var(--ru);transition:background .1s}
+.ml-table tbody tr:last-child{border-bottom:none}
+.ml-table tbody tr:hover{background:#f0f4fa;cursor:pointer}
+.ml-table td{padding:9px 12px;font-size:12px;vertical-align:middle}
+
+.rnd{font-weight:800;color:var(--mu);font-size:11px;white-space:nowrap}
+.date{color:var(--mu);font-size:11px;white-space:nowrap}
+.opp{font-weight:700;color:var(--ink)}
+.venue-lbl{font-size:10px;font-weight:800;padding:2px 7px;
+  border-radius:3px;margin-left:6px;vertical-align:middle}
+.h-lbl{background:var(--navy-l);color:var(--navy-d)}
+.a-lbl{background:var(--wine-l);color:var(--wine-d)}
+.score{font-weight:900;font-size:13px;white-space:nowrap;min-width:60px}
+.res-W{color:var(--gd)}
+.res-L{color:var(--bad)}
+.res-D{color:var(--mu)}
+.view-btn{display:inline-block;padding:5px 12px;background:var(--navy);
+  color:#fff;border-radius:4px;font-size:11px;font-weight:700;
+  text-decoration:none;transition:background .15s;white-space:nowrap}
+.view-btn:hover{background:var(--navy-d)}
+.venue-txt{font-size:10px;color:var(--mu);max-width:200px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.empty{padding:40px;text-align:center;color:var(--mu);font-size:13px}
+.hidden{display:none}
+
+/* ── Stats bar ── */
+.stats-bar{display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap}
+.stat-pill{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700}
+.sp-w{background:#e8f5ed;color:#1a7a3c}
+.sp-l{background:#fde8e8;color:#b03030}
+.sp-d{background:#f0f0f0;color:#666}
+.sp-all{background:var(--navy-l);color:var(--navy-d)}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <h1>Super Rugby Pacific</h1>
+  <span class="sub">Match Reports</span>
+</div>
+
+<div class="sel-bar">
+  <div class="sel-group">
+    <label><span class="step-lbl">1</span>League</label>
+    <select id="selLeague" onchange="onLeague()">
+      <option value="">— Select League —</option>
+    </select>
+  </div>
+  <div class="sel-group hidden" id="grpTeam">
+    <label><span class="step-lbl">2</span>Team</label>
+    <select id="selTeam" onchange="onTeam()">
+      <option value="">— Select Team —</option>
+    </select>
+  </div>
+</div>
+
+<div id="mlWrap" class="hidden">
+  <div class="ml-wrap">
+    <div class="ml-hdr">
+      <h2 id="mlTitle"></h2>
+      <span class="badge" id="mlCount"></span>
+    </div>
+    <div class="stats-bar" id="statsBar"></div>
+    <table class="ml-table">
+      <thead>
+        <tr>
+          <th>Round</th>
+          <th>Date</th>
+          <th>Opponent</th>
+          <th>Score</th>
+          <th>Venue</th>
+          <th>Report</th>
+        </tr>
+      </thead>
+      <tbody id="mlBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const DATA = {"Super Rugby Pacific": {"id": "super_rugby", "teams": ["ACT Brumbies", "Blues", "Chiefs", "Crusaders", "Fijian Drua", "Highlanders", "Hurricanes", "Moana Pasifika", "NSW Waratahs", "Queensland Reds", "Western Force"], "matches": [{"fxid": 949208, "round": 1, "date": "2026-02-13", "home": "Highlanders", "away": "Crusaders", "hs": 25, "as_": 23, "venue": "Forsyth Barr Stadium", "comp": "Super Rugby Pacific", "file": "sr_R01_HighlandersvCrusaders.html"}, {"fxid": 949209, "round": 1, "date": "2026-02-13", "home": "NSW Waratahs", "away": "Queensland Reds", "hs": 36, "as_": 12, "venue": "Allianz Stadium", "comp": "Super Rugby Pacific", "file": "sr_R01_NSW_WaratahsvQueensland_Reds.html"}, {"fxid": 949210, "round": 1, "date": "2026-02-14", "home": "Fijian Drua", "away": "Moana Pasifika", "hs": 26, "as_": 40, "venue": "Churchill Park", "comp": "Super Rugby Pacific", "file": "sr_R01_Fijian_DruavMoana_Pasifika.html"}, {"fxid": 949211, "round": 1, "date": "2026-02-14", "home": "Blues", "away": "Chiefs", "hs": 15, "as_": 19, "venue": "Eden Park", "comp": "Super Rugby Pacific", "file": "sr_R01_BluesvChiefs.html"}, {"fxid": 949212, "round": 1, "date": "2026-02-14", "home": "Western Force", "away": "ACT Brumbies", "hs": 24, "as_": 56, "venue": "HBF Park", "comp": "Super Rugby Pacific", "file": "sr_R01_Western_ForcevACT_Brumbies.html"}, {"fxid": 949213, "round": 2, "date": "2026-02-20", "home": "Hurricanes", "away": "Moana Pasifika", "hs": 52, "as_": 10, "venue": "HNRY Stadium", "comp": "Super Rugby Pacific", "file": "sr_R02_HurricanesvMoana_Pasifika.html"}, {"fxid": 949214, "round": 2, "date": "2026-02-20", "home": "NSW Waratahs", "away": "Fijian Drua", "hs": 36, "as_": 13, "venue": "Allianz Stadium", "comp": "Super Rugby Pacific", "file": "sr_R02_NSW_WaratahsvFijian_Drua.html"}, {"fxid": 949215, "round": 2, "date": "2026-02-21", "home": "Highlanders", "away": "Chiefs", "hs": 23, "as_": 26, "venue": "Forsyth Barr Stadium", "comp": "Super Rugby Pacific", "file": "sr_R02_HighlandersvChiefs.html"}, {"fxid": 949216, "round": 2, "date": "2026-02-21", "home": "Western Force", "away": "Blues", "hs": 32, "as_": 42, "venue": "HIF Health Insurance Oval", "comp": "Super Rugby Pacific", "file": "sr_R02_Western_ForcevBlues.html"}, {"fxid": 949217, "round": 2, "date": "2026-02-22", "home": "Crusaders", "away": "ACT Brumbies", "hs": 24, "as_": 50, "venue": "Apollo Projects Stadium", "comp": "Super Rugby Pacific", "file": "sr_R02_CrusadersvACT_Brumbies.html"}, {"fxid": 949218, "round": 3, "date": "2026-02-27", "home": "Moana Pasifika", "away": "Western Force", "hs": 19, "as_": 35, "venue": "Navigation Homes Stadium", "comp": "Super Rugby Pacific", "file": "sr_R03_Moana_PasifikavWestern_Force.html"}, {"fxid": 949219, "round": 3, "date": "2026-02-27", "home": "Queensland Reds", "away": "Highlanders", "hs": 31, "as_": 14, "venue": "Suncorp Stadium", "comp": "Super Rugby Pacific", "file": "sr_R03_Queensland_RedsvHighlanders.html"}, {"fxid": 949220, "round": 3, "date": "2026-02-28", "home": "Fijian Drua", "away": "Hurricanes", "hs": 25, "as_": 20, "venue": "Churchill Park", "comp": "Super Rugby Pacific", "file": "sr_R03_Fijian_DruavHurricanes.html"}, {"fxid": 949221, "round": 3, "date": "2026-02-28", "home": "Chiefs", "away": "Crusaders", "hs": 33, "as_": 43, "venue": "FMG Stadium Waikato", "comp": "Super Rugby Pacific", "file": "sr_R03_ChiefsvCrusaders.html"}, {"fxid": 949222, "round": 3, "date": "2026-02-28", "home": "ACT Brumbies", "away": "Blues", "hs": 30, "as_": 27, "venue": "GIO Stadium", "comp": "Super Rugby Pacific", "file": "sr_R03_ACT_BrumbiesvBlues.html"}, {"fxid": 949223, "round": 4, "date": "2026-03-06", "home": "Chiefs", "away": "Moana Pasifika", "hs": 57, "as_": 24, "venue": "FMG Stadium Waikato", "comp": "Super Rugby Pacific", "file": "sr_R04_ChiefsvMoana_Pasifika.html"}, {"fxid": 949224, "round": 4, "date": "2026-03-06", "home": "NSW Waratahs", "away": "Hurricanes", "hs": 19, "as_": 59, "venue": "Allianz Stadium", "comp": "Super Rugby Pacific", "file": "sr_R04_NSW_WaratahsvHurricanes.html"}, {"fxid": 949225, "round": 4, "date": "2026-03-07", "home": "Highlanders", "away": "Western Force", "hs": 39, "as_": 31, "venue": "Forsyth Barr Stadium", "comp": "Super Rugby Pacific", "file": "sr_R04_HighlandersvWestern_Force.html"}, {"fxid": 949226, "round": 4, "date": "2026-03-07", "home": "Blues", "away": "Crusaders", "hs": 29, "as_": 13, "venue": "Eden Park", "comp": "Super Rugby Pacific", "file": "sr_R04_BluesvCrusaders.html"}, {"fxid": 949227, "round": 4, "date": "2026-03-07", "home": "ACT Brumbies", "away": "Queensland Reds", "hs": 31, "as_": 34, "venue": "GIO Stadium", "comp": "Super Rugby Pacific", "file": "sr_R04_ACT_BrumbiesvQueensland_Reds.html"}, {"fxid": 949228, "round": 5, "date": "2026-03-13", "home": "Hurricanes", "away": "Western Force", "hs": 31, "as_": 23, "venue": "McLean Park", "comp": "Super Rugby Pacific", "file": "sr_R05_HurricanesvWestern_Force.html"}, {"fxid": 949229, "round": 5, "date": "2026-03-14", "home": "Fijian Drua", "away": "ACT Brumbies", "hs": 42, "as_": 27, "venue": "Four R Stadium", "comp": "Super Rugby Pacific", "file": "sr_R05_Fijian_DruavACT_Brumbies.html"}, {"fxid": 949230, "round": 5, "date": "2026-03-14", "home": "Crusaders", "away": "Highlanders", "hs": 29, "as_": 18, "venue": "Apollo Projects Stadium", "comp": "Super Rugby Pacific", "file": "sr_R05_CrusadersvHighlanders.html"}, {"fxid": 949231, "round": 5, "date": "2026-03-14", "home": "Queensland Reds", "away": "NSW Waratahs", "hs": 26, "as_": 17, "venue": "Suncorp Stadium", "comp": "Super Rugby Pacific", "file": "sr_R05_Queensland_RedsvNSW_Waratahs.html"}, {"fxid": 949232, "round": 5, "date": "2026-03-15", "home": "Blues", "away": "Moana Pasifika", "hs": 43, "as_": 7, "venue": "Eden Park", "comp": "Super Rugby Pacific", "file": "sr_R05_BluesvMoana_Pasifika.html"}, {"fxid": 949233, "round": 6, "date": "2026-03-20", "home": "Highlanders", "away": "Hurricanes", "hs": 7, "as_": 50, "venue": "Forsyth Barr Stadium", "comp": "Super Rugby Pacific", "file": "sr_R06_HighlandersvHurricanes.html"}, {"fxid": 949234, "round": 6, "date": "2026-03-20", "home": "ACT Brumbies", "away": "Chiefs", "hs": 33, "as_": 24, "venue": "GIO Stadium", "comp": "Super Rugby Pacific", "file": "sr_R06_ACT_BrumbiesvChiefs.html"}, {"fxid": 949235, "round": 6, "date": "2026-03-21", "home": "Fijian Drua", "away": "Queensland Reds", "hs": 6, "as_": 21, "venue": "Churchill Park", "comp": "Super Rugby Pacific", "file": "sr_R06_Fijian_DruavQueensland_Reds.html"}, {"fxid": 949236, "round": 6, "date": "2026-03-21", "home": "Moana Pasifika", "away": "Crusaders", "hs": 21, "as_": 50, "venue": "North Harbour Stadium", "comp": "Super Rugby Pacific", "file": "sr_R06_Moana_PasifikavCrusaders.html"}, {"fxid": 949237, "round": 6, "date": "2026-03-21", "home": "NSW Waratahs", "away": "Blues", "hs": 20, "as_": 35, "venue": "Allianz Stadium", "comp": "Super Rugby Pacific", "file": "sr_R06_NSW_WaratahsvBlues.html"}, {"fxid": 949238, "round": 7, "date": "2026-03-27", "home": "Moana Pasifika", "away": "Highlanders", "hs": 19, "as_": 39, "venue": "North Harbour Stadium", "comp": "Super Rugby Pacific", "file": "sr_R07_Moana_PasifikavHighlanders.html"}, {"fxid": 949239, "round": 7, "date": "2026-03-27", "home": "ACT Brumbies", "away": "NSW Waratahs", "hs": 28, "as_": 30, "venue": "GIO Stadium", "comp": "Super Rugby Pacific", "file": "sr_R07_ACT_BrumbiesvNSW_Waratahs.html"}, {"fxid": 949240, "round": 7, "date": "2026-03-28", "home": "Hurricanes", "away": "Queensland Reds", "hs": 52, "as_": 14, "venue": "Hnry Stadium", "comp": "Super Rugby Pacific", "file": "sr_R07_HurricanesvQueensland_Reds.html"}, {"fxid": 949241, "round": 7, "date": "2026-03-28", "home": "Blues", "away": "Fijian Drua", "hs": 40, "as_": 15, "venue": "Eden Park", "comp": "Super Rugby Pacific", "file": "sr_R07_BluesvFijian_Drua.html"}, {"fxid": 949242, "round": 7, "date": "2026-03-28", "home": "Western Force", "away": "Chiefs", "hs": 14, "as_": 24, "venue": "HBF Park", "comp": "Super Rugby Pacific", "file": "sr_R07_Western_ForcevChiefs.html"}, {"fxid": 949243, "round": 8, "date": "2026-04-03", "home": "Crusaders", "away": "Fijian Drua", "hs": 69, "as_": 26, "venue": "Apollo Projects Stadium", "comp": "Super Rugby Pacific", "file": "sr_R08_CrusadersvFijian_Drua.html"}, {"fxid": 949244, "round": 8, "date": "2026-04-04", "home": "Chiefs", "away": "NSW Waratahs", "hs": 42, "as_": 14, "venue": "FMG Stadium Waikato", "comp": "Super Rugby Pacific", "file": "sr_R08_ChiefsvNSW_Waratahs.html"}, {"fxid": 949245, "round": 8, "date": "2026-04-04", "home": "Queensland Reds", "away": "Western Force", "hs": 19, "as_": 42, "venue": "Suncorp Stadium", "comp": "Super Rugby Pacific", "file": "sr_R08_Queensland_RedsvWestern_Force.html"}, {"fxid": 949246, "round": 9, "date": "2026-04-10", "home": "Highlanders", "away": "ACT Brumbies", "hs": 10, "as_": 14, "venue": "Forsyth Barr Stadium", "comp": "Super Rugby Pacific", "file": "sr_R09_HighlandersvACT_Brumbies.html"}, {"fxid": 949247, "round": 9, "date": "2026-04-11", "home": "Moana Pasifika", "away": "Chiefs", "hs": 17, "as_": 62, "venue": "Rotorua International Stadium", "comp": "Super Rugby Pacific", "file": "sr_R09_Moana_PasifikavChiefs.html"}, {"fxid": 949248, "round": 9, "date": "2026-04-11", "home": "Fijian Drua", "away": "Western Force", "hs": 24, "as_": 22, "venue": "Churchill Park", "comp": "Super Rugby Pacific", "file": "sr_R09_Fijian_DruavWestern_Force.html"}, {"fxid": 949249, "round": 9, "date": "2026-04-11", "home": "Hurricanes", "away": "Blues", "hs": 42, "as_": 19, "venue": "Hnry Stadium", "comp": "Super Rugby Pacific", "file": "sr_R09_HurricanesvBlues.html"}, {"fxid": 949250, "round": 9, "date": "2026-04-11", "home": "Queensland Reds", "away": "Crusaders", "hs": 31, "as_": 26, "venue": "Suncorp Stadium", "comp": "Super Rugby Pacific", "file": "sr_R09_Queensland_RedsvCrusaders.html"}, {"fxid": 949251, "round": 10, "date": "2026-04-17", "home": "Blues", "away": "Highlanders", "hs": 47, "as_": 40, "venue": "Eden Park", "comp": "Super Rugby Pacific", "file": "sr_R10_BluesvHighlanders.html"}, {"fxid": 949252, "round": 10, "date": "2026-04-17", "home": "NSW Waratahs", "away": "Moana Pasifika", "hs": 29, "as_": 14, "venue": "Allianz Stadium", "comp": "Super Rugby Pacific", "file": "sr_R10_NSW_WaratahsvMoana_Pasifika.html"}, {"fxid": 949253, "round": 10, "date": "2026-04-18", "home": "Chiefs", "away": "Hurricanes", "hs": 22, "as_": 17, "venue": "FMG Stadium Waikato", "comp": "Super Rugby Pacific", "file": "sr_R10_ChiefsvHurricanes.html"}, {"fxid": 949254, "round": 10, "date": "2026-04-18", "home": "ACT Brumbies", "away": "Fijian Drua", "hs": 28, "as_": 33, "venue": "GIO Stadium", "comp": "Super Rugby Pacific", "file": "sr_R10_ACT_BrumbiesvFijian_Drua.html"}, {"fxid": 949255, "round": 10, "date": "2026-04-18", "home": "Western Force", "away": "Crusaders", "hs": 31, "as_": 26, "venue": "HBF Park", "comp": "Super Rugby Pacific", "file": "sr_R10_Western_ForcevCrusaders.html"}, {"fxid": 949256, "round": 11, "date": "2026-04-24", "home": "Crusaders", "away": "NSW Waratahs", "hs": 35, "as_": 20, "venue": "One NZ Stadium", "comp": "Super Rugby Pacific", "file": "sr_R11_CrusadersvNSW_Waratahs.html"}, {"fxid": 949257, "round": 11, "date": "2026-04-25", "home": "Hurricanes", "away": "ACT Brumbies", "hs": 45, "as_": 12, "venue": "One NZ Stadium", "comp": "Super Rugby Pacific", "file": "sr_R11_HurricanesvACT_Brumbies.html"}, {"fxid": 949258, "round": 11, "date": "2026-04-25", "home": "Blues", "away": "Queensland Reds", "hs": 36, "as_": 33, "venue": "One NZ Stadium", "comp": "Super Rugby Pacific", "file": "sr_R11_BluesvQueensland_Reds.html"}, {"fxid": 949259, "round": 11, "date": "2026-04-26", "home": "Highlanders", "away": "Moana Pasifika", "hs": 27, "as_": 17, "venue": "One NZ Stadium", "comp": "Super Rugby Pacific", "file": "sr_R11_HighlandersvMoana_Pasifika.html"}, {"fxid": 949260, "round": 11, "date": "2026-04-26", "home": "Chiefs", "away": "Fijian Drua", "hs": 42, "as_": 22, "venue": "One NZ Stadium", "comp": "Super Rugby Pacific", "file": "sr_R11_ChiefsvFijian_Drua.html"}, {"fxid": 949261, "round": 12, "date": "2026-05-01", "home": "Hurricanes", "away": "Crusaders", "hs": 38, "as_": 31, "venue": "Hnry Stadium", "comp": "Super Rugby Pacific", "file": "sr_R12_HurricanesvCrusaders.html"}, {"fxid": 949262, "round": 12, "date": "2026-05-01", "home": "NSW Waratahs", "away": "Western Force", "hs": 17, "as_": 20, "venue": "Allianz Stadium", "comp": "Super Rugby Pacific", "file": "sr_R12_NSW_WaratahsvWestern_Force.html"}, {"fxid": 949263, "round": 12, "date": "2026-05-02", "home": "Fijian Drua", "away": "Highlanders", "hs": 24, "as_": 14, "venue": "Four R Stadium", "comp": "Super Rugby Pacific", "file": "sr_R12_Fijian_DruavHighlanders.html"}, {"fxid": 949264, "round": 12, "date": "2026-05-02", "home": "Moana Pasifika", "away": "Blues", "hs": 19, "as_": 45, "venue": "North Harbour Stadium", "comp": "Super Rugby Pacific", "file": "sr_R12_Moana_PasifikavBlues.html"}, {"fxid": 949265, "round": 12, "date": "2026-05-02", "home": "Queensland Reds", "away": "ACT Brumbies", "hs": 30, "as_": 21, "venue": "Suncorp Stadium", "comp": "Super Rugby Pacific", "file": "sr_R12_Queensland_RedsvACT_Brumbies.html"}, {"fxid": 949266, "round": 13, "date": "2026-05-08", "home": "Crusaders", "away": "Blues", "hs": 36, "as_": 20, "venue": "One NZ Stadium", "comp": "Super Rugby Pacific", "file": "sr_R13_CrusadersvBlues.html"}, {"fxid": 949267, "round": 13, "date": "2026-05-08", "home": "Queensland Reds", "away": "Chiefs", "hs": 21, "as_": 31, "venue": "Suncorp Stadium", "comp": "Super Rugby Pacific", "file": "sr_R13_Queensland_RedsvChiefs.html"}, {"fxid": 949268, "round": 13, "date": "2026-05-09", "home": "Highlanders", "away": "NSW Waratahs", "hs": 31, "as_": 26, "venue": "Forsyth Barr Stadium", "comp": "Super Rugby Pacific", "file": "sr_R13_HighlandersvNSW_Waratahs.html"}, {"fxid": 949269, "round": 13, "date": "2026-05-09", "home": "Moana Pasifika", "away": "Hurricanes", "hs": 17, "as_": 50, "venue": "North Harbour Stadium", "comp": "Super Rugby Pacific", "file": "sr_R13_Moana_PasifikavHurricanes.html"}, {"fxid": 949270, "round": 13, "date": "2026-05-09", "home": "ACT Brumbies", "away": "Western Force", "hs": 32, "as_": 15, "venue": "GIO Stadium", "comp": "Super Rugby Pacific", "file": "sr_R13_ACT_BrumbiesvWestern_Force.html"}, {"fxid": 949271, "round": 14, "date": "2026-05-15", "home": "Chiefs", "away": "Highlanders", "hs": 42, "as_": 12, "venue": "FMG Stadium Waikato", "comp": "Super Rugby Pacific", "file": "sr_R14_ChiefsvHighlanders.html"}, {"fxid": 949272, "round": 14, "date": "2026-05-16", "home": "Fijian Drua", "away": "NSW Waratahs", "hs": 35, "as_": 50, "venue": "HFC Bank Stadium", "comp": "Super Rugby Pacific", "file": "sr_R14_Fijian_DruavNSW_Waratahs.html"}, {"fxid": 949273, "round": 14, "date": "2026-05-16", "home": "Blues", "away": "Hurricanes", "hs": 24, "as_": 47, "venue": "Eden Park", "comp": "Super Rugby Pacific", "file": "sr_R14_BluesvHurricanes.html"}, {"fxid": 949274, "round": 14, "date": "2026-05-16", "home": "Western Force", "away": "Queensland Reds", "hs": 19, "as_": 14, "venue": "HBF Park", "comp": "Super Rugby Pacific", "file": "sr_R14_Western_ForcevQueensland_Reds.html"}, {"fxid": 945332, "round": 15, "date": "2025-05-23", "home": "Crusaders", "away": "Highlanders", "hs": 15, "as_": 12, "venue": "Apollo Projects Stadium", "comp": "Super Rugby Pacific", "file": "sr_R15_CrusadersvHighlanders.html"}, {"fxid": 949275, "round": 15, "date": "2026-05-22", "home": "Crusaders", "away": "Chiefs", "hs": 36, "as_": 32, "venue": "One NZ Stadium", "comp": "Super Rugby Pacific", "file": "sr_R15_CrusadersvChiefs.html"}, {"fxid": 949276, "round": 15, "date": "2026-05-22", "home": "NSW Waratahs", "away": "ACT Brumbies", "hs": 14, "as_": 21, "venue": "Allianz Stadium", "comp": "Super Rugby Pacific", "file": "sr_R15_NSW_WaratahsvACT_Brumbies.html"}, {"fxid": 949277, "round": 15, "date": "2026-05-23", "home": "Moana Pasifika", "away": "Queensland Reds", "hs": 31, "as_": 33, "venue": "North Harbour Stadium", "comp": "Super Rugby Pacific", "file": "sr_R15_Moana_PasifikavQueensland_Reds.html"}, {"fxid": 949278, "round": 15, "date": "2026-05-23", "home": "Hurricanes", "away": "Highlanders", "hs": 45, "as_": 28, "venue": "Hnry Stadium", "comp": "Super Rugby Pacific", "file": "sr_R15_HurricanesvHighlanders.html"}, {"fxid": 949279, "round": 15, "date": "2026-05-23", "home": "Western Force", "away": "Fijian Drua", "hs": 19, "as_": 15, "venue": "HBF Park", "comp": "Super Rugby Pacific", "file": "sr_R15_Western_ForcevFijian_Drua.html"}, {"fxid": 949280, "round": 16, "date": "2026-05-29", "home": "Crusaders", "away": "Hurricanes", "hs": 47, "as_": 14, "venue": "One NZ Stadium", "comp": "Super Rugby Pacific", "file": "sr_R16_CrusadersvHurricanes.html"}, {"fxid": 949281, "round": 16, "date": "2026-05-29", "home": "Queensland Reds", "away": "Fijian Drua", "hs": 45, "as_": 24, "venue": "Suncorp Stadium", "comp": "Super Rugby Pacific", "file": "sr_R16_Queensland_RedsvFijian_Drua.html"}, {"fxid": 949282, "round": 16, "date": "2026-05-30", "home": "ACT Brumbies", "away": "Moana Pasifika", "hs": 19, "as_": 21, "venue": "GIO Stadium", "comp": "Super Rugby Pacific", "file": "sr_R16_ACT_BrumbiesvMoana_Pasifika.html"}, {"fxid": 949283, "round": 16, "date": "2026-05-30", "home": "Chiefs", "away": "Blues", "hs": 59, "as_": 34, "venue": "FMG Stadium Waikato", "comp": "Super Rugby Pacific", "file": "sr_R16_ChiefsvBlues.html"}, {"fxid": 949284, "round": 16, "date": "2026-05-30", "home": "Western Force", "away": "NSW Waratahs", "hs": 31, "as_": 25, "venue": "HBF Park", "comp": "Super Rugby Pacific", "file": "sr_R16_Western_ForcevNSW_Waratahs.html"}, {"fxid": 949285, "round": 17, "date": "2026-06-05", "home": "Hurricanes", "away": "ACT Brumbies", "hs": 66, "as_": 12, "venue": "Hnry Stadium", "comp": "Super Rugby Pacific", "file": "sr_R17_HurricanesvACT_Brumbies.html"}, {"fxid": 949286, "round": 17, "date": "2026-06-06", "home": "Chiefs", "away": "Queensland Reds", "hs": 46, "as_": 24, "venue": "FMG Stadium Waikato", "comp": "Super Rugby Pacific", "file": "sr_R17_ChiefsvQueensland_Reds.html"}, {"fxid": 949287, "round": 17, "date": "2026-06-06", "home": "Crusaders", "away": "Blues", "hs": 52, "as_": 31, "venue": "One NZ Stadium", "comp": "Super Rugby Pacific", "file": "sr_R17_CrusadersvBlues.html"}, {"fxid": 949288, "round": 18, "date": "2026-06-13", "home": "Hurricanes", "away": "Blues", "hs": 57, "as_": 21, "venue": "Hnry Stadium", "comp": "Super Rugby Pacific", "file": "sr_R18_HurricanesvBlues.html"}, {"fxid": 949289, "round": 18, "date": "2026-06-12", "home": "Chiefs", "away": "Crusaders", "hs": 49, "as_": 12, "venue": "FMG Stadium Waikato", "comp": "Super Rugby Pacific", "file": "sr_R18_ChiefsvCrusaders.html"}, {"fxid": 949290, "round": 19, "date": "2026-06-20", "home": "Hurricanes", "away": "Chiefs", "hs": 60, "as_": 5, "venue": "Hnry Stadium", "comp": "Super Rugby Pacific", "file": "sr_R19_HurricanesvChiefs.html"}]}};
+
+// Populate league dropdown
+const selLeague = document.getElementById('selLeague');
+Object.keys(DATA).forEach(lg => {
+  const o = document.createElement('option');
+  o.value = lg; o.textContent = lg;
+  selLeague.appendChild(o);
+});
+// Auto-select if only one league
+if (Object.keys(DATA).length === 1) {
+  selLeague.value = Object.keys(DATA)[0];
+  onLeague();
+}
+
+function onLeague() {
+  const lg = selLeague.value;
+  const grpTeam = document.getElementById('grpTeam');
+  const selTeam = document.getElementById('selTeam');
+  document.getElementById('mlWrap').classList.add('hidden');
+  selTeam.innerHTML = '<option value="">— Select Team —</option>';
+  if (!lg) { grpTeam.classList.add('hidden'); return; }
+  grpTeam.classList.remove('hidden');
+  DATA[lg].teams.forEach(t => {
+    const o = document.createElement('option');
+    o.value = t; o.textContent = t;
+    selTeam.appendChild(o);
+  });
+}
+
+function onTeam() {
+  const lg = selLeague.value;
+  const team = document.getElementById('selTeam').value;
+  const wrap = document.getElementById('mlWrap');
+  if (!team) { wrap.classList.add('hidden'); return; }
+
+  const all = DATA[lg].matches.filter(m => m.home === team || m.away === team);
+  all.sort((a, b) => a.round - b.round || a.fxid - b.fxid);
+
+  let W=0, L=0, D=0;
+  const tbody = document.getElementById('mlBody');
+  tbody.innerHTML = '';
+  all.forEach(m => {
+    const isHome = m.home === team;
+    const opp    = isHome ? m.away : m.home;
+    const ts     = isHome ? m.hs   : m.as_;
+    const os     = isHome ? m.as_  : m.hs;
+    const ha     = isHome ? 'H' : 'A';
+    const res    = ts > os ? 'W' : ts < os ? 'L' : 'D';
+    if(res==='W') W++; else if(res==='L') L++; else D++;
+    const tr = document.createElement('tr');
+    tr.onclick = () => { if(m.file) window.open(m.file,'_blank'); };
+    tr.innerHTML = `
+      <td class="rnd">R${m.round}</td>
+      <td class="date">${m.date}</td>
+      <td class="opp">vs ${opp}<span class="venue-lbl ${ha==='H'?'h-lbl':'a-lbl'}">${ha}</span></td>
+      <td class="score res-${res}">${ts} – ${os}</td>
+      <td class="venue-txt">${m.venue}</td>
+      <td><a class="view-btn" href="${m.file}" target="_blank" onclick="event.stopPropagation()">View →</a></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('mlTitle').textContent = team;
+  document.getElementById('mlCount').textContent = all.length + ' matches';
+  const sb = document.getElementById('statsBar');
+  sb.innerHTML = `
+    <span class="stat-pill sp-all">${W+L+D} Played</span>
+    <span class="stat-pill sp-w">W ${W}</span>
+    <span class="stat-pill sp-l">L ${L}</span>
+    ${D?`<span class="stat-pill sp-d">D ${D}</span>`:''}
+  `;
+  wrap.classList.remove('hidden');
+}
+</script>
+</body>
+</html>
