@@ -1009,6 +1009,12 @@ TEAM_ABBR_MAP = {
     'Yokohama Canon Eagles': 'YCE',
     'Shizuoka BlueRevs': 'SBR',
     'Toshiba Brave Lupus Tokyo': 'TOH',
+    # Super Rugby Pacific
+    'Blues': 'BLU', 'Chiefs': 'CHI', 'Crusaders': 'CRU',
+    'Highlanders': 'HIG', 'Hurricanes': 'HUR',
+    'ACT Brumbies': 'BRU', 'NSW Waratahs': 'WAR',
+    'Queensland Reds': 'RED', 'Western Force': 'FOR',
+    'Fijian Drua': 'FDR', 'Moana Pasifika': 'MOP',
 }
 
 
@@ -1184,6 +1190,198 @@ def cmd_match(args):
           f"{'Home' if m['kubota_is_home'] else 'Away'})")
     
     con.close()
+
+
+_SR_DARK_ROOT = (
+    ":root{--ks:#4A7EC0;--ksd:#1B2A4A;--ksl:#1a2535;"
+    "--sn:#9B4050;--snm:#722F37;--snl:#2d1a1d;"
+    "--neu:#1e2938;--ink:#dde3ed;--mu:#7a8699;"
+    "--ru:#2a3a50;--gd:#2d7a4a;--wn:#c87422;}"
+)
+_SR_DARK_BODY = (
+    "body{font-family:'Helvetica Neue',Arial,sans-serif;"
+    "background:#0f1623;color:var(--ink);padding:6px;font-size:12px}"
+)
+_SR_DARK_EXTRA = """<style>
+.sum-card,.qtr-card,.sp2-card,.sp2-trycard,.ts2-block{background:#1e2938!important;border-color:#2a3a50!important}
+.ts2-row{border-color:#2a3a50!important}
+.ts2-row.sub{background:#192232!important}
+.sum-card-title{color:#c0ccd8!important;border-color:#2a3a50!important}
+.nav button{background:#1e2938!important;color:#8899bb!important}
+</style>"""
+
+
+def cmd_sr_match(args):
+    """Generate a Super Rugby Pacific match report HTML."""
+    global con, cur, fx, p2
+
+    con = sqlite3.connect(DB)
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+
+    q = "SELECT * FROM matches WHERE league='super_rugby'"
+    params = []
+    if hasattr(args, 'fxid') and args.fxid:
+        q += " AND fxid=?"; params.append(args.fxid)
+    if hasattr(args, 'round') and args.round:
+        q += " AND round_number=?"; params.append(args.round)
+    if hasattr(args, 'home') and args.home:
+        q += " AND home_team_name LIKE ?"; params.append(f"%{args.home}%")
+    if hasattr(args, 'away') and args.away:
+        q += " AND away_team_name LIKE ?"; params.append(f"%{args.away}%")
+
+    m = cur.execute(q, params).fetchone()
+    if not m:
+        sys.exit("No Super Rugby match found matching the given criteria.")
+
+    fx = m["fxid"]
+    HOME_T = m["home_team_name"]
+    AWAY_T = m["away_team_name"]
+    p2 = _num(cur.execute(
+        "SELECT MIN(ps_timestamp) v FROM events WHERE fxid=? AND period=2", (fx,)
+    ).fetchone()["v"])
+
+    h_stats, at_h, at_tot, terr_num_h, terr_den_h, bip_v2_h, terr_num2_h, terr_den2_h = team_stats(HOME_T, AWAY_T)
+    a_stats, at_a, _,    terr_num_a, terr_den_a, _,       terr_num2_a, terr_den2_a = team_stats(AWAY_T, HOME_T)
+    poss_denom = at_h + at_a
+    h_pct = round(at_h / poss_denom * 100) if poss_denom else 0
+    a_pct = 100 - h_pct
+    total_atk_time = terr_den_h + terr_den_a
+    if total_atk_time > 0:
+        time_in_away_half = terr_num_h + (terr_den_a - terr_num_a)
+        h_terr = round(time_in_away_half / total_atk_time * 100)
+        a_terr = 100 - h_terr
+    else:
+        h_terr = a_terr = 0
+    bip_v2_total = terr_den2_h + terr_den2_a
+    if bip_v2_total > 0:
+        time_h_atk_v2 = terr_num2_h + (terr_den2_a - terr_num2_a)
+        h_terr_v2 = round(time_h_atk_v2 / bip_v2_total * 100)
+        a_terr_v2 = 100 - h_terr_v2
+    else:
+        h_terr_v2 = a_terr_v2 = 0
+
+    qd_h = quarter_stats(HOME_T, AWAY_T)
+    qd_a = quarter_stats(AWAY_T, HOME_T)
+    score_events = events_for("Try") + events_for(
+        "Goal Kick", result="Goal Kicked", types=("Penalty Goal", "Drop Goal"))
+    score_events.sort(key=lambda e: e["min"])
+    pen_events = events_for("Penalty Conceded")
+    error_events = events_for("Turnover")
+    kick_events = events_for("Kick")
+    miss_kick_events = events_for("Goal Kick", result="Goal Missed")
+    HOME_ABBR = team_abbr(HOME_T)
+    AWAY_ABBR = team_abbr(AWAY_T)
+    HOME_NAME = HOME_T.upper()
+    AWAY_NAME = AWAY_T.upper()
+
+    pos_map_h, shirt_map_h, play_time_h = player_meta(HOME_T)
+    pos_map_a, shirt_map_a, play_time_a = player_meta(AWAY_T)
+
+    date_parts = m["date_played"].split("-")
+    date_fmt = f"{int(date_parts[2])} {MONTHS[int(date_parts[1])]} {date_parts[0]}"
+
+    D = {
+        "info": {
+            "home": HOME_NAME, "away": AWAY_NAME,
+            "home_score": m["home_ft_score"], "away_score": m["away_ft_score"],
+            "home_ht": m["home_ht_score"], "away_ht": m["away_ht_score"],
+            "venue": m["venue_name"], "date": date_fmt,
+            "round": m["round_number"], "competition": "Super Rugby Pacific",
+        },
+        "home_stats": h_stats, "away_stats": a_stats,
+        "ball_in_play": {
+            "total_fmt": mmss(at_tot), "h_fmt": mmss(at_h), "h_pct": h_pct,
+            "a_fmt": mmss(at_a), "a_pct": a_pct, "h_terr": h_terr, "a_terr": a_terr,
+            "total_v2_fmt": mmss(bip_v2_total), "h_terr_v2": h_terr_v2, "a_terr_v2": a_terr_v2,
+        },
+        "score_events": score_events, "pen_events": pen_events, "error_events": error_events,
+        "kick_events": kick_events, "miss_kick_events": miss_kick_events,
+        "e22_detail": {HOME_NAME: e22_detail(HOME_T, AWAY_T), AWAY_NAME: e22_detail(AWAY_T, HOME_T)},
+        "setpiece": {HOME_NAME: setpiece_detail(HOME_T), AWAY_NAME: setpiece_detail(AWAY_T)},
+        "teamsheet": {
+            HOME_NAME: teamsheet(HOME_T, pos_map_h, shirt_map_h, play_time_h),
+            AWAY_NAME: teamsheet(AWAY_T, pos_map_a, shirt_map_a, play_time_a),
+        },
+    }
+
+    TOT = {
+        "h": {
+            "pts": m["home_ft_score"],
+            "tries": h_stats["tries"], "pos_t": mmss(at_h), "pos_p": h_pct, "ter_p": h_terr, "ter_p_v2": h_terr_v2,
+            "car": h_stats["carries"], "mtr": h_stats["metres"], "amc": h_stats["avg_carry"],
+            "pas": h_stats["passes"],
+            "r2k": round(h_stats["rucks"] / h_stats["kicks"], 1) if h_stats["kicks"] else float(h_stats["rucks"]),
+            "ta": h_stats["tack_att"], "tm": h_stats["tack_miss"], "tp": h_stats["tack_pct"],
+            "lb": h_stats["linebreaks"], "tow": h_stats["to_won"], "toc": h_stats["to_con"],
+            "pen": h_stats["penalties"], "e22": h_stats["e22"], "c22": h_stats["c22"], "s22": h_stats["s22"],
+        },
+        "a": {
+            "pts": m["away_ft_score"],
+            "tries": a_stats["tries"], "pos_t": mmss(at_a), "pos_p": a_pct, "ter_p": a_terr, "ter_p_v2": a_terr_v2,
+            "car": a_stats["carries"], "mtr": a_stats["metres"], "amc": a_stats["avg_carry"],
+            "pas": a_stats["passes"],
+            "r2k": round(a_stats["rucks"] / a_stats["kicks"], 1) if a_stats["kicks"] else float(a_stats["rucks"]),
+            "ta": a_stats["tack_att"], "tm": a_stats["tack_miss"], "tp": a_stats["tack_pct"],
+            "lb": a_stats["linebreaks"], "tow": a_stats["to_won"], "toc": a_stats["to_con"],
+            "pen": a_stats["penalties"], "e22": a_stats["e22"], "c22": a_stats["c22"], "s22": a_stats["s22"],
+        },
+    }
+
+    QD = {"h": qd_h, "a": qd_a}
+    PD = {HOME_NAME: penalty_detail(HOME_T), AWAY_NAME: penalty_detail(AWAY_T)}
+    ATK = {
+        HOME_NAME: players_attack(HOME_T, pos_map_h, shirt_map_h, play_time_h),
+        AWAY_NAME: players_attack(AWAY_T, pos_map_a, shirt_map_a, play_time_a),
+    }
+    DEFV5 = {
+        HOME_NAME: players_defence(HOME_T, pos_map_h, shirt_map_h, play_time_h),
+        AWAY_NAME: players_defence(AWAY_T, pos_map_a, shirt_map_a, play_time_a),
+    }
+
+    con.close()
+
+    html = open(MATCH_TEMPLATE, encoding="utf-8").read()
+
+    # Dark navy/wine-red theme: replace CSS variables and body background
+    html = html.replace(
+        ":root{--ks:#E87722;--ksd:#C05E0E;--ksl:#FEF0E3;--sn:#0B1D3A;--snm:#1A3460;--snl:#D0D8E8;--neu:#fafaf8;--ink:#1a1a1a;--mu:#6b6b6b;--ru:#e0dcd4;--gd:#1a7a3c;--wn:#b85c00;}",
+        _SR_DARK_ROOT,
+    )
+    html = html.replace(
+        "body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f0ece4;color:var(--ink);padding:6px;font-size:12px}",
+        _SR_DARK_BODY,
+    )
+    html = html.replace("</head>", _SR_DARK_EXTRA + "</head>")
+
+    for name, value in [("D", D), ("TOT", TOT), ("QD", QD), ("PD", PD), ("ATK", ATK), ("DEFV5", DEFV5)]:
+        html = replace_const(html, name, value)
+
+    html = html.replace("label:'Attack KS'", f"label:'Attack {HOME_ABBR}'")
+    html = html.replace("label:'Attack SUN'", f"label:'Attack {AWAY_ABBR}'")
+    html = html.replace("label:'Defence KS'", f"label:'Defence {HOME_ABBR}'")
+    html = html.replace("label:'Defence SUN'", f"label:'Defence {AWAY_ABBR}'")
+    html = html.replace(">KS<", f">{HOME_ABBR}<")
+    html = html.replace("${HOME_ABBR}", HOME_ABBR)
+    html = html.replace("${AWAY_ABBR}", AWAY_ABBR)
+    html = html.replace(">SUN<", f">{AWAY_ABBR}<")
+    html = html.replace(">KUB<", f">{HOME_ABBR}<")
+    html = html.replace("KUB Won", f"{HOME_ABBR} Won")
+    html = html.replace("KUB Win", f"{HOME_ABBR} Win")
+    html = html.replace("SUN Won", f"{AWAY_ABBR} Won")
+    html = html.replace("SUN Win", f"{AWAY_ABBR} Win")
+    html = html.replace(">KS ${hEnd.v>0", f">{HOME_ABBR} ${{hEnd.v>0")
+    html = html.replace(">SUN ${aEnd.v>0", f">{AWAY_ABBR} ${{aEnd.v>0")
+
+    home_slug = HOME_T.replace(" ", "_")
+    away_slug = AWAY_T.replace(" ", "_")
+    out_name = f"sr_R{m['round_number']:02d}_{home_slug}v{away_slug}.html"
+    with open(out_name, "w", encoding="utf-8") as fh:
+        fh.write(html)
+
+    print(f"Wrote {out_name}")
+    print(f"  {HOME_T} {m['home_ft_score']} - {m['away_ft_score']} {AWAY_T} "
+          f"(R{m['round_number']}, {m['date_played']}, {m['venue_name']})")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -5617,6 +5815,12 @@ def main():
     p_scout.add_argument("--data", default="../BI Scouting", help="CSV data directory")
     p_scout.add_argument("--out", default=".", help="Output directory")
 
+    p_sr_match = sub.add_parser("sr-match", help="Generate Super Rugby match report")
+    p_sr_match.add_argument("--fxid", type=int, help="Match FXID")
+    p_sr_match.add_argument("--round", type=int, help="Round number")
+    p_sr_match.add_argument("--home", help="Home team name (partial match)")
+    p_sr_match.add_argument("--away", help="Away team name (partial match)")
+
     p_kpi = sub.add_parser("kpi", help="Generate season KPI report")
 
     sub.add_parser("kpi-a4", help="Generate season KPI report (A4 portrait layout)")
@@ -5633,6 +5837,8 @@ def main():
         cmd_build(args)
     elif args.command == "match":
         cmd_match(args)
+    elif args.command == "sr-match":
+        cmd_sr_match(args)
     elif args.command == "scout":
         cmd_scout(args)
     elif args.command == "kpi":
