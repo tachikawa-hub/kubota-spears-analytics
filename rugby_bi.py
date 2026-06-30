@@ -5348,6 +5348,24 @@ def cmd_scout(args):
     print(f'\n✅ 完成: {out_path}')
     print(f'   ファイルサイズ: {os.path.getsize(out_path)//1024}KB')
 
+    # ── Scrum & Lineout sections (integrated from insert_scrum_v4 / insert_lineout_v4) ─
+    abbr = TEAM_SHORT.get(opp)
+    if abbr and abbr != 'Spears':
+        _here = os.path.dirname(os.path.abspath(__file__))
+        if _here not in sys.path:
+            sys.path.insert(0, _here)
+        try:
+            import insert_scrum_v4 as _sc
+            if abbr in _sc.TEAM_SCRUM_DATA and _sc.process_file(out_path, abbr):
+                print(f'   ✓ Scrum section added')
+        except Exception as _e:
+            print(f'   [WARN] Scrum: {_e}')
+        try:
+            import insert_lineout_v4 as _lo
+            if abbr in _lo.TEAM_DATA and _lo.process_file(out_path, abbr):
+                print(f'   ✓ Lineout section added')
+        except Exception as _e:
+            print(f'   [WARN] Lineout: {_e}')
 
 
 # ═══════════════════════════════════════════════════════════════
