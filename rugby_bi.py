@@ -1351,6 +1351,24 @@ def cmd_sr_match(args):
     )
     html = html.replace("</head>", _SR_DARK_EXTRA + "</head>")
 
+    # Momentum chart: replace hardcoded Kubota-orange HOME colors → navy,
+    # and D1-navy AWAY colors → wine red. Target only momentum SVG call sites.
+    _H_COL = "#1B2A4A"   # home navy (matches --ks)
+    _H_LAB = "#0F1A2E"   # home label (matches --ksd)
+    _A_COL = "#722F37"   # away wine red (matches --snm)
+    html = html.replace("area(hP,'#E87722')",       f"area(hP,'{_H_COL}')")
+    html = html.replace("area(aP,'#1A3460')",       f"area(aP,'{_A_COL}')")
+    html = html.replace("line(hP,'#E87722')",       f"line(hP,'{_H_COL}')")
+    html = html.replace("line(aP,'#1A3460',true)",  f"line(aP,'{_A_COL}',true)")
+    html = html.replace("ndots(hP,'#E87722')",      f"ndots(hP,'{_H_COL}')")
+    html = html.replace("ndots(aP,'#1A3460')",      f"ndots(aP,'{_A_COL}')")
+    html = html.replace('fill="#C05E0E" font-weight="700">KS ',
+                        f'fill="{_H_LAB}" font-weight="700">KS ')
+    html = html.replace('fill="#1A3460" font-weight="700">SUN ',
+                        f'fill="{_A_COL}" font-weight="700">SUN ')
+    html = html.replace('border-top:2px dashed #1A3460',
+                        f'border-top:2px dashed {_A_COL}')
+
     for name, value in [("D", D), ("TOT", TOT), ("QD", QD), ("PD", PD), ("ATK", ATK), ("DEFV5", DEFV5)]:
         html = replace_const(html, name, value)
 
