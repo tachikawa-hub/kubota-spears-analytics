@@ -5366,6 +5366,12 @@ def cmd_scout(args):
                 print(f'   ✓ Lineout section added')
         except Exception as _e:
             print(f'   [WARN] Lineout: {_e}')
+    try:
+        import insert_kicktest as _kt
+        if _kt.process_file_cached(out_path):
+            print(f'   ✓ Kick Types section added')
+    except Exception as _e:
+        print(f'   [WARN] Kick Types: {_e}')
 
 
 # ═══════════════════════════════════════════════════════════════
