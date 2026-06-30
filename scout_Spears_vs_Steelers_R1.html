@@ -296,32 +296,97 @@ body{background:#F8F9FA;color:#212529;font-family:'Inter',sans-serif;font-size:1
   <div id="kick" class="section">
     <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;padding:8px 14px;background:#fff;border:1px solid #DEE2E6;border-radius:6px;font-size:11px;"><div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:50%;background:#CBD5E1;flex-shrink:0"></div><span style="color:#CBD5E1;">BlackRams</span></div><div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:50%;background:#DC2626;flex-shrink:0"></div><span style="color:#DC2626;font-weight:600;">Steelers</span></div><div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:50%;background:#F97316;flex-shrink:0"></div><span style="color:#F97316;font-weight:600;">Spears</span></div><div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:50%;background:#CBD5E1;flex-shrink:0"></div><span style="color:#CBD5E1;">Heat</span></div><div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:50%;background:#CBD5E1;flex-shrink:0"></div><span style="color:#CBD5E1;">Dynaboars</span></div><div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:50%;background:#CBD5E1;flex-shrink:0"></div><span style="color:#CBD5E1;">WildKnights</span></div><div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:50%;background:#CBD5E1;flex-shrink:0"></div><span style="color:#CBD5E1;">BlueRevs</span></div><div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:50%;background:#CBD5E1;flex-shrink:0"></div><span style="color:#CBD5E1;">Sungoliath</span></div><div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:50%;background:#CBD5E1;flex-shrink:0"></div><span style="color:#CBD5E1;">BraveLupus</span></div><div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:50%;background:#CBD5E1;flex-shrink:0"></div><span style="color:#CBD5E1;">Verblitz</span></div><div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:50%;background:#CBD5E1;flex-shrink:0"></div><span style="color:#CBD5E1;">D-Rocks</span></div><div style="display:flex;align-items:center;gap:4px"><div style="width:9px;height:9px;border-radius:50%;background:#CBD5E1;flex-shrink:0"></div><span style="color:#CBD5E1;">Eagles</span></div></div>
     <div style="background:#fff;border:1px solid #DEE2E6;border-radius:8px;padding:18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #F1F3F5">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #F1F3F5">
     <div style="font-family:Oswald,sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#495057">👟 Kick Type Breakdown</div>
     <div style="margin-left:auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:5px">
         <span style="font-size:10px;color:#6C757D;font-weight:600">Spears:</span>
-        <select id="kt-sel-h" onchange="ktUpdate('h')" style="font-size:10px;padding:3px 6px;border:1px solid #DEE2E6;border-radius:4px;color:#F97316;font-weight:600"><option value="season">Season All</option><option value="win">WIN Only</option><option value="loss">LOSS Only</option><option value="m948748">R1: vs Steelers 33-28 ✓</option></select>
+        <select id="kt-sel-h" onchange="ktRender()" style="font-size:10px;padding:3px 6px;border:1px solid #DEE2E6;border-radius:4px;color:#F97316;font-weight:600"><option value="season">Season All (1G)</option><option value="win">WIN Only</option><option value="loss">LOSS Only</option><option value="m948748">R1: vs Steelers 33-28 ✓</option></select>
       </div>
       <div style="display:flex;align-items:center;gap:5px">
         <span style="font-size:10px;color:#6C757D;font-weight:600">Steelers:</span>
-        <select id="kt-sel-o" onchange="ktUpdate('o')" style="font-size:10px;padding:3px 6px;border:1px solid #DEE2E6;border-radius:4px;color:#DC2626;font-weight:600"><option value="season">Season All</option><option value="win">WIN Only</option><option value="loss">LOSS Only</option><option value="m948748">R1: vs Spears 28-33 ✗</option></select>
+        <select id="kt-sel-o" onchange="ktRender()" style="font-size:10px;padding:3px 6px;border:1px solid #DEE2E6;border-radius:4px;color:#DC2626;font-weight:600"><option value="season">Season All (1G)</option><option value="win">WIN Only</option><option value="loss">LOSS Only</option><option value="m948748">R1: vs Spears 28-33 ✗</option></select>
       </div>
     </div>
   </div>
+  <div style="margin-bottom:10px;display:flex;align-items:center;gap:2px;flex-wrap:wrap">
+    <span style="font-size:10px;color:#6C757D;font-weight:600;margin-right:6px">Kick Type:</span>
+    <button data-t="All" onclick="setKTT('All')" id="ktt-All" style="font-size:10px;padding:3px 10px;border-radius:12px;border:1.5px solid #333;background:#333;color:#fff;cursor:pointer;font-weight:700;margin-right:2px">All</button><button data-t="Bomb" onclick="setKTT('Bomb')" id="ktt-Bomb" style="font-size:10px;padding:3px 10px;border-radius:12px;border:1.5px solid #2563EB;background:transparent;color:#2563EB;cursor:pointer;font-weight:600;margin-right:2px">Bomb</button><button data-t="Chip" onclick="setKTT('Chip')" id="ktt-Chip" style="font-size:10px;padding:3px 10px;border-radius:12px;border:1.5px solid #16A34A;background:transparent;color:#16A34A;cursor:pointer;font-weight:600;margin-right:2px">Chip</button><button data-t="Cross Pitch" onclick="setKTT('Cross Pitch')" id="ktt-Cross-Pitch" style="font-size:10px;padding:3px 10px;border-radius:12px;border:1.5px solid #D97706;background:transparent;color:#D97706;cursor:pointer;font-weight:600;margin-right:2px">Cross Pitch</button><button data-t="Territorial" onclick="setKTT('Territorial')" id="ktt-Territorial" style="font-size:10px;padding:3px 10px;border-radius:12px;border:1.5px solid #DC2626;background:transparent;color:#DC2626;cursor:pointer;font-weight:600;margin-right:2px">Territorial</button><button data-t="Low" onclick="setKTT('Low')" id="ktt-Low" style="font-size:10px;padding:3px 10px;border-radius:12px;border:1.5px solid #7C3AED;background:transparent;color:#7C3AED;cursor:pointer;font-weight:600;margin-right:2px">Low</button><button data-t="Box" onclick="setKTT('Box')" id="ktt-Box" style="font-size:10px;padding:3px 10px;border-radius:12px;border:1.5px solid #0891B2;background:transparent;color:#0891B2;cursor:pointer;font-weight:600;margin-right:2px">Box</button><button data-t="Touch Kick" onclick="setKTT('Touch Kick')" id="ktt-Touch-Kick" style="font-size:10px;padding:3px 10px;border-radius:12px;border:1.5px solid #9CA3AF;background:transparent;color:#9CA3AF;cursor:pointer;font-weight:600;margin-right:2px">Touch Kick</button>
+  </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-    <div id="kt-panel-h"></div>
-    <div id="kt-panel-o"></div>
+    <div>
+      <div id="kt-field-h" style="margin-bottom:6px"></div>
+      <div id="kt-panel-h"></div>
+    </div>
+    <div>
+      <div id="kt-field-o" style="margin-bottom:6px"></div>
+      <div id="kt-panel-o"></div>
+    </div>
   </div>
 </div>
 <script>
 (function(){
-var KD={"home": {"per_match": [{"fxid": 948748, "round": 1, "opp": "Steelers", "pf": 33, "pa": 28, "win": true, "total": 28, "kt": {"Bomb": 4, "Chip": 1, "Cross Pitch": 0, "Territorial": 5, "Low": 0, "Box": 3, "Touch Kick": 15}, "oc": {"Own Player - Collected": 4, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 1}}], "season": {"n": 1, "total": 28, "kt": {"Bomb": 4, "Chip": 1, "Cross Pitch": 0, "Territorial": 5, "Low": 0, "Box": 3, "Touch Kick": 15}, "oc": {"Own Player - Collected": 4, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 1}}, "win": {"n": 1, "total": 28, "kt": {"Bomb": 4, "Chip": 1, "Cross Pitch": 0, "Territorial": 5, "Low": 0, "Box": 3, "Touch Kick": 15}, "oc": {"Own Player - Collected": 4, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 1}}, "loss": {"n": 0, "total": 0, "kt": {"Bomb": 0, "Chip": 0, "Cross Pitch": 0, "Territorial": 0, "Low": 0, "Box": 0, "Touch Kick": 0}, "oc": {"Own Player - Collected": 0, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 0}}}, "opp": {"per_match": [{"fxid": 948748, "round": 1, "opp": "Spears", "pf": 28, "pa": 33, "win": false, "total": 24, "kt": {"Bomb": 1, "Chip": 2, "Cross Pitch": 1, "Territorial": 7, "Low": 0, "Box": 4, "Touch Kick": 9}, "oc": {"Own Player - Collected": 1, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 5}}], "season": {"n": 1, "total": 24, "kt": {"Bomb": 1, "Chip": 2, "Cross Pitch": 1, "Territorial": 7, "Low": 0, "Box": 4, "Touch Kick": 9}, "oc": {"Own Player - Collected": 1, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 5}}, "win": {"n": 0, "total": 0, "kt": {"Bomb": 0, "Chip": 0, "Cross Pitch": 0, "Territorial": 0, "Low": 0, "Box": 0, "Touch Kick": 0}, "oc": {"Own Player - Collected": 0, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 0}}, "loss": {"n": 1, "total": 24, "kt": {"Bomb": 1, "Chip": 2, "Cross Pitch": 1, "Territorial": 7, "Low": 0, "Box": 4, "Touch Kick": 9}, "oc": {"Own Player - Collected": 1, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 5}}}, "hCol": "#F97316", "oCol": "#DC2626", "hSht": "Spears", "oSht": "Steelers"};
+var KD={"home": {"per_match": [{"fxid": 948748, "round": 1, "opp": "Steelers", "pf": 33, "pa": 28, "win": true, "total": 28, "kt": {"Bomb": 4, "Chip": 1, "Cross Pitch": 0, "Territorial": 5, "Low": 0, "Box": 3, "Touch Kick": 15}, "oc": {"Own Player - Collected": 4, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 1}, "kicks": [[2.0, 42.0, "Territorial"], [32.0, 46.0, "Touch Kick"], [-1.0, 24.0, "Touch Kick"], [19.0, 10.0, "Touch Kick"], [60.0, 21.0, "Bomb"], [36.0, 27.0, "Territorial"], [31.0, 13.0, "Bomb"], [59.0, 15.0, "Touch Kick"], [10.0, 46.0, "Touch Kick"], [28.0, 20.0, "Touch Kick"], [12.0, 21.0, "Territorial"], [27.0, 43.0, "Touch Kick"], [58.0, 46.0, "Box"], [44.0, 17.0, "Bomb"], [18.0, 58.0, "Touch Kick"], [21.0, 28.0, "Touch Kick"], [47.0, 11.0, "Box"], [46.0, 40.0, "Touch Kick"], [88.0, 15.0, "Touch Kick"], [15.0, 55.0, "Box"], [43.0, 48.0, "Chip"], [38.0, 60.0, "Territorial"], [4.0, 43.0, "Territorial"], [-5.0, 54.0, "Touch Kick"], [17.0, 44.0, "Touch Kick"], [37.0, 35.0, "Bomb"], [46.0, 61.0, "Touch Kick"], [75.0, 62.0, "Touch Kick"]]}], "season": {"n": 1, "total": 28, "kt": {"Bomb": 4, "Chip": 1, "Cross Pitch": 0, "Territorial": 5, "Low": 0, "Box": 3, "Touch Kick": 15}, "oc": {"Own Player - Collected": 4, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 1}, "kicks": [[2.0, 42.0, "Territorial"], [32.0, 46.0, "Touch Kick"], [-1.0, 24.0, "Touch Kick"], [19.0, 10.0, "Touch Kick"], [60.0, 21.0, "Bomb"], [36.0, 27.0, "Territorial"], [31.0, 13.0, "Bomb"], [59.0, 15.0, "Touch Kick"], [10.0, 46.0, "Touch Kick"], [28.0, 20.0, "Touch Kick"], [12.0, 21.0, "Territorial"], [27.0, 43.0, "Touch Kick"], [58.0, 46.0, "Box"], [44.0, 17.0, "Bomb"], [18.0, 58.0, "Touch Kick"], [21.0, 28.0, "Touch Kick"], [47.0, 11.0, "Box"], [46.0, 40.0, "Touch Kick"], [88.0, 15.0, "Touch Kick"], [15.0, 55.0, "Box"], [43.0, 48.0, "Chip"], [38.0, 60.0, "Territorial"], [4.0, 43.0, "Territorial"], [-5.0, 54.0, "Touch Kick"], [17.0, 44.0, "Touch Kick"], [37.0, 35.0, "Bomb"], [46.0, 61.0, "Touch Kick"], [75.0, 62.0, "Touch Kick"]]}, "win": {"n": 1, "total": 28, "kt": {"Bomb": 4, "Chip": 1, "Cross Pitch": 0, "Territorial": 5, "Low": 0, "Box": 3, "Touch Kick": 15}, "oc": {"Own Player - Collected": 4, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 1}, "kicks": [[2.0, 42.0, "Territorial"], [32.0, 46.0, "Touch Kick"], [-1.0, 24.0, "Touch Kick"], [19.0, 10.0, "Touch Kick"], [60.0, 21.0, "Bomb"], [36.0, 27.0, "Territorial"], [31.0, 13.0, "Bomb"], [59.0, 15.0, "Touch Kick"], [10.0, 46.0, "Touch Kick"], [28.0, 20.0, "Touch Kick"], [12.0, 21.0, "Territorial"], [27.0, 43.0, "Touch Kick"], [58.0, 46.0, "Box"], [44.0, 17.0, "Bomb"], [18.0, 58.0, "Touch Kick"], [21.0, 28.0, "Touch Kick"], [47.0, 11.0, "Box"], [46.0, 40.0, "Touch Kick"], [88.0, 15.0, "Touch Kick"], [15.0, 55.0, "Box"], [43.0, 48.0, "Chip"], [38.0, 60.0, "Territorial"], [4.0, 43.0, "Territorial"], [-5.0, 54.0, "Touch Kick"], [17.0, 44.0, "Touch Kick"], [37.0, 35.0, "Bomb"], [46.0, 61.0, "Touch Kick"], [75.0, 62.0, "Touch Kick"]]}, "loss": {"n": 0, "total": 0, "kt": {"Bomb": 0, "Chip": 0, "Cross Pitch": 0, "Territorial": 0, "Low": 0, "Box": 0, "Touch Kick": 0}, "oc": {"Own Player - Collected": 0, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 0}, "kicks": []}}, "opp": {"per_match": [{"fxid": 948748, "round": 1, "opp": "Spears", "pf": 28, "pa": 33, "win": false, "total": 24, "kt": {"Bomb": 1, "Chip": 2, "Cross Pitch": 1, "Territorial": 7, "Low": 0, "Box": 4, "Touch Kick": 9}, "oc": {"Own Player - Collected": 1, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 5}, "kicks": [[80.0, 56.0, "Touch Kick"], [75.0, 15.0, "Territorial"], [47.0, 48.0, "Territorial"], [32.0, 50.0, "Box"], [10.0, 54.0, "Touch Kick"], [22.0, 5.0, "Territorial"], [29.0, 37.0, "Territorial"], [26.0, 58.0, "Territorial"], [16.0, 55.0, "Box"], [42.0, 21.0, "Bomb"], [18.0, 35.0, "Chip"], [31.0, 54.0, "Touch Kick"], [66.0, 2.0, "Chip"], [12.0, 38.0, "Touch Kick"], [35.0, 55.0, "Box"], [8.0, 21.0, "Touch Kick"], [24.0, 19.0, "Touch Kick"], [10.0, 50.0, "Territorial"], [8.0, 23.0, "Touch Kick"], [68.0, 40.0, "Cross Pitch"], [13.0, 14.0, "Touch Kick"], [22.0, 20.0, "Territorial"], [27.0, 53.0, "Box"], [84.0, 9.0, "Touch Kick"]]}], "season": {"n": 1, "total": 24, "kt": {"Bomb": 1, "Chip": 2, "Cross Pitch": 1, "Territorial": 7, "Low": 0, "Box": 4, "Touch Kick": 9}, "oc": {"Own Player - Collected": 1, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 5}, "kicks": [[80.0, 56.0, "Touch Kick"], [75.0, 15.0, "Territorial"], [47.0, 48.0, "Territorial"], [32.0, 50.0, "Box"], [10.0, 54.0, "Touch Kick"], [22.0, 5.0, "Territorial"], [29.0, 37.0, "Territorial"], [26.0, 58.0, "Territorial"], [16.0, 55.0, "Box"], [42.0, 21.0, "Bomb"], [18.0, 35.0, "Chip"], [31.0, 54.0, "Touch Kick"], [66.0, 2.0, "Chip"], [12.0, 38.0, "Touch Kick"], [35.0, 55.0, "Box"], [8.0, 21.0, "Touch Kick"], [24.0, 19.0, "Touch Kick"], [10.0, 50.0, "Territorial"], [8.0, 23.0, "Touch Kick"], [68.0, 40.0, "Cross Pitch"], [13.0, 14.0, "Touch Kick"], [22.0, 20.0, "Territorial"], [27.0, 53.0, "Box"], [84.0, 9.0, "Touch Kick"]]}, "win": {"n": 0, "total": 0, "kt": {"Bomb": 0, "Chip": 0, "Cross Pitch": 0, "Territorial": 0, "Low": 0, "Box": 0, "Touch Kick": 0}, "oc": {"Own Player - Collected": 0, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 0}, "kicks": []}, "loss": {"n": 1, "total": 24, "kt": {"Bomb": 1, "Chip": 2, "Cross Pitch": 1, "Territorial": 7, "Low": 0, "Box": 4, "Touch Kick": 9}, "oc": {"Own Player - Collected": 1, "Pressure Error": 0, "Pressure in Touch": 0, "Collected Bounce": 5}, "kicks": [[80.0, 56.0, "Touch Kick"], [75.0, 15.0, "Territorial"], [47.0, 48.0, "Territorial"], [32.0, 50.0, "Box"], [10.0, 54.0, "Touch Kick"], [22.0, 5.0, "Territorial"], [29.0, 37.0, "Territorial"], [26.0, 58.0, "Territorial"], [16.0, 55.0, "Box"], [42.0, 21.0, "Bomb"], [18.0, 35.0, "Chip"], [31.0, 54.0, "Touch Kick"], [66.0, 2.0, "Chip"], [12.0, 38.0, "Touch Kick"], [35.0, 55.0, "Box"], [8.0, 21.0, "Touch Kick"], [24.0, 19.0, "Touch Kick"], [10.0, 50.0, "Territorial"], [8.0, 23.0, "Touch Kick"], [68.0, 40.0, "Cross Pitch"], [13.0, 14.0, "Touch Kick"], [22.0, 20.0, "Territorial"], [27.0, 53.0, "Box"], [84.0, 9.0, "Touch Kick"]]}}, "hCol": "#F97316", "oCol": "#DC2626", "hSht": "Spears", "oSht": "Steelers"};
 var KT=['Bomb','Chip','Cross Pitch','Territorial','Low','Box','Touch Kick'];
 var KC={'Bomb':'#2563EB','Chip':'#16A34A','Cross Pitch':'#D97706','Territorial':'#DC2626','Low':'#7C3AED','Box':'#0891B2','Touch Kick':'#9CA3AF'};
 var OC=[['Own Player - Collected','Own Player Collected'],['Pressure Error','Pressure Error'],['Pressure in Touch','Pressure in Touch'],['Collected Bounce','Hit Grass']];
+var _kttFilter='All';
+var FBKG='<rect x="0" y="0" width="220" height="136" fill="#2d6a39"/>'
+  +'<rect x="20" y="0" width="200" height="136" fill="#336b3e"/>'
+  +'<rect x="20" y="0" width="200" height="136" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1"/>'
+  +'<line x1="120" y1="0" x2="120" y2="136" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>'
+  +'<line x1="64" y1="0" x2="64" y2="136" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/>'
+  +'<line x1="176" y1="0" x2="176" y2="136" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/>'
+  +'<line x1="20" y1="0" x2="20" y2="136" stroke="rgba(255,255,255,0.9)" stroke-width="1.5"/>'
+  +'<line x1="220" y1="0" x2="220" y2="136" stroke="rgba(255,255,255,0.9)" stroke-width="1.5"/>'
+  +'<text x="10" y="10" fill="rgba(255,255,255,0.45)" font-size="5.5" text-anchor="middle">Own</text>'
+  +'<text x="64" y="10" fill="rgba(255,255,255,0.45)" font-size="5" text-anchor="middle">22m</text>'
+  +'<text x="120" y="10" fill="rgba(255,255,255,0.6)" font-size="5.5" text-anchor="middle">50m</text>'
+  +'<text x="176" y="10" fill="rgba(255,255,255,0.45)" font-size="5" text-anchor="middle">22m</text>'
+  +'<text x="220" y="10" fill="rgba(255,255,255,0.45)" font-size="5.5" text-anchor="middle">Opp</text>';
+function aggN(kd,n){
+  var recs=kd.per_match.slice(-n);
+  var kt={},oc={},kicks=[],tot=0;
+  KT.forEach(function(t){kt[t]=0;});
+  OC.forEach(function(p){oc[p[0]]=0;});
+  recs.forEach(function(r){
+    tot+=r.total;
+    KT.forEach(function(t){kt[t]+=(r.kt[t]||0);});
+    OC.forEach(function(p){oc[p[0]]+=(r.oc[p[0]]||0);});
+    if(r.kicks)kicks=kicks.concat(r.kicks);
+  });
+  return {n:recs.length,total:tot,kt:kt,oc:oc,kicks:kicks,label:'Last '+n+'G'};
+}
+function getD(side){
+  var kd=KD[side];
+  var v=document.getElementById('kt-sel-'+side).value;
+  if(v==='season')return Object.assign({label:'SEASON'},kd.season);
+  if(v==='win')return Object.assign({label:'WIN'},kd.win);
+  if(v==='loss')return Object.assign({label:'LOSS'},kd.loss);
+  if(v.charAt(0)==='n')return aggN(kd,parseInt(v.slice(1)));
+  var fx=parseInt(v.slice(1));
+  for(var i=0;i<kd.per_match.length;i++){
+    var m=kd.per_match[i];
+    if(m.fxid===fx)return {n:1,total:m.total,kt:m.kt,oc:m.oc,kicks:m.kicks||[],label:'R'+m.round+' vs '+m.opp+' '+m.pf+'-'+m.pa+(m.win?' ✓':' ✗')};
+  }
+  return Object.assign({label:'SEASON'},kd.season);
+}
+function renderPitch(side,d,col){
+  var kicks=(d.kicks||[]).filter(function(k){return _kttFilter==='All'||k[2]===_kttFilter;});
+  var dots=kicks.map(function(k){
+    var cx=((k[0]||0)+10)*2,cy=(k[1]||0)*2;
+    var c=KC[k[2]]||col;
+    return'<circle cx="'+cx.toFixed(0)+'" cy="'+cy.toFixed(0)+'" r="3.5" fill="'+c+'" fill-opacity="0.75" stroke="rgba(255,255,255,0.6)" stroke-width="0.8"/>';
+  }).join('');
+  var filter=_kttFilter!=='All'?' · <span style="color:'+KC[_kttFilter]+'">'+_kttFilter+'</span>':'';
+  document.getElementById('kt-field-'+side).innerHTML=
+    '<div style="font-size:10px;font-weight:600;color:'+col+';margin-bottom:3px">'+d.label
+    +' <span style="font-weight:400;color:#888">('+kicks.length+' kicks'+filter+')</span>'
+    +' <span style="font-size:9px;color:#aaa;font-weight:400">&nbsp;← attacking →</span></div>'
+    +'<svg viewBox="0 0 220 136" style="width:100%;border-radius:4px;display:block">'+FBKG+dots+'</svg>';
+}
 function bar(kt,tot,nG,lbl,lc){
-  if(!tot)return '<div style="margin-bottom:8px;font-size:11px;color:#aaa">'+lbl+' ('+nG+'G): no data</div>';
+  if(!tot)return'<div style="margin-bottom:8px;font-size:11px;color:#aaa">'+lbl+' ('+nG+'G): no data</div>';
   var pg=(tot/nG).toFixed(1);
   var seg=KT.map(function(t){var n=kt[t]||0,w=Math.round(n/tot*100);return w?'<div title="'+t+': '+n+' ('+w+'%)" style="width:'+w+'%;background:'+KC[t]+';height:18px;display:inline-block"></div>':''}).join('');
   var det=KT.filter(function(t){return(kt[t]||0)>0}).map(function(t){var n=kt[t]||0,p=Math.round(n/tot*100);return'<span style="font-size:9.5px;white-space:nowrap"><span style="display:inline-block;width:7px;height:7px;background:'+KC[t]+';border-radius:1px;vertical-align:middle;margin-right:2px"></span>'+t+' '+n+'('+p+'%)</span>'}).join('&ensp;');
@@ -331,24 +396,24 @@ function oct(oc,n,col,sht){
   var rows=OC.map(function(p){var v=(oc||{})[p[0]]||0,pg=n?(v/n).toFixed(1):'—';return'<tr><td style="padding:4px 6px;font-size:11px">'+p[1]+'</td><td style="text-align:center;font-weight:700;padding:3px 6px">'+v+' <span style="color:#aaa;font-size:10px">('+pg+'/G)</span></td></tr>'}).join('');
   return'<table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:8px"><thead><tr><th style="text-align:left;padding:4px 6px;border-bottom:2px solid #DEE2E6;font-size:10px">Kick Outcome (KIP)</th><th style="text-align:center;padding:4px;border-bottom:2px solid #DEE2E6;font-size:10px;color:'+col+'">'+sht+'</th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
-window.ktUpdate=function(side){
-  var kd=KD[side],col=KD[side+'Col'],sht=KD[side+'Sht'];
-  var v=document.getElementById('kt-sel-'+side).value;
-  var d,lbl,nG;
-  if(v==='season'){d=kd.season;lbl='SEASON';nG=kd.season.n;}
-  else if(v==='win'){d=kd.win;lbl='WIN';nG=kd.win.n;}
-  else if(v==='loss'){d=kd.loss;lbl='LOSS';nG=kd.loss.n;}
-  else{
-    var fx=parseInt(v.slice(1)),m=null;
-    for(var i=0;i<kd.per_match.length;i++){if(kd.per_match[i].fxid===fx){m=kd.per_match[i];break;}}
-    if(!m)return;
-    d={n:1,total:m.total,kt:m.kt,oc:m.oc};
-    lbl='R'+m.round+' vs '+m.opp+' '+m.pf+'-'+m.pa+(m.win?' ✓':' ✗');
-    nG=1;
-  }
-  document.getElementById('kt-panel-'+side).innerHTML=bar(d.kt,d.total,nG,lbl,col)+oct(d.oc,nG,col,sht);
+function ktRender(){
+  ['h','o'].forEach(function(side){
+    var d=getD(side),col=KD[side+'Col'],sht=KD[side+'Sht'];
+    renderPitch(side,d,col);
+    document.getElementById('kt-panel-'+side).innerHTML=bar(d.kt,d.total,d.n,d.label,col)+oct(d.oc,d.n,col,sht);
+  });
+}
+window.setKTT=function(t){
+  _kttFilter=t;
+  document.querySelectorAll('[id^="ktt-"]').forEach(function(b){
+    var act=b.dataset.t===t;
+    if(act){b.style.background=b.dataset.t==='All'?'#333':(KC[b.dataset.t]||'#333');b.style.color='#fff';b.style.fontWeight='700';}
+    else{b.style.background='transparent';b.style.color=b.dataset.t==='All'?'#555':(KC[b.dataset.t]||'#666');b.style.fontWeight='600';}
+  });
+  ktRender();
 };
-ktUpdate('h');ktUpdate('o');
+window.ktUpdate=function(side){ktRender();};
+ktRender();
 })();
 </script>
     <div style="background:#fff;border:1px solid #DEE2E6;border-radius:8px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
