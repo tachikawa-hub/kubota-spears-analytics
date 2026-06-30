@@ -5405,14 +5405,14 @@ def cmd_build(args=None):
             except ValueError:
                 return v
 
-    # find qualifying CSV files
+    # find qualifying CSV files; tuples are (path, first_row, kubota_playing)
     files = []
     for f in sorted(glob.glob(os.path.join(HERE, "*.csv"))):
         with open(f, encoding="utf-8-sig", newline="") as fh:
             r = csv.DictReader(fh)
             first = next(r, None)
             if first and TARGET in (first.get("homeTeamName",""), first.get("awayTeamName","")):
-                files.append((f, first))
+                files.append((f, first, True))
 
     if not files:
         # Try BI Scouting subdirectory
@@ -5421,10 +5421,28 @@ def cmd_build(args=None):
                 r = csv.DictReader(fh)
                 first = next(r, None)
                 if first and TARGET in (first.get("homeTeamName",""), first.get("awayTeamName","")):
-                    files.append((f, first))
+                    files.append((f, first, True))
 
     if not files:
         sys.exit(f"No Kubota Spears matches found in {HERE}")
+
+    # Super Rugby — always relative to this script, not HERE (which may be BI Scouting/)
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    sr_dir = os.path.join(SCRIPT_DIR, "csv_data", "super_rugby")
+    if os.path.isdir(sr_dir):
+        sr_seen = set()
+        for pattern in (
+            os.path.join(sr_dir, "*.csv"),
+            os.path.join(sr_dir, "**", "*.csv"),
+        ):
+            for f in sorted(glob.glob(pattern, recursive=True)):
+                if f not in sr_seen:
+                    sr_seen.add(f)
+                    with open(f, encoding="utf-8-sig", newline="") as fh:
+                        r = csv.DictReader(fh)
+                        first = next(r, None)
+                        if first:
+                            files.append((f, first, False))
 
     if os.path.exists(db_path):
         os.remove(db_path)
@@ -5508,22 +5526,30 @@ def cmd_build(args=None):
     ev_sql = f"INSERT INTO events ({','.join(insert_cols)}) VALUES ({placeholders})"
 
     n_events = 0
-    for path, first in files:
+    for path, first, kubota_playing in files:
         fxid = num(first["FXID"])
-        is_home = first["homeTeamName"] == TARGET
-        if is_home:
-            kub_score = num(first["hometeamFTscore"]); opp_score = num(first["awayteamFTscore"])
-            opp_name = first["awayTeamName"]
+        if kubota_playing:
+            is_home = first["homeTeamName"] == TARGET
+            if is_home:
+                kub_score = num(first["hometeamFTscore"]); opp_score = num(first["awayteamFTscore"])
+                opp_name = first["awayTeamName"]
+            else:
+                kub_score = num(first["awayteamFTscore"]); opp_score = num(first["hometeamFTscore"])
+                opp_name = first["homeTeamName"]
+            res = None if kub_score is None or opp_score is None else ("W" if kub_score > opp_score else "L" if kub_score < opp_score else "D")
+            kubota_is_home_val = 1 if is_home else 0
         else:
-            kub_score = num(first["awayteamFTscore"]); opp_score = num(first["hometeamFTscore"])
-            opp_name = first["homeTeamName"]
-        res = None if kub_score is None or opp_score is None else ("W" if kub_score > opp_score else "L" if kub_score < opp_score else "D")
+            kub_score = None; opp_score = None; opp_name = None; res = None
+            kubota_is_home_val = 0
 
         comp = first["competitionName"]
-        league = 'd1' if 'D1' in comp else ('d2' if 'D2' in comp else 'other')
+        league = ('d1' if 'D1' in comp else
+                  'd2' if 'D2' in comp else
+                  'super_rugby' if 'Super Rugby' in comp else
+                  'other')
 
         cur.execute(
-            "INSERT INTO matches VALUES (" + ",".join("?" * 28) + ")",
+            "INSERT OR IGNORE INTO matches VALUES (" + ",".join("?" * 28) + ")",
             (fxid, to_iso(first["datePlayed"]), num(first["roundNumber"]), num(first["season"]),
              num(first["competitionID"]), first["competitionName"], league,
              num(first["homeTeamID"]), first["homeTeamName"],
@@ -5532,7 +5558,7 @@ def cmd_build(args=None):
              num(first["hometeamFTscore"]), num(first["awayteamFTscore"]),
              num(first["venueID"]), first["venueName"], first["cityName"],
              first["kickofftime"], first["homecoachName"], first["awaycoachName"],
-             first["refereeName"], 1 if is_home else 0,
+             first["refereeName"], kubota_is_home_val,
              kub_score, opp_name, opp_score, res, os.path.basename(path)),
         )
 
@@ -5541,7 +5567,7 @@ def cmd_build(args=None):
                 vals = [fxid]
                 for col in insert_cols[1:]:
                     csv_key = next((k for k, v in CSV_TO_COL.items() if v == col), None)
-                    vals.append(num(row[csv_key]) if csv_key else None)
+                    vals.append(num(row.get(csv_key)) if csv_key else None)
                 cur.execute(ev_sql, vals)
                 n_events += 1
 
