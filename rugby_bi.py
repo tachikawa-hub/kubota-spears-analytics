@@ -1205,6 +1205,7 @@ _SR_DARK_BODY = (
 _SR_DARK_EXTRA = """<style>
 .sum-card,.qtr-card,.sp2-card,.sp2-trycard{box-shadow:0 1px 5px rgba(0,0,0,.10)}
 .ts2-block{box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.grp-hdr,.grp-avg{display:none!important}
 </style>"""
 
 
