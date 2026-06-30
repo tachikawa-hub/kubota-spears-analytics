@@ -4947,6 +4947,125 @@ function showSub(sid,subId,btn){
             + '</div>'
         )
 
+    # ============================================================
+    # Kick Type Breakdown: CSV全試合から集計（_load_kick_csv_stats）
+    # ============================================================
+    _KT_TYPES_K = ['Bomb','Chip','Cross Pitch','Territorial','Low','Box','Touch Kick']
+    _KT_OC_K    = ['Own Player - Collected','Pressure Error','Pressure in Touch','Collected Bounce']
+
+    def _load_kick_csv_stats(team):
+        """CSV dfから指定チームのキックタイプ・アウトカム統計を試合単位で集計する。"""
+        tk   = df[(df['teamName'].eq(team)) & (df['actionName']=='Kick')]
+        tkip = tk[tk['qualifier3Name'].isin(['Kick in Play','Kick in Play (Own 22)'])]
+        per_match = []
+        for fxid in sorted(df[df['teamName'].eq(team)]['FXID'].unique()):
+            if fxid not in match_res.index: continue
+            r = match_res.loc[fxid]
+            if r['homeTeamName'] == team:
+                pf, pa, opp_nm = int(r['hometeamFTscore']), int(r['awayteamFTscore']), r['awayTeamName']
+            else:
+                pf, pa, opp_nm = int(r['awayteamFTscore']), int(r['hometeamFTscore']), r['homeTeamName']
+            rn_s = df[df['FXID']==fxid]['roundNumber'].dropna()
+            rn   = int(rn_s.iloc[0]) if len(rn_s) else 0
+            fk_all = tk[tk['FXID']==fxid]
+            fk_kip = tkip[tkip['FXID']==fxid]
+            per_match.append({
+                'fxid': int(fxid), 'round': rn,
+                'opp': TEAM_SHORT.get(opp_nm, opp_nm[:10]),
+                'pf': pf, 'pa': pa, 'win': pf > pa,
+                'total': int(len(fk_all)),
+                'kt': {k: int(len(fk_all[fk_all['ActionTypeName']==k])) for k in _KT_TYPES_K},
+                'oc': {k: int(len(fk_kip[fk_kip['ActionResultName']==k])) for k in _KT_OC_K},
+            })
+        def _agg(recs):
+            if not recs:
+                return {'n':0,'total':0,'kt':{k:0 for k in _KT_TYPES_K},'oc':{k:0 for k in _KT_OC_K}}
+            return {
+                'n': len(recs),
+                'total': sum(r['total'] for r in recs),
+                'kt': {k: sum(r['kt'][k] for r in recs) for k in _KT_TYPES_K},
+                'oc': {k: sum(r['oc'][k] for r in recs) for k in _KT_OC_K},
+            }
+        wins   = [r for r in per_match if r['win']]
+        losses = [r for r in per_match if not r['win']]
+        return {
+            'per_match': per_match,
+            'season': _agg(per_match),
+            'win':    _agg(wins),
+            'loss':   _agg(losses),
+        }
+
+    kd_h = _load_kick_csv_stats(home)
+    kd_o = _load_kick_csv_stats(opp)
+    _kick_json = json.dumps(
+        {'home': kd_h, 'opp': kd_o, 'hCol': h_col, 'oCol': o_col, 'hSht': h_sht, 'oSht': o_sht},
+        ensure_ascii=False
+    )
+    _h_opts = ''.join(
+        f'<option value="m{r["fxid"]}">R{r["round"]}: vs {r["opp"]} {r["pf"]}-{r["pa"]} {"✓" if r["win"] else "✗"}</option>'
+        for r in kd_h['per_match']
+    )
+    _o_opts = ''.join(
+        f'<option value="m{r["fxid"]}">R{r["round"]}: vs {r["opp"]} {r["pf"]}-{r["pa"]} {"✓" if r["win"] else "✗"}</option>'
+        for r in kd_o['per_match']
+    )
+    kick_type_html = f'''<div style="background:#fff;border:1px solid #DEE2E6;border-radius:8px;padding:18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #F1F3F5">
+    <div style="font-family:Oswald,sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#495057">👟 Kick Type Breakdown</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="font-size:10px;color:#6C757D;font-weight:600">{h_sht}:</span>
+        <select id="kt-sel-h" onchange="ktUpdate('h')" style="font-size:10px;padding:3px 6px;border:1px solid #DEE2E6;border-radius:4px;color:{h_col};font-weight:600"><option value="season">Season All</option><option value="win">WIN Only</option><option value="loss">LOSS Only</option>{_h_opts}</select>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="font-size:10px;color:#6C757D;font-weight:600">{o_sht}:</span>
+        <select id="kt-sel-o" onchange="ktUpdate('o')" style="font-size:10px;padding:3px 6px;border:1px solid #DEE2E6;border-radius:4px;color:{o_col};font-weight:600"><option value="season">Season All</option><option value="win">WIN Only</option><option value="loss">LOSS Only</option>{_o_opts}</select>
+      </div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div id="kt-panel-h"></div>
+    <div id="kt-panel-o"></div>
+  </div>
+</div>
+<script>
+(function(){{
+var KD={_kick_json};
+var KT=['Bomb','Chip','Cross Pitch','Territorial','Low','Box','Touch Kick'];
+var KC={{'Bomb':'#2563EB','Chip':'#16A34A','Cross Pitch':'#D97706','Territorial':'#DC2626','Low':'#7C3AED','Box':'#0891B2','Touch Kick':'#9CA3AF'}};
+var OC=[['Own Player - Collected','Own Player Collected'],['Pressure Error','Pressure Error'],['Pressure in Touch','Pressure in Touch'],['Collected Bounce','Hit Grass']];
+function bar(kt,tot,nG,lbl,lc){{
+  if(!tot)return '<div style="margin-bottom:8px;font-size:11px;color:#aaa">'+lbl+' ('+nG+'G): no data</div>';
+  var pg=(tot/nG).toFixed(1);
+  var seg=KT.map(function(t){{var n=kt[t]||0,w=Math.round(n/tot*100);return w?'<div title="'+t+': '+n+' ('+w+'%)" style="width:'+w+'%;background:'+KC[t]+';height:18px;display:inline-block"></div>':''}}).join('');
+  var det=KT.filter(function(t){{return(kt[t]||0)>0}}).map(function(t){{var n=kt[t]||0,p=Math.round(n/tot*100);return'<span style="font-size:9.5px;white-space:nowrap"><span style="display:inline-block;width:7px;height:7px;background:'+KC[t]+';border-radius:1px;vertical-align:middle;margin-right:2px"></span>'+t+' '+n+'('+p+'%)</span>'}}).join('&ensp;');
+  return'<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><b style="color:'+lc+'">'+lbl+' ('+nG+'G)</b><span style="color:#6C757D">'+tot+' kicks · '+pg+'/G</span></div><div style="display:flex;border-radius:3px;overflow:hidden;height:18px">'+seg+'</div><div style="display:flex;flex-wrap:wrap;gap:2px 8px;margin-top:5px">'+det+'</div></div>';
+}}
+function oct(oc,n,col,sht){{
+  var rows=OC.map(function(p){{var v=(oc||{{}})[p[0]]||0,pg=n?(v/n).toFixed(1):'—';return'<tr><td style="padding:4px 6px;font-size:11px">'+p[1]+'</td><td style="text-align:center;font-weight:700;padding:3px 6px">'+v+' <span style="color:#aaa;font-size:10px">('+pg+'/G)</span></td></tr>'}}).join('');
+  return'<table style="width:100%;font-size:11px;border-collapse:collapse;margin-top:8px"><thead><tr><th style="text-align:left;padding:4px 6px;border-bottom:2px solid #DEE2E6;font-size:10px">Kick Outcome (KIP)</th><th style="text-align:center;padding:4px;border-bottom:2px solid #DEE2E6;font-size:10px;color:'+col+'">'+sht+'</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}}
+window.ktUpdate=function(side){{
+  var kd=KD[side],col=KD[side+'Col'],sht=KD[side+'Sht'];
+  var v=document.getElementById('kt-sel-'+side).value;
+  var d,lbl,nG;
+  if(v==='season'){{d=kd.season;lbl='SEASON';nG=kd.season.n;}}
+  else if(v==='win'){{d=kd.win;lbl='WIN';nG=kd.win.n;}}
+  else if(v==='loss'){{d=kd.loss;lbl='LOSS';nG=kd.loss.n;}}
+  else{{
+    var fx=parseInt(v.slice(1)),m=null;
+    for(var i=0;i<kd.per_match.length;i++){{if(kd.per_match[i].fxid===fx){{m=kd.per_match[i];break;}}}}
+    if(!m)return;
+    d={{n:1,total:m.total,kt:m.kt,oc:m.oc}};
+    lbl='R'+m.round+' vs '+m.opp+' '+m.pf+'-'+m.pa+(m.win?' ✓':' ✗');
+    nG=1;
+  }}
+  document.getElementById('kt-panel-'+side).innerHTML=bar(d.kt,d.total,nG,lbl,col)+oct(d.oc,nG,col,sht);
+}};
+ktUpdate('h');ktUpdate('o');
+}})();
+</script>'''
+
     # 旧: ov セクション → rank_section に変更（OV KPIカード廃止）。ロールバック時は ov_html 変数を上記コメント版に戻す。
     # 旧: atk セクション = cat_section('atk',ATT,'Attack KPIs','Attack Rankings')
     # 旧: def セクション = cat_section('def',DEF,'Defence KPIs','Defence Rankings')
@@ -4994,6 +5113,7 @@ function showSub(sid,subId,btn){
   <div id="def"  class="section">{rank_section('def',DEF,'Defence Rankings')}</div>
   <div id="kick" class="section">{f'''
     {legend}
+    {kick_type_html}
     <div style="background:#fff;border:1px solid #DEE2E6;border-radius:8px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #F1F3F5">
         <div style="font-family:Oswald,sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#495057">🏆 League Ranking</div>
