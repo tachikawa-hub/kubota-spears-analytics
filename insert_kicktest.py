@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """insert_kicktest.py — Kick Types field map tab for all 35 scout HTML files.
 
-Adds a separate "Kick Types" nav tab with:
-- Vertical rugby field SVG (380x594)
-- Kubota Spears (left) / Opponent (right) panels
-- Match checkbox dropdown + type filter buttons
-Data loaded from all 164 CSV files.
+Two-panel layout:
+  Upper: Kubota Spears vs Opponents (match selector + type filter)
+  Lower: Scout team all-season kicks (type filter only, static all matches)
 """
 import csv, glob, json, os, re
 
@@ -14,19 +12,20 @@ BIOUT_DIR = "/Users/ktachikawa/Desktop/BIoutput"
 KUBOTA    = "Kubota Spears"
 
 TEAM_SHORT = {
-    'BlackRams Tokyo':              'BlackRams',
-    'Kobelco Kobe Steelers':        'Steelers',
-    'Kubota Spears':                'Spears',
-    'Mie Honda Heat':               'Heat',
+    'BlackRams Tokyo':                 'BlackRams',
+    'Kobelco Kobe Steelers':           'Steelers',
+    'Kubota Spears':                   'Spears',
+    'Mie Honda Heat':                  'Heat',
     'Mitsubishi Sagamihara Dynaboars': 'Dynaboars',
-    'Saitama Wild Knights':         'WildKnights',
-    'Shizuoka BlueRevs':            'BlueRevs',
-    'Tokyo Sungoliath':             'Sungoliath',
-    'Toshiba Brave Lupus Tokyo':    'BraveLupus',
-    'Toyota Verblitz':              'Verblitz',
-    'Urayasu D-Rocks':              'D-Rocks',
-    'Yokohama Canon Eagles':        'Eagles',
+    'Saitama Wild Knights':            'WildKnights',
+    'Shizuoka BlueRevs':               'BlueRevs',
+    'Tokyo Sungoliath':                'Sungoliath',
+    'Toshiba Brave Lupus Tokyo':       'BraveLupus',
+    'Toyota Verblitz':                 'Verblitz',
+    'Urayasu D-Rocks':                 'D-Rocks',
+    'Yokohama Canon Eagles':           'Eagles',
 }
+TEAM_FULL = {v: k for k, v in TEAM_SHORT.items()}
 
 COLS = {
     'Box':         '#38BDF8',
@@ -39,10 +38,15 @@ COLS = {
 }
 TYPE_ORDER = ['Box', 'Bomb', 'Territorial', 'Touch Kick', 'Low', 'Chip', 'Cross Pitch']
 
-# ─── JS template (uses __PLACEHOLDER__ for data injection) ───────────────────
+# ─── JS template ─────────────────────────────────────────────────────────────
+# Placeholders: __ALL_KICKS__ __MATCHES__ __LAST_FXID__
+#               __SCOUT_KICKS__ __SCOUT_LABEL__
+#               __COLS__ __TYPE_ORDER__
 _JS_TEMPLATE = r"""(function(){
   const ALL_KICKS=__ALL_KICKS__;
   const MATCHES=__MATCHES__;
+  const SCOUT_KICKS=__SCOUT_KICKS__;
+  const SCOUT_LABEL='__SCOUT_LABEL__';
   const COLS=__COLS__;
   const TYPE_ORDER=__TYPE_ORDER__;
   const DEF='#9CA3AF';
@@ -133,6 +137,7 @@ _JS_TEMPLATE = r"""(function(){
     }else{el.textContent=sel.length+' matches selected';}
   }
   function render(){
+    // ── Upper panel: Kubota Spears (kt3-*) ──
     const kk=getKicks('k');
     const ok=getKicks('o');
     renderSVG(kk,'kt3-kub-svg');
@@ -150,6 +155,22 @@ _JS_TEMPLATE = r"""(function(){
     barChart(okAll,'kt3-opp-bar-wrap');
     const hdr=document.getElementById('kt3-opp-hdr');
     if(hdr)hdr.textContent=getOppLabel();
+    // ── Lower panel: Scout team (kt4-*) ──
+    if(SCOUT_KICKS.length){
+      const sk=SCOUT_KICKS.filter(k=>k.tm==='s'&&(selType==='All'||k.t===selType));
+      const so=SCOUT_KICKS.filter(k=>k.tm==='o'&&(selType==='All'||k.t===selType));
+      renderSVG(sk,'kt4-sct-svg');
+      renderSVG(so,'kt4-sco-svg');
+      const ss=calcStats(sk);const sop=calcStats(so);
+      setEl('kt4-sct-tot',ss.tot);setEl('kt4-sct-totm',ss.totm);
+      setEl('kt4-sct-avg',ss.avg);setEl('kt4-sct-ret',ss.rp);
+      setEl('kt4-sct-cont',ss.cont);setEl('kt4-sct-atk',ss.atk);
+      setEl('kt4-sco-tot',sop.tot);setEl('kt4-sco-totm',sop.totm);
+      setEl('kt4-sco-avg',sop.avg);setEl('kt4-sco-ret',sop.rp);
+      setEl('kt4-sco-cont',sop.cont);setEl('kt4-sco-atk',sop.atk);
+      barChart(SCOUT_KICKS.filter(k=>k.tm==='s'),'kt4-sct-bar-wrap');
+      barChart(SCOUT_KICKS.filter(k=>k.tm==='o'),'kt4-sco-bar-wrap');
+    }
   }
   window.kt3ToggleDrop=function(e){
     e.stopPropagation();
@@ -192,15 +213,15 @@ _JS_TEMPLATE = r"""(function(){
 
 # ─── Data loading ─────────────────────────────────────────────────────────────
 
-def load_all_kicks():
-    """Read all 164 CSVs, return (matches_dict, kicks_list).
+def _load_kicks_for_team(team_name, tm_label):
+    """Load kick events for all D1 matches where team_name appears.
 
-    matches_dict: {fxid: {rn, os}}  — Kubota Spears matches only
-    kicks_list:   list of dicts {f, tm, x, y, ex, t, r, m, rn}
+    tm_label: the value assigned to k['tm'] for team_name's own kicks
+              (e.g. 'k' for Kubota, 's' for scout team)
+    Returns: (matches_dict, kicks_list)
     """
-    matches = {}   # fxid → {rn, os}
+    matches = {}
     kicks   = []
-
     for fpath in sorted(glob.glob(os.path.join(CSV_DIR, "*.csv"))):
         try:
             with open(fpath, encoding="utf-8-sig", newline="") as f:
@@ -208,7 +229,7 @@ def load_all_kicks():
                 for row in reader:
                     home = row.get('homeTeamName', '')
                     away = row.get('awayTeamName', '')
-                    if KUBOTA not in (home, away):
+                    if team_name not in (home, away):
                         continue
                     if row.get('actionName') != 'Kick':
                         continue
@@ -217,20 +238,18 @@ def load_all_kicks():
                     if not raw_x or not raw_y:
                         continue
                     try:
-                        x = float(raw_x)
-                        y = float(raw_y)
+                        x    = float(raw_x)
+                        y    = float(raw_y)
                         fxid = int(float(row['FXID']))
                         rn   = int(float(row.get('roundNumber', 0) or 0))
                     except (ValueError, TypeError, KeyError):
                         continue
-
                     if fxid not in matches:
-                        opp = away if home == KUBOTA else home
+                        opp = away if home == team_name else home
                         matches[fxid] = {
                             'rn': rn,
                             'os': TEAM_SHORT.get(opp, opp[:10]),
                         }
-
                     try:
                         ex = float(row.get('x_coord_end') or 0)
                     except (ValueError, TypeError):
@@ -239,11 +258,9 @@ def load_all_kicks():
                         m = float(row.get('Metres') or 0)
                     except (ValueError, TypeError):
                         m = 0.0
-
-                    t = (row.get('ActionTypeName') or '').strip()
-                    r = (row.get('ActionResultName') or '').strip()
-                    tm = 'k' if row.get('teamName') == KUBOTA else 'o'
-
+                    t  = (row.get('ActionTypeName')  or '').strip()
+                    r  = (row.get('ActionResultName') or '').strip()
+                    tm = tm_label if row.get('teamName') == team_name else 'o'
                     kicks.append({
                         'f': fxid, 'tm': tm,
                         'x': round(x, 1), 'y': round(y, 1),
@@ -252,10 +269,19 @@ def load_all_kicks():
                         'm': round(m, 1),
                         'rn': rn,
                     })
-        except Exception as e:
-            print(f"  [WARN] {os.path.basename(fpath)}: {e}")
-
+        except Exception:
+            continue
     return matches, kicks
+
+
+def load_all_kicks():
+    """Load Kubota Spears matches (tm='k')."""
+    return _load_kicks_for_team(KUBOTA, 'k')
+
+
+def load_team_kicks(team_name):
+    """Load scout team matches (tm='s')."""
+    return _load_kicks_for_team(team_name, 's')
 
 
 # ─── HTML builders ────────────────────────────────────────────────────────────
@@ -267,7 +293,6 @@ _SVG_FIELD = (
     '<rect width="380" height="594" fill="#4d8a28"/>'
     '<rect x="0" y="0" width="380" height="27" fill="#3d7520"/>'
     '<rect x="0" y="567" width="380" height="27" fill="#3d7520"/>'
-    # 10 alternating stripes 54px each
     '<rect x="0" y="27.0" width="380" height="54.0" fill="#4d8a28"/>'
     '<rect x="0" y="81.0" width="380" height="54.0" fill="#5a9e2f"/>'
     '<rect x="0" y="135.0" width="380" height="54.0" fill="#4d8a28"/>'
@@ -278,38 +303,28 @@ _SVG_FIELD = (
     '<rect x="0" y="405.0" width="380" height="54.0" fill="#5a9e2f"/>'
     '<rect x="0" y="459.0" width="380" height="54.0" fill="#4d8a28"/>'
     '<rect x="0" y="513.0" width="380" height="54.0" fill="#5a9e2f"/>'
-    # Side lines
     '<line x1="0" y1="27" x2="0" y2="567" stroke="white" stroke-width="1.5"/>'
     '<line x1="380" y1="27" x2="380" y2="567" stroke="white" stroke-width="1.5"/>'
-    # Try lines
     '<line x1="0" y1="27" x2="380" y2="27" stroke="white" stroke-width="2"/>'
     '<line x1="0" y1="567" x2="380" y2="567" stroke="white" stroke-width="2"/>'
-    # 22m lines
     '<line x1="0" y1="448.2" x2="380" y2="448.2" stroke="rgba(255,255,255,.75)" stroke-width="1.3"/>'
     '<line x1="0" y1="145.8" x2="380" y2="145.8" stroke="rgba(255,255,255,.75)" stroke-width="1.3"/>'
-    # 10m lines (dashed)
     '<line x1="0" y1="351.0" x2="380" y2="351.0" stroke="rgba(255,255,255,.5)" stroke-width="1" stroke-dasharray="5,4"/>'
     '<line x1="0" y1="243.0" x2="380" y2="243.0" stroke="rgba(255,255,255,.5)" stroke-width="1" stroke-dasharray="5,4"/>'
-    # Halfway
     '<line x1="0" y1="297.0" x2="380" y2="297.0" stroke="white" stroke-width="2"/>'
-    # Labels
     '<text x="5" y="463.2" font-size="16" font-family="sans-serif" fill="rgba(255,255,255,.9)" font-weight="500">22</text>'
     '<text x="5" y="366.0" font-size="16" font-family="sans-serif" fill="rgba(255,255,255,.9)" font-weight="500">10</text>'
     '<text x="5" y="312.0" font-size="16" font-family="sans-serif" fill="rgba(255,255,255,.9)" font-weight="500">50</text>'
     '<text x="5" y="258.0" font-size="16" font-family="sans-serif" fill="rgba(255,255,255,.9)" font-weight="500">10</text>'
     '<text x="5" y="160.8" font-size="16" font-family="sans-serif" fill="rgba(255,255,255,.9)" font-weight="500">22</text>'
-    # Direction labels
-    '<text x="370" y="18" font-size="14" font-weight="800" font-family="sans-serif" fill="white" text-anchor="end">ATTACK ↑</text>'
-    '<text x="370" y="580" font-size="14" font-weight="800" font-family="sans-serif" fill="white" text-anchor="end">OWN ↓</text>'
-    # Goal posts (attack end)
+    '<text x="370" y="18" font-size="14" font-weight="800" font-family="sans-serif" fill="white" text-anchor="end">ATTACK &#8593;</text>'
+    '<text x="370" y="580" font-size="14" font-weight="800" font-family="sans-serif" fill="white" text-anchor="end">OWN &#8595;</text>'
     '<line x1="165" y1="0" x2="165" y2="27" stroke="white" stroke-width="2.5"/>'
     '<line x1="215" y1="0" x2="215" y2="27" stroke="white" stroke-width="2.5"/>'
     '<line x1="165" y1="12" x2="215" y2="12" stroke="white" stroke-width="2.5"/>'
-    # Goal posts (own end)
     '<line x1="165" y1="497" x2="165" y2="567" stroke="white" stroke-width="2.5"/>'
     '<line x1="215" y1="497" x2="215" y2="567" stroke="white" stroke-width="2.5"/>'
     '<line x1="165" y1="552" x2="215" y2="552" stroke="white" stroke-width="2.5"/>'
-    # Scale arrow
     '<line x1="388" y1="448.2" x2="388" y2="153" stroke="white" stroke-width="1.2" opacity="0.35"/>'
     '<polygon points="385.5,153 390.5,153 388,147" fill="white" opacity="0.35"/>'
     '<g id="__SID__-dots"></g>'
@@ -323,57 +338,86 @@ def _stat_box(box_id, label, sub=''):
         f'<div style="flex:1;background:white;border:1px solid #E5E7EB;border-radius:6px;'
         f'padding:6px 4px;text-align:center;min-width:52px">'
         f'<div id="{box_id}" style="font-family:Oswald,sans-serif;font-size:16px;'
-        f'font-weight:700;color:#111827;line-height:1.1">–</div>'
+        f'font-weight:700;color:#111827;line-height:1.1">&#8211;</div>'
         f'<div style="font-size:7.5px;color:#6B7280;text-transform:uppercase;'
         f'letter-spacing:.05em;margin-top:2px;line-height:1.2">{label}</div>'
         + sub_html + '</div>'
     )
 
 
-def _panel(side, label, border_color):
-    sid = 'kub' if side == 'k' else 'opp'
-    svg = _SVG_FIELD.replace('__SID__', f'kt3-{sid}-svg')
-    hdr = (
+def _panel(prefix, label, border_color, hdr_id=None):
+    """Build a left/right kick-map panel. prefix = 'kt3-kub', 'kt3-opp', 'kt4-sct', 'kt4-sco'."""
+    svg   = _SVG_FIELD.replace('__SID__', f'{prefix}-svg')
+    hid   = hdr_id or f'{prefix}-hdr'
+    hdr   = (
         f'<div style="font-family:Oswald,sans-serif;font-size:11px;font-weight:700;'
         f'letter-spacing:.06em;text-transform:uppercase;color:{border_color};'
         f'border-bottom:2px solid {border_color}44;margin-bottom:8px" '
-        f'id="kt3-{sid}-hdr">{label}</div>'
+        f'id="{hid}">{label}</div>'
     )
     stats = (
         f'<div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">'
-        + _stat_box(f'kt3-{sid}-tot',  'Total Kicks')
-        + _stat_box(f'kt3-{sid}-totm', 'Total Metres')
-        + _stat_box(f'kt3-{sid}-avg',  'Avg Distance')
-        + _stat_box(f'kt3-{sid}-ret',  'Contest Ret%', '5 types')
-        + _stat_box(f'kt3-{sid}-cont', 'Contest Kicks', 'Box &amp; Bomb')
-        + _stat_box(f'kt3-{sid}-atk',  'Attacking Kicks', 'XP / Chip / Low')
+        + _stat_box(f'{prefix}-tot',  'Total Kicks')
+        + _stat_box(f'{prefix}-totm', 'Total Metres')
+        + _stat_box(f'{prefix}-avg',  'Avg Distance')
+        + _stat_box(f'{prefix}-ret',  'Contest Ret%',    '5 types')
+        + _stat_box(f'{prefix}-cont', 'Contest Kicks',   'Box &amp; Bomb')
+        + _stat_box(f'{prefix}-atk',  'Attacking Kicks', 'XP / Chip / Low')
         + '</div>'
     )
     return (
         f'<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">'
         + hdr + svg + stats
-        + f'<div id="kt3-{sid}-bar-wrap"></div>'
+        + f'<div id="{prefix}-bar-wrap"></div>'
         + '</div>'
     )
 
 
-def build_kicktest_section(matches, kicks, max_round):
-    """Build the complete <div id="kicktest"> section for a given max_round."""
-    valid_fxids = {fxid for fxid, info in matches.items() if info['rn'] <= max_round}
+def _type_buttons():
+    btns = ''
+    for t in ['All'] + TYPE_ORDER:
+        if t == 'All':
+            sty = 'background:#374151;color:#fff;font-weight:700'
+        else:
+            sty = 'background:#F9FAFB;color:#374151;font-weight:400'
+        btns += (
+            f'<button class="kt3-fbtn" data-t="{t}" onclick="kt3TypeFilter(\'{t}\')" '
+            f'style="padding:4px 10px;border:1px solid #D1D5DB;border-radius:4px;'
+            f'font-size:10px;cursor:pointer;{sty};transition:all .15s">{t}</button>'
+        )
+    return btns
+
+
+def _legend():
+    return ' '.join(
+        f'<span style="display:inline-flex;align-items:center;gap:3px;font-size:9.5px;color:#374151">'
+        f'<span style="width:9px;height:9px;border-radius:50%;background:{COLS[t]};flex-shrink:0"></span>'
+        f'{t}</span>'
+        for t in TYPE_ORDER
+    )
+
+
+def build_kicktest_section(k_matches, k_kicks, max_round,
+                           s_matches, s_kicks, scout_label):
+    """Build the complete <div id="kicktest"> section.
+
+    k_*: Kubota Spears data (upper panel, match-filterable)
+    s_*: Scout team data   (lower panel, all D1 matches up to max_round)
+    """
+    # ── Kubota panel data ──────────────────────────────────────
+    valid_fxids = {fxid for fxid, info in k_matches.items() if info['rn'] <= max_round}
     if not valid_fxids:
         return '<div id="kicktest" class="section"><p style="padding:20px">No data</p></div>'
 
     valid_matches = sorted(
-        [(fxid, matches[fxid]) for fxid in valid_fxids],
+        [(fxid, k_matches[fxid]) for fxid in valid_fxids],
         key=lambda x: x[1]['rn']
     )
-    valid_kicks = [k for k in kicks if k['f'] in valid_fxids]
+    valid_kicks = [k for k in k_kicks if k['f'] in valid_fxids]
+    last_fxid   = valid_matches[-1][0]
+    last_info   = valid_matches[-1][1]
+    def_label   = f'R{last_info["rn"]} vs {last_info["os"]}'
 
-    last_fxid  = valid_matches[-1][0]
-    last_info  = valid_matches[-1][1]
-    def_label  = f'R{last_info["rn"]} vs {last_info["os"]}'
-
-    # JSON data arrays (compact)
     kicks_json   = json.dumps(
         [{'f': k['f'], 'tm': k['tm'], 'x': k['x'], 'y': k['y'],
           'ex': k['ex'], 't': k['t'], 'r': k['r'], 'm': k['m'], 'q': 0}
@@ -384,18 +428,31 @@ def build_kicktest_section(matches, kicks, max_round):
         [{'f': fxid, 'rn': info['rn'], 'os': info['os']} for fxid, info in valid_matches],
         separators=(',', ':')
     )
+
+    # ── Scout panel data ───────────────────────────────────────
+    scout_valid = [k for k in s_kicks if k['rn'] <= max_round]
+    scout_json  = json.dumps(
+        [{'f': k['f'], 'tm': k['tm'], 'x': k['x'], 'y': k['y'],
+          'ex': k['ex'], 't': k['t'], 'r': k['r'], 'm': k['m'], 'q': 0}
+         for k in scout_valid],
+        separators=(',', ':')
+    )
+    # Count scout matches for subtitle
+    scout_match_cnt = len({k['f'] for k in scout_valid})
+
+    # ── JS ─────────────────────────────────────────────────────
     cols_json  = json.dumps(COLS, separators=(',', ':'))
     order_json = json.dumps(TYPE_ORDER, separators=(',', ':'))
-
-    # JS script (substitute placeholders)
     js = (_JS_TEMPLATE
-          .replace('__ALL_KICKS__', kicks_json)
-          .replace('__MATCHES__',   matches_json)
-          .replace('__COLS__',      cols_json)
-          .replace('__TYPE_ORDER__', order_json)
-          .replace('__LAST_FXID__', str(last_fxid)))
+          .replace('__ALL_KICKS__',   kicks_json)
+          .replace('__MATCHES__',     matches_json)
+          .replace('__SCOUT_KICKS__', scout_json)
+          .replace('__SCOUT_LABEL__', scout_label)
+          .replace('__COLS__',        cols_json)
+          .replace('__TYPE_ORDER__',  order_json)
+          .replace('__LAST_FXID__',   str(last_fxid)))
 
-    # Match checkboxes
+    # ── Match checkboxes ───────────────────────────────────────
     mcbs = ''
     for fxid, info in valid_matches:
         chk = ' checked' if fxid == last_fxid else ''
@@ -407,30 +464,39 @@ def build_kicktest_section(matches, kicks, max_round):
             f'R{info["rn"]} vs {info["os"]}</label>'
         )
 
-    # Type filter buttons
-    type_btns = ''
-    for t in ['All'] + TYPE_ORDER:
-        if t == 'All':
-            sty = 'background:#374151;color:#fff;font-weight:700'
-        else:
-            sty = 'background:#F9FAFB;color:#374151;font-weight:400'
-        type_btns += (
-            f'<button class="kt3-fbtn" data-t="{t}" onclick="kt3TypeFilter(\'{t}\')" '
-            f'style="padding:4px 10px;border:1px solid #D1D5DB;border-radius:4px;'
-            f'font-size:10px;cursor:pointer;{sty};transition:all .15s">{t}</button>'
-        )
+    type_btns = _type_buttons()
+    legend    = _legend()
 
-    # Color legend
-    legend = ' '.join(
-        f'<span style="display:inline-flex;align-items:center;gap:3px;font-size:9.5px;color:#374151">'
-        f'<span style="width:9px;height:9px;border-radius:50%;background:{COLS[t]};flex-shrink:0"></span>'
-        f'{t}</span>'
-        for t in TYPE_ORDER
-    )
+    # ── Scout lower panel HTML ─────────────────────────────────
+    if scout_valid:
+        sct_cnt = sum(1 for k in scout_valid if k['tm'] == 's')
+        sco_cnt = sum(1 for k in scout_valid if k['tm'] == 'o')
+        lower_panel = (
+            f'<div style="border-top:2px solid #E5E7EB;margin-top:22px;padding-top:16px">\n'
+            f'  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;'
+            f'padding-bottom:9px;border-bottom:1px solid #F3F4F6">\n'
+            f'    <div style="font-family:Oswald,sans-serif;font-size:13px;font-weight:700;'
+            f'letter-spacing:.1em;text-transform:uppercase;color:#374151">'
+            f'&#9660; Scout Team ▸ {scout_label}</div>\n'
+            f'    <div style="font-size:9px;color:#9CA3AF;margin-left:auto">'
+            f'全D1試合 {scout_match_cnt}試合 · {sct_cnt}キック（vs {sco_cnt}被キック）</div>\n'
+            f'  </div>\n'
+            f'  <div style="display:flex;gap:20px">\n'
+            f'    {_panel("kt4-sct", scout_label, "#2563EB")}\n'
+            f'    {_panel("kt4-sco", "vs Opponents", "#6B7280")}\n'
+            f'  </div>\n'
+            f'</div>\n'
+        )
+    else:
+        lower_panel = (
+            f'<div style="border-top:2px solid #E5E7EB;margin-top:22px;padding-top:12px">'
+            f'<p style="color:#9CA3AF;font-size:11px">No kick data for {scout_label}</p></div>\n'
+        )
 
     return (
         f'<div id="kicktest" class="section">\n'
         f'<div style="padding:14px 20px">\n'
+        f'  <!-- ═══ Header ═══ -->\n'
         f'  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;'
         f'padding-bottom:9px;border-bottom:2px solid #E5E7EB">\n'
         f'    <div style="font-family:Oswald,sans-serif;font-size:13px;font-weight:700;'
@@ -439,6 +505,7 @@ def build_kicktest_section(matches, kicks, max_round):
         f'    <div style="font-size:9px;color:#9CA3AF;margin-left:auto">'
         f'座標系 x: 0=自陣 / 100=敵陣 · 上=攻撃方向</div>\n'
         f'  </div>\n'
+        f'  <!-- ═══ Controls ═══ -->\n'
         f'  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">\n'
         f'    <div style="font-size:10px;font-weight:700;color:#6B7280;white-space:nowrap">試合:</div>\n'
         f'    <div id="kt3-mdrop-wrap" style="position:relative;display:inline-block">\n'
@@ -464,11 +531,14 @@ def build_kicktest_section(matches, kicks, max_round):
         f'    <div style="display:flex;gap:5px;flex-wrap:wrap">{type_btns}</div>\n'
         f'  </div>\n'
         f'  <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap">{legend}</div>\n'
+        f'  <!-- ═══ Upper panel: Kubota vs Opponents ═══ -->\n'
         f'  <div style="display:flex;gap:20px">\n'
-        f'    {_panel("k", "Kubota Spears", "#F97316")}\n'
-        f'    {_panel("o", "Opponent(s)", "#DC2626")}\n'
+        f'    {_panel("kt3-kub", "Kubota Spears", "#F97316")}\n'
+        f'    {_panel("kt3-opp", "Opponent(s)", "#DC2626", "kt3-opp-hdr")}\n'
         f'  </div>\n'
-        f'</div>\n'
+        f'  <!-- ═══ Lower panel: Scout team all-season ═══ -->\n'
+        + lower_panel
+        + f'</div>\n'
         f'<script>\n{js}\n</script>\n'
         f'</div>\n'
     )
@@ -476,26 +546,29 @@ def build_kicktest_section(matches, kicks, max_round):
 
 # ─── File processor ───────────────────────────────────────────────────────────
 
-def process_file(fpath, matches, kicks):
+def process_file(fpath, k_matches, k_kicks, s_matches, s_kicks,
+                 scout_full=None, scout_abbr=None):
     """Insert or replace kicktest section in one HTML file."""
     m = re.search(r'_R(\d+)\.html$', fpath)
     if not m:
         return False
     max_round = int(m.group(1))
 
+    scout_label = scout_abbr or 'Scout Team'
+    new_section = build_kicktest_section(
+        k_matches, k_kicks, max_round,
+        s_matches, s_kicks, scout_label
+    )
+
     with open(fpath, encoding='utf-8') as f:
         content = f.read()
 
-    new_section = build_kicktest_section(matches, kicks, max_round)
-
-    KT  = '<div id="kicktest" class="section">'
-    LO  = '<div id="lo" class="section">'
-    SP  = '<div id="sp" class="section">'
+    KT = '<div id="kicktest" class="section">'
+    LO = '<div id="lo" class="section">'
+    SP = '<div id="sp" class="section">'
 
     if KT in content:
-        # Replace existing kicktest section
         kt_i = content.index(KT)
-        # Find next top-level section after kicktest
         next_marker = None
         for marker in [LO, SP]:
             try:
@@ -508,20 +581,19 @@ def process_file(fpath, matches, kicks):
             return False
         content = content[:kt_i] + new_section + content[next_marker:]
     elif LO in content:
-        lo_i = content.index(LO)
+        lo_i    = content.index(LO)
         content = content[:lo_i] + new_section + content[lo_i:]
     elif SP in content:
-        sp_i = content.index(SP)
+        sp_i    = content.index(SP)
         content = content[:sp_i] + new_section + content[sp_i:]
     else:
         return False
 
-    # Add nav button "Kick Types" after "Kicking" button if missing
     if "showSection('kicktest'" not in content:
         kick_btn = ">Kicking</button>"
         if kick_btn in content:
-            idx = content.index(kick_btn) + len(kick_btn)
-            nav = '<button class="nav-btn" style="color:#6D28D9" onclick="showSection(\'kicktest\',this)">Kick Types</button>'
+            idx     = content.index(kick_btn) + len(kick_btn)
+            nav     = '<button class="nav-btn" style="color:#6D28D9" onclick="showSection(\'kicktest\',this)">Kick Types</button>'
             content = content[:idx] + nav + content[idx:]
 
     with open(fpath, 'w', encoding='utf-8') as f:
@@ -529,34 +601,82 @@ def process_file(fpath, matches, kicks):
     return True
 
 
-# ─── Main ─────────────────────────────────────────────────────────────────────
+# ─── Cache + public API ───────────────────────────────────────────────────────
 
-_cache = {'matches': None, 'kicks': None}
+_cache = {
+    'k_matches': None,
+    'k_kicks':   None,
+    'team_data': {},   # full_team_name → (s_matches, s_kicks)
+}
+
 
 def process_file_cached(fpath):
-    """Wrapper for rugby_bi.py integration: loads data once, caches for subsequent calls."""
-    if _cache['matches'] is None:
-        _cache['matches'], _cache['kicks'] = load_all_kicks()
-    return process_file(fpath, _cache['matches'], _cache['kicks'])
+    """Cached entry point for rugby_bi.py integration."""
+    if _cache['k_matches'] is None:
+        _cache['k_matches'], _cache['k_kicks'] = load_all_kicks()
 
+    m = re.search(r'scout_Spears_vs_(\w[\w-]*)_R\d+\.html$', fpath)
+    scout_abbr = m.group(1) if m else None
+    scout_full = TEAM_FULL.get(scout_abbr) if scout_abbr else None
+
+    if scout_full and scout_full not in _cache['team_data']:
+        _cache['team_data'][scout_full] = load_team_kicks(scout_full)
+
+    s_matches, s_kicks = _cache['team_data'].get(scout_full, ({}, []))
+
+    return process_file(
+        fpath,
+        _cache['k_matches'], _cache['k_kicks'],
+        s_matches, s_kicks,
+        scout_full, scout_abbr
+    )
+
+
+# ─── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
-    print("Loading kick data from CSVs...")
-    matches, kicks = load_all_kicks()
-    print(f"  {len(matches)} Kubota matches, {len(kicks)} kick events")
+    print("Loading Kubota Spears kick data...")
+    k_matches, k_kicks = load_all_kicks()
+    print(f"  {len(k_matches)} matches, {len(k_kicks)} kick events")
+
+    # Pre-load all scout team data
+    scout_teams = {}
+    for fname in sorted(os.listdir(BIOUT_DIR)):
+        if not (fname.startswith("scout_Spears_vs_") and fname.endswith(".html")):
+            continue
+        m = re.search(r'scout_Spears_vs_(\w[\w-]*)_R\d+\.html$', fname)
+        if not m:
+            continue
+        abbr = m.group(1)
+        full = TEAM_FULL.get(abbr)
+        if full and full not in scout_teams:
+            scout_teams[full] = abbr
+
+    team_data = {}
+    for full, abbr in sorted(scout_teams.items()):
+        s_m, s_k = load_team_kicks(full)
+        team_data[full] = (s_m, s_k, abbr)
+        print(f"  Scout [{abbr}]: {len(s_m)} matches, {len(s_k)} kicks")
 
     done = 0
     for fname in sorted(os.listdir(BIOUT_DIR)):
         if not (fname.startswith("scout_Spears_vs_") and fname.endswith(".html")):
             continue
         fpath = os.path.join(BIOUT_DIR, fname)
-        if process_file(fpath, matches, kicks):
+        m = re.search(r'scout_Spears_vs_(\w[\w-]*)_R\d+\.html$', fname)
+        if not m:
+            continue
+        abbr = m.group(1)
+        full = TEAM_FULL.get(abbr)
+        s_matches, s_kicks, _ = team_data.get(full, ({}, [], abbr))
+
+        if process_file(fpath, k_matches, k_kicks, s_matches, s_kicks, full, abbr):
             print(f"  ✓ {fname}")
             done += 1
         else:
             print(f"  ✗ SKIP {fname}")
 
-    print(f"\nDone: {done} files updated.")
+    print(f"\nDone: {done}/35 files updated.")
 
 
 if __name__ == "__main__":
