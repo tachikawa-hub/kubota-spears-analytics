@@ -8,7 +8,7 @@ Changes vs v3:
 """
 import os, re, math, csv, glob, sqlite3, collections
 
-BIOUT_DIR = "/Users/ktachikawa/Desktop/BIoutput"
+BIOUT_DIR = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
 DB_PATH   = os.path.join(BIOUT_DIR, "rugby.db")
 CSV_DIR   = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
 

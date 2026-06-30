@@ -184,7 +184,7 @@ TEAM_DATA = {
 },
 }
 
-BIOUT_DIR = "/Users/ktachikawa/Desktop/BIoutput"
+BIOUT_DIR = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
 DB_PATH   = os.path.join(BIOUT_DIR, "rugby.db")
 CSV_DIR   = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
 

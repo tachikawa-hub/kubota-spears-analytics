@@ -144,7 +144,7 @@ TEAM_SCRUM_DATA = {
     },
 }
 
-BIOUT_DIR = "/Users/ktachikawa/Desktop/BIoutput"
+BIOUT_DIR = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 

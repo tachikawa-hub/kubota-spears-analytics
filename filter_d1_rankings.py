@@ -136,7 +136,7 @@ def process_file(filepath):
 
 
 if __name__ == '__main__':
-    scout_files = sorted(glob.glob('/Users/ktachikawa/Desktop/BIoutput/scout_*.html'))
+    scout_files = sorted(glob.glob('/Users/ktachikawa/Desktop/kubota-spears-analytics/scout_*.html'))
     print(f"Processing {len(scout_files)} scout files...")
     total = 0
     for fpath in scout_files:

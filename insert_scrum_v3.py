@@ -2,7 +2,7 @@ import os
 import re
 import math
 
-BIOUT_DIR = "/Users/ktachikawa/Desktop/BIoutput"
+BIOUT_DIR = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
 
 SPEARS_SCRUM = {
     "name": "Kubota Spears",

@@ -9,7 +9,7 @@ Both panels are fully interactive and independent of each other.
 import csv, glob, json, os, re
 
 CSV_DIR   = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
-BIOUT_DIR = "/Users/ktachikawa/Desktop/BIoutput"
+BIOUT_DIR = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
 KUBOTA    = "Kubota Spears"
 
 TEAM_SHORT = {
