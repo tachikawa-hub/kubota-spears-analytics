@@ -93,6 +93,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 .dot{width:6px;height:6px;border-radius:50%;background:#222;cursor:pointer;transition:background .3s,transform .3s}
 .dot.active{background:var(--gold);transform:scale(1.4)}
 .snum{position:fixed;bottom:11px;right:24px;font-family:var(--ef);font-size:.55rem;letter-spacing:.12em;color:#222;z-index:200;text-transform:uppercase}
+.vbtn{position:absolute;bottom:18px;right:22px;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.55);border:1.5px solid rgba(255,255,255,.3);color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:50;transition:background .2s;user-select:none;padding-left:3px}
+.vbtn:hover{background:rgba(0,0,0,.8)}
 </style>
 </head>
 <body>
@@ -101,7 +103,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 <!-- SLIDE 0: INTRO -->
 <div class="slide intro-slide enter" id="s0">
   <video muted loop playsinline
-    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.25;z-index:0;">
+    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;z-index:0;">
     <source src="videos/Intro.mp4" type="video/mp4">
   </video>
   <div class="ibg"></div>
@@ -118,7 +120,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 <!-- SLIDE 1: CONTEST GAME -->
 <div class="slide" id="s1">
   <video muted loop playsinline
-    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.25;z-index:0;"
+    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;z-index:0;"
     onerror="console.error('動画読み込みエラー:', this.src)"
     oncanplay="console.log('動画読み込み成功:', this.src)">
     <source src="videos/Contest_Game.mov" type="video/quicktime">
@@ -231,7 +233,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 <!-- SLIDE 2: UNSTRUCTURED ATTACK -->
 <div class="slide" id="s2">
   <video muted loop playsinline
-    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.25;z-index:0;"
+    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;z-index:0;"
     onerror="console.error('動画読み込みエラー:', this.src)"
     oncanplay="console.log('動画読み込み成功:', this.src)">
     <source src="videos/Unstructured_Attack.mov" type="video/quicktime">
@@ -317,7 +319,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 <!-- SLIDE 3: DEFENCE -->
 <div class="slide" id="s3">
   <video muted loop playsinline
-    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.25;z-index:0;"
+    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;z-index:0;"
     onerror="console.error('動画読み込みエラー:', this.src)"
     oncanplay="console.log('動画読み込み成功:', this.src)">
     <source src="videos/Defence.mov" type="video/quicktime">
@@ -632,7 +634,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 <!-- SLIDE 4: SET PIECE -->
 <div class="slide" id="s4">
   <video muted loop playsinline
-    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.25;z-index:0;"
+    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;z-index:0;"
     onerror="console.error('動画読み込みエラー:', this.src)"
     oncanplay="console.log('動画読み込み成功:', this.src)">
     <source src="videos/Set_Piece.mov" type="video/quicktime">
@@ -871,7 +873,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 <!-- SLIDE 5: PENALTY DISCIPLINE -->
 <div class="slide" id="s5">
   <video muted loop playsinline
-    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.25;z-index:0;"
+    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;z-index:0;"
     onerror="console.error('動画読み込みエラー:', this.src)"
     oncanplay="console.log('動画読み込み成功:', this.src)">
     <source src="videos/Penalty_Goal.mov" type="video/quicktime">
@@ -1099,7 +1101,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 <!-- SLIDE 6: CHALLENGES -->
 <div class="slide" id="s6">
   <video muted loop playsinline
-    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.25;z-index:0;"
+    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;z-index:0;"
     onerror="console.error('動画読み込みエラー:', this.src)"
     oncanplay="console.log('動画読み込み成功:', this.src)">
     <source src="videos/Challenges_22m.mov" type="video/quicktime">
@@ -1323,7 +1325,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
 <!-- SLIDE 7: NEXT STAGE -->
 <div class="slide finale-slide" id="s7">
   <video muted loop playsinline
-    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0.25;z-index:0;"
+    style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;z-index:0;"
     onerror="console.error('動画読み込みエラー:', this.src)"
     oncanplay="console.log('動画読み込み成功:', this.src)">
     <source src="videos/Next_Stage.mov" type="video/quicktime">
@@ -1399,19 +1401,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
     numEl.textContent=cur+' / '+(N-1)+'  '+labels[cur];
     setTimeout(()=>{
       reset(slides[prev],prev);
-      const pv=slides[prev].querySelector('video');if(pv)pv.pause();
+      const pv=slides[prev].querySelector('video');
+      const pb=slides[prev].querySelector('.vbtn');
+      if(pv){pv.pause();pv.style.opacity='0';}
+      if(pb){pb.innerHTML='&#9654;';}
       slides[next].className=baseClass[next];
       slides[next].style.opacity='1';
       slides[next].style.transform='translateX(0)';
       slides[next].style.pointerEvents='auto';
-      const nv=slides[next].querySelector('video');if(nv){nv.currentTime=0;nv.play().catch(()=>{});}
       busy=false;
     },580);
   }
 
   slides.forEach((s,i)=>{
     if(i===0){
-      setTimeout(()=>{s.className=baseClass[0];s.style.opacity='1';s.style.transform='translateX(0)';s.style.pointerEvents='auto';const v=s.querySelector('video');if(v)v.play().catch(()=>{});},620);
+      setTimeout(()=>{s.className=baseClass[0];s.style.opacity='1';s.style.transform='translateX(0)';s.style.pointerEvents='auto';},620);
     } else {
       reset(s,i);
     }
@@ -1424,8 +1428,33 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:#fff
     if(e.key==='Home')show(0,-1);
     if(e.key==='End')show(N-1,1);
   });
+  // 動画再生ボタンを各スライドに動的生成
+  slides.forEach(s=>{
+    const v=s.querySelector('video');
+    if(!v)return;
+    const btn=document.createElement('div');
+    btn.className='vbtn';
+    btn.setAttribute('role','button');
+    btn.setAttribute('tabindex','0');
+    btn.setAttribute('title','動画再生');
+    btn.innerHTML='&#9654;';
+    s.appendChild(btn);
+    btn.addEventListener('click',e=>{
+      e.stopPropagation();
+      if(v.paused){
+        v.style.opacity='0.25';
+        v.play().catch(()=>{});
+        btn.innerHTML='&#9646;&#9646;';
+      }else{
+        v.pause();
+        v.style.opacity='0';
+        btn.innerHTML='&#9654;';
+      }
+    });
+  });
+
   document.getElementById('deck').addEventListener('click',e=>{
-    if(!e.target.closest('.dot'))show(cur+1,1);
+    if(!e.target.closest('.dot')&&!e.target.closest('.vbtn'))show(cur+1,1);
   });
   dots.forEach(d=>d.addEventListener('click',e=>{
     e.stopPropagation();
