@@ -244,9 +244,6 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f0ece4;color:var(
 .note{font-size:9px;color:var(--mu);margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;padding:0 2px}
 .cd{color:#ccc}
 .chi{background:rgba(232,119,34,.12)!important;font-weight:700}
-.it tbody tr.grp-hdr td{background:#e8e6e0;color:#14213d;font-size:8px;font-weight:900;text-align:left;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-bottom:1px solid #ccc;}
-.it tbody tr.grp-avg td{background:rgba(232,161,60,.13);font-style:italic;font-size:8.5px;border-top:1px solid rgba(232,161,60,.2);border-bottom:2px solid rgba(232,161,60,.25);}
-.it tbody tr.grp-avg td.nc{font-weight:700;}
 
 @page{size:A4 landscape;margin:0}
 @media print{
@@ -1048,20 +1045,10 @@ function atkPage(team,side){
   // Avg PCM per carry
   function avgPcm(r){return r.carries>0?Math.round(r.pcm/r.carries*10)/10:'-';}
 
-  const PG={'Loosehead Prop':'Front Row','Hooker':'Front Row','Tighthead Prop':'Front Row','Lock (4)':'Lock','Lock (5)':'Lock','Lock':'Lock','Blindside Flanker':'Loosie','Openside Flanker':'Loosie','Flanker':'Loosie','Number 8':'Loosie','Scrum Half':'Inside','Fly Half':'Inside','Inside Centre':'Midfield','Outside Centre':'Midfield','Left Wing':'Back 3','Right Wing':'Back 3','Wing':'Back 3','Full Back':'Back 3'};
-  const _atkAvg=(buf)=>{
-    if(!buf.length) return '';
-    const n=buf.length,s=buf.reduce((a,r)=>{['carries','metres','pcm','linebreaks','def_beaten','offloads','tries','dom_carry','ooa_1_3','ooa_4p','handle_count','passes','kicks','kick_m','errors'].forEach(k=>a[k]=(a[k]||0)+(r[k]||0));a._glo=(a._glo||0)+Math.round((r.gl_pct||0)/100*(r.carries||0));a._pgood=(a._pgood||0)+Math.round((r.pass_acc||0)/100*(r.passes||0));return a;},{_glo:0,_pgood:0});
-    const f1=v=>v.toFixed(1),av=k=>s[k]?f1(s[k]/n):'-';
-    return`<tr class="grp-avg"><td class="shc"></td><td class="nc">Avg ${n}P</td><td>${av('carries')}</td><td>${av('metres')}</td><td>${s.carries?f1(s.metres/s.carries):'-'}</td><td>${s.carries?f1(s.pcm/s.carries):'-'}</td><td>${s.linebreaks?f1(s.linebreaks/n):'-'}</td><td>${s.def_beaten?f1(s.def_beaten/n):'-'}</td><td>${s.offloads?f1(s.offloads/n):'-'}</td><td>${s.tries?f1(s.tries/n):'-'}</td><td>${s.carries?(s._glo/s.carries*100).toFixed(1)+'%':'-'}</td><td>${s.dom_carry?f1(s.dom_carry/n):'-'}</td><td>${s.ooa_1_3?f1(s.ooa_1_3/n):'-'}</td><td>${s.ooa_4p?f1(s.ooa_4p/n):'-'}</td><td>${(s.ooa_1_3+s.ooa_4p)?(s.ooa_1_3/(s.ooa_1_3+s.ooa_4p)*100).toFixed(1)+'%':'-'}</td><td>${av('handle_count')}</td><td>${av('passes')}</td><td>${s.passes?(s._pgood/s.passes*100).toFixed(1)+'%':'-'}</td><td>${s.kicks?f1(s.kicks/n):'-'}</td><td>${s.kick_m?f1(s.kick_m/n):'-'}</td><td>${s.kicks?f1(s.kick_m/s.kicks):'-'}</td><td>${s.errors?f1(s.errors/n):'-'}</td></tr>`;
-  };
-  const bodyRows=rows.reduce((acc,r,i,a)=>{
-    const grp=PG[r.pos]||'Other';
-    if(grp!==acc.g){if(acc.b.length)acc.s+=_atkAvg(acc.b);acc.g=grp;acc.b=[];acc.s+=`<tr class="grp-hdr"><td colspan="22">${grp}</td></tr>`;}
-    acc.b.push(r);
+  const bodyRows=rows.map(r=>{
     const ooa_tot=r.ooa_1_3+r.ooa_4p;
     const apcm=avgPcm(r);
-    acc.s+=`<tr>
+    return`<tr>
       <td class="shc">${r.shirt}</td>
       <td class="nc">${r.player}</td>
       <td>${r.carries||''}</td>
@@ -1085,9 +1072,7 @@ function atkPage(team,side){
       <td>${r.avg_kick||'-'}</td>
       <td class="${r.errors?'cw':'cd'}">${r.errors||'-'}</td>
     </tr>`;
-    if(i===a.length-1)acc.s+=_atkAvg(acc.b);
-    return acc;
-  },{g:'',b:[],s:''}).s;
+  }).join('');
 
   const totAvgPcm=tot.carries>0?Math.round(tot.pcm/tot.carries*10)/10:'-';
   const totRow=`<tr class="tr${!isHome?' aw':''}">
@@ -1161,22 +1146,12 @@ function defPage(team,side){
     jck:a.jck+r.jck,tow:a.tow+r.tow,infr:a.infr+r.infr
   }),{att:0,tkl_assist:0,made:0,miss:0,dom:0,try_saver:0,to_t:0,oa:0,pas:0,jck:0,tow:0,infr:0});
 
-  const PG_D={'Loosehead Prop':'Front Row','Hooker':'Front Row','Tighthead Prop':'Front Row','Lock (4)':'Lock','Lock (5)':'Lock','Lock':'Lock','Blindside Flanker':'Loosie','Openside Flanker':'Loosie','Flanker':'Loosie','Number 8':'Loosie','Scrum Half':'Inside','Fly Half':'Inside','Inside Centre':'Midfield','Outside Centre':'Midfield','Left Wing':'Back 3','Right Wing':'Back 3','Wing':'Back 3','Full Back':'Back 3'};
-  const _defAvg=(buf)=>{
-    if(!buf.length) return '';
-    const n=buf.length,s=buf.reduce((a,r)=>{['att','tkl_assist','made','miss','dom','try_saver','to_t','oa','pas','jck','tow','infr','mins'].forEach(k=>a[k]=(a[k]||0)+(r[k]||0));a._hl=(a._hl||0)+(r.hl||0);return a;},{_hl:0});
-    const f1=v=>v.toFixed(1),av=k=>s[k]?f1(s[k]/n):'-';
-    return`<tr class="grp-avg"><td class="shc"></td><td class="nc">Avg ${n}P</td><td>${av('mins')}'</td><td>${av('att')}</td><td>${s.tkl_assist?f1(s.tkl_assist/n):'-'}</td><td>${av('made')}</td><td>${s.miss?f1(s.miss/n):'-'}</td><td>${s.att?(s.made/s.att*100).toFixed(1)+'%':'-'}</td><td>${s._hl?f1(s._hl/n)+'%':'-'}</td><td>${s.dom?f1(s.dom/n):'-'}</td><td>${s.att?(s.dom/s.att*100).toFixed(1)+'%':'-'}</td><td>${s.try_saver?f1(s.try_saver/n):'-'}</td><td>${s.to_t?f1(s.to_t/n):'-'}</td><td>${s.oa?f1(s.oa/n):'-'}</td><td>${s.pas?f1(s.pas/n):'-'}</td><td>${s.jck?f1(s.jck/n):'-'}</td><td>${s.tow?f1(s.tow/n):'-'}</td><td>${s.infr?f1(s.infr/n):'-'}</td></tr>`;
-  };
-  const body=rows.reduce((acc,r,i,a)=>{
-    const grp=PG_D[r.pos]||'Other';
-    if(grp!==acc.g){if(acc.b.length)acc.s+=_defAvg(acc.b);acc.g=grp;acc.b=[];acc.s+=`<tr class="grp-hdr"><td colspan="18">${grp}</td></tr>`;}
-    acc.b.push(r);
+  const body=rows.map(r=>{
     const pv  = r.pct!==null     ? r.pct+'%'      : '-';
     const pc2 = r.pct!==null     ? (r.pct>=90?'cg':r.pct<75?'cw':'') : '';
     const dv  = r.dom_pct!==null ? r.dom_pct+'%'  : '-';
     const hv  = r.hl!==null      ? r.hl+'%'       : '-';
-    acc.s+=`<tr>
+    return`<tr>
       <td class="shc">${r.shirt}</td>
       <td class="nc">${r.player}</td>
       <td>${r.mins}'</td>
@@ -1196,9 +1171,7 @@ function defPage(team,side){
       <td class="${r.tow?'cg':'cd'}">${r.tow||'-'}</td>
       <td class="${r.infr?'cw':'cd'}">${r.infr||'-'}</td>
     </tr>`;
-    if(i===a.length-1)acc.s+=_defAvg(acc.b);
-    return acc;
-  },{g:'',b:[],s:''}).s;
+  }).join('');
 
   const tPct    = tot.att ? (tot.made/tot.att*100).toFixed(1)+'%' : '-';
   const tDomPct = tot.att ? (tot.dom/tot.att*100).toFixed(1)+'%'  : '-';
