@@ -1663,6 +1663,37 @@ function onTeam() {{
     print(f"Wrote {out}  ({len(matches)} matches, {len(teams)} teams)")
 
 
+def cmd_sr_build(args=None):
+    """Batch-generate match reports for all Super Rugby matches in rugby.db."""
+    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rugby.db")
+    con = sqlite3.connect(db_path)
+    con.row_factory = sqlite3.Row
+    rows = con.execute(
+        "SELECT fxid FROM matches WHERE league='super_rugby' ORDER BY round_number, fxid"
+    ).fetchall()
+    con.close()
+
+    total = len(rows)
+    ok = 0
+    for i, row in enumerate(rows, 1):
+        fxid = row["fxid"]
+        try:
+            class _A:
+                pass
+            a = _A()
+            a.fxid = fxid
+            a.round = None
+            a.home = None
+            a.away = None
+            cmd_sr_match(a)
+            ok += 1
+            print(f"  [{i:3d}/{total}] fxid {fxid} ✓")
+        except Exception as e:
+            print(f"  [{i:3d}/{total}] fxid {fxid} ERROR: {e}")
+
+    print(f"\n✅ sr-build done: {ok}/{total} reports generated")
+
+
 # ═══════════════════════════════════════════════════════════════
 # SECTION 3: SEASON KPI
 # ═══════════════════════════════════════════════════════════════
@@ -6101,6 +6132,7 @@ def main():
     p_sr_match.add_argument("--away", help="Away team name (partial match)")
 
     sub.add_parser("sr-index", help="Generate Super Rugby match index page (sr_index.html)")
+    sub.add_parser("sr-build", help="Batch-generate all Super Rugby match reports")
 
     p_kpi = sub.add_parser("kpi", help="Generate season KPI report")
 
@@ -6122,6 +6154,8 @@ def main():
         cmd_sr_match(args)
     elif args.command == "sr-index":
         cmd_sr_index()
+    elif args.command == "sr-build":
+        cmd_sr_build()
     elif args.command == "scout":
         cmd_scout(args)
     elif args.command == "kpi":

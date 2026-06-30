@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<style>
+:root{--ks:#1B2A4A;--ksd:#0F1A2E;--ksl:#EAF0FA;--sn:#5C1A1B;--snm:#722F37;--snl:#F5E8EA;--neu:#ffffff;--ink:#1a1a1a;--mu:#6b6b6b;--ru:#e0dcd4;--gd:#1a7a3c;--wn:#b85c00;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Helvetica Neue',Arial,sans-serif;background:#F5F5F7;color:var(--ink);padding:6px;font-size:12px}
+.nav{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px}
+.nav button{padding:4px 10px;border:none;border-radius:3px;background:#ddd;cursor:pointer;font-size:10px;font-weight:700;color:#444}
+.nav button.active{background:var(--ks);color:white}
+/* A4 landscape page: 297mm x 210mm @ 96dpi ≈ 1122 x 794px */
+.page{width:1122px;height:794px;margin:0 auto;background:var(--neu);border-radius:4px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.12);display:flex;flex-direction:column}
+.page>.ph{flex:0 0 auto}
+.page>.ph+*{flex:1 1 auto;overflow:hidden;min-height:0}
+.ph{background:var(--ks);color:white;padding:6px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--ksd)}
+.ph h1{font-size:12px;font-weight:700;letter-spacing:.04em}
+.ph .sub{font-size:9px;color:rgba(255,255,255,.8);letter-spacing:.08em;text-transform:uppercase}
+.ph .meta{font-size:9px;color:rgba(255,255,255,.75);text-align:right}
+.score-pill{background:var(--sn);padding:3px 12px;border-radius:20px;font-size:14px;font-weight:900;border:1px solid rgba(255,255,255,.2)}
+.cg{color:var(--gd);font-weight:700}.cw{color:var(--wn);font-weight:700}
+
+/* ── TEAM SHEET v2 ── */
+.ts2-wrap{padding:10px 14px;display:flex;gap:10px;height:100%}
+.ts2-block{display:flex;flex-direction:column;border:1px solid var(--ru);border-radius:4px;overflow:hidden;background:#fff;min-height:0}
+.ts2-reserves{flex:0 0 168px}
+.ts2-main{flex:1;display:flex;gap:10px;min-width:0}
+.ts2-main .ts2-block{flex:1}
+.ts2-head{padding:6px 10px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:white;display:flex;justify-content:space-between;align-items:baseline;flex:0 0 auto}
+.ts2-head .nm{font-size:11px}
+.ts2-head .tag{font-size:8px;font-weight:700;opacity:.85;letter-spacing:.08em}
+.ts2-head.h{background:var(--ks)}.ts2-head.a{background:var(--snm)}
+.ts2-body{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+.ts2-row{flex:1;display:flex;align-items:center;gap:8px;padding:0 10px;border-bottom:1px solid var(--ru);min-height:0}
+.ts2-row:last-child{border-bottom:none}
+.ts2-row.sub{background:#f8f6f2}
+.ts2-shirt{font-weight:800;font-size:13px;color:var(--ksd);width:20px;text-align:center;flex:0 0 auto}
+.ts2-shirt.a{color:var(--snm)}
+.ts2-info{flex:1;min-width:0}
+.ts2-name{font-weight:700;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ts2-pos{font-size:8px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ts2-mins{font-weight:800;font-size:12px;flex:0 0 auto;text-align:right;min-width:30px}
+.ts2-reserves .ts2-name{font-size:10px;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.2}
+.ts2-reserves .ts2-shirt{font-size:11px}
+.ts2-reserves .ts2-mins{font-size:11px}
+.ts2-toprow-spacer{flex:0 0 37.5%}
+.ts2-reserves .ts2-body{flex:0 0 44%}
+
+/* ── MATCH SUMMARY (dashboard) ── */
+.sum-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:auto auto 12px 1fr;gap:6px;padding:6px 10px;height:100%}
+.sum-grid>.sum-card:nth-child(n+6){grid-row:4}
+
+.sum-card{background:#fff;border:1px solid var(--ru);border-radius:6px;padding:7px 10px;display:flex;flex-direction:column;gap:4px;min-width:0;min-height:0;overflow:hidden}
+.sum-card.wide{grid-column:1/-1}
+.sum-card-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#222;border-bottom:1px solid var(--ru);padding-bottom:5px;margin-bottom:2px;display:flex;justify-content:space-between;align-items:baseline}
+/* score highlight */
+.score-board{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px}
+.score-team{text-align:center}
+.score-team-name{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+.score-team.h .score-team-name{color:var(--ksd)}
+.score-team.a .score-team-name{color:var(--snm)}
+.score-team-pts{font-size:44px;font-weight:900;line-height:1.05}
+.score-team.h .score-team-pts{color:var(--ks)}
+.score-team.a .score-team-pts{color:var(--snm)}
+.score-ht{font-size:9px;color:var(--mu);font-weight:600}
+.score-mid{text-align:center;padding:0 8px;display:flex;flex-direction:column;gap:2px}
+.score-mid .vs{font-size:11px;font-weight:800;color:var(--mu);letter-spacing:.1em}
+.score-mid .comp{font-size:8.5px;color:var(--mu);text-transform:uppercase;letter-spacing:.05em}
+.score-mid .venue{font-size:8.5px;color:var(--mu)}
+.score-bip{margin-top:8px;padding-top:8px;border-top:1px solid var(--ru);display:flex;justify-content:center;gap:18px;font-size:9px;color:var(--mu)}
+.score-bip b{font-size:13px;color:var(--ink);display:block;font-weight:900}
+/* donut */
+.donut-row{display:flex;align-items:center;gap:12px}
+.donut-legend{flex:1;display:flex;flex-direction:column;gap:8px;font-size:9px;min-width:0}
+.donut-legend-row{display:flex;flex-direction:column;gap:1px}
+.donut-legend-row .dn{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.donut-legend-row.h .dn{color:var(--ksd)}
+.donut-legend-row.a .dn{color:var(--snm)}
+.donut-legend-row .dv{font-weight:800;font-size:13px}
+/* gauge */
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;gap:2px}
+.gauge-val{font-size:16px;font-weight:900;color:var(--ink);margin-top:-24px}
+.gauge-cap{font-size:8px;color:var(--mu);text-transform:uppercase;letter-spacing:.05em}
+.gauge-split{width:100%;margin-top:3px}
+/* stat rows (bar comparisons inside cards) */
+.stat-row{margin-bottom:7px}
+.stat-row:last-child{margin-bottom:0}
+.stat-row-top{display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-bottom:2px}
+.stat-row-top .sv{font-size:12px;font-weight:800;min-width:30px}
+.stat-row-top .sv.h{color:var(--ksd);text-align:left}
+.stat-row-top .sv.a{color:var(--snm);text-align:right}
+.qtot-cols .stat-row-top .sv.h{background:var(--ksl);border-radius:3px;padding:1px 5px}
+.qtot-cols .stat-row-top .sv.a{background:var(--snl);border-radius:3px;padding:1px 5px}
+.stat-row-top .sl{font-size:10px;color:#333;font-weight:800;text-transform:uppercase;letter-spacing:.03em;text-align:center;flex:1}
+.stat-bar{height:6px;background:#eee;border-radius:3px;overflow:hidden;display:flex}
+.stat-bar-h{background:var(--ks)}
+.stat-bar-a{background:var(--snm)}
+
+/* ── QUARTERS (dashboard) ── */
+.page>.qtot-wrap{flex:0 0 auto;overflow:visible}
+.qtot-wrap{padding:12px 16px 8px}
+/* team identification band (top of Quarters table) */
+.qtr-teamband{display:grid;grid-template-columns:1fr 1fr;border-radius:6px;overflow:hidden;margin-bottom:6px}
+.qtr-teamband .qtb{padding:6px 14px;color:#fff;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.qtr-teamband .qtb.h{background:var(--ks);text-align:left}
+.qtr-teamband .qtb.a{background:var(--snm);text-align:right}
+.qtot-cols{display:grid;grid-template-columns:1fr 1fr;gap:0 32px}
+.qtot-cols .stat-row{margin-bottom:6px}
+.qtot-cols .stat-row-top .sv{font-size:14px;min-width:30px;font-weight:800}
+.qtot-cols .stat-row-top .sl{font-size:10px;font-weight:700}
+.qtot-cols .stat-bar{height:5px}
+.qtr-grid{display:grid;grid-template-columns:1fr 1fr 1.4fr 1fr 1fr;gap:8px;padding:8px 10px;flex:1 1 auto;min-height:0;align-items:stretch}
+.qtr-card{background:#fff;border:1px solid var(--ru);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+.qtr-head{padding:6px 10px;color:white;display:flex;justify-content:space-between;align-items:baseline;flex:0 0 auto}
+.qtr-head .qh-name{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.qtr-head .qh-range{font-size:8px;font-weight:600;opacity:.85}
+.qtr-body{padding:4px 10px;flex:1 1 auto;display:flex;flex-direction:column;justify-content:center}
+.qtr-row{display:flex;justify-content:space-between;align-items:stretch;padding:5px 0;border-bottom:1px solid #f3f0eb;gap:4px}
+.qtr-row:last-child{border-bottom:none}
+.qtr-row .ql-lbl{color:var(--mu);font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;flex:1;text-align:center;display:flex;align-items:center;justify-content:center}
+.qtr-row .ql-v{font-weight:800;font-size:12px;min-width:38px;display:flex;align-items:center;border-radius:3px}
+.qtr-row .ql-v.h{text-align:right;justify-content:flex-end;color:var(--ksd);padding:1px 6px 1px 4px}
+.qtr-row .ql-v.a{text-align:left;justify-content:flex-start;color:var(--snm);padding:1px 4px 1px 6px}
+.qtr-row .ql-v.cg{color:var(--gd)}
+.qtr-row .ql-v.cw{color:var(--wn)}
+.qtr-foot{flex:0 0 auto;display:flex;gap:14px;margin:4px 12px 6px;font-size:8px;color:var(--mu);flex-wrap:wrap;align-items:center}
+
+/* ── MOMENTUM ── */
+.tlwrap{padding:10px 24px;display:flex;flex-direction:column;gap:18px;justify-content:center;height:100%}
+.tlt{font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);margin-bottom:4px}
+.tlleg{display:flex;gap:10px;margin-bottom:4px}
+.tlleg span{font-size:8px;color:var(--mu);display:flex;align-items:center;gap:3px}
+.tlleg .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.tlch{position:relative;height:36px;margin-bottom:3px}
+.tlax{position:absolute;bottom:50%;left:0;right:0;height:2px;background:#ccc;transform:translateY(50%)}
+.tldot{position:absolute;width:9px;height:9px;border-radius:50%;transform:translate(-50%,-50%);top:50%}
+.tldot.h{background:var(--ks)}.tldot.a{background:var(--sn);border:1px solid #888}
+.tlml{position:absolute;font-size:7px;font-weight:700;transform:translateX(-50%);white-space:nowrap}
+.tlml.h{top:22px;color:var(--ksd)}.tlml.a{bottom:22px;color:var(--snm)}
+.htl{position:absolute;top:0;bottom:0;width:1px;border-left:1px dashed #bbb}
+.htlb{position:absolute;font-size:7px;color:#bbb;top:2px;transform:translateX(-50%)}
+.tlaxis-labels{display:flex;justify-content:space-between;font-size:7px;color:var(--mu);margin-top:2px}
+.tlla{display:flex;justify-content:space-between;font-size:7px;color:var(--mu);margin-top:2px}
+
+/* ── 22M ── */
+.e22wrap{padding:10px 16px;display:grid;grid-template-columns:238px 1fr 238px;gap:16px;align-items:start}
+.e22t{min-width:0;display:flex;flex-direction:column}
+.e22h{padding:6px 8px;font-size:11px;font-weight:800;text-transform:uppercase;color:white;text-align:center;border-radius:3px 3px 0 0;flex:0 0 auto}
+.e22h.home{background:var(--ks)}.e22h.away{background:var(--snm)}
+.e22c{border:1px solid var(--ru);border-top:none;border-radius:0 0 3px 3px;flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+.e22-total{text-align:center;padding:12px 6px;background:#f8f6f2;border-bottom:1px solid var(--ru)}
+.e22-total .n{font-size:40px;font-weight:900;line-height:1}
+.e22-total .s{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);margin-top:4px}
+.e22st{display:flex;justify-content:space-between;padding:9px 13px;border-bottom:1px solid var(--ru);font-size:15px;font-weight:700}
+.e22st .l{color:var(--mu);font-size:11px}
+.e22mid{width:100%;display:flex;flex-direction:column;align-items:center;gap:4px}
+
+/* ── SET PIECE v2 ── */
+.sp2-wrap{padding:8px 12px;display:grid;grid-template-columns:1fr 1.6fr 1fr;grid-template-rows:auto auto;gap:8px}
+.sp2-col{display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0}
+.sp2-mid{display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0}
+.sp2-card{border:1px solid var(--ru);border-radius:4px;overflow:visible;display:flex;flex-direction:column;background:#fff;flex:1 1 0;min-height:auto}
+.sp2-head{padding:4px 10px;font-size:10px;font-weight:800;color:white;display:flex;justify-content:space-between;align-items:baseline;flex:0 0 auto;text-transform:uppercase;letter-spacing:.04em}
+.sp2-head.h{background:var(--ks)}.sp2-head.a{background:var(--snm)}
+.sp2-head.mid{background:var(--sn);justify-content:center;letter-spacing:.12em}
+.sp2-body{flex:1 1 auto;padding:6px 10px;display:flex;flex-direction:column;gap:4px;min-height:0;overflow:visible}
+.sp2-subtitle{font-size:6.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);margin-bottom:0;flex:0 0 auto;font-weight:700}
+.sp2-grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;flex:0 0 auto}
+.sp2-grid4 .c{text-align:center;background:#f5f2ed;border-radius:3px;padding:3px 0}
+.sp2-grid4 .c .n{font-size:12px;font-weight:700}
+.sp2-grid4 .c .l{font-size:6px;color:var(--mu);text-transform:uppercase;margin-top:1px}
+.spmt{width:100%;border-collapse:collapse;font-size:9px;table-layout:fixed;flex:0 0 auto}
+.spmt th{padding:2.5px 2px;background:#f0ede8;font-size:6.5px;line-height:1.25;color:var(--mu);text-transform:uppercase;letter-spacing:.01em;border-bottom:1px solid var(--ru);text-align:center;overflow-wrap:break-word}
+.spmt td{padding:3.5px 2px;border-bottom:1px solid var(--ru);text-align:center;font-weight:600;font-size:9px}
+.spmt td.tn{text-align:left;font-weight:700}
+/* Scrum cards: fewer rows → larger visual elements, centered */
+.sp2-card.sc .sp2-body{justify-content:center}
+.sp2-card.sc .sp2-grid4 .c{padding:12px 0}
+.sp2-card.sc .sp2-grid4 .c .n{font-size:22px}
+.sp2-card.sc .sp2-grid4 .c .l{font-size:9px}
+.sp2-card.sc .sp2-subtitle{font-size:9px}
+.sp2-stab-row{display:flex;align-items:center;justify-content:center;gap:14px;flex:0 0 auto}
+.sp2-stab-stats{display:flex;flex-direction:column;gap:6px;font-size:11px}
+.sp2-stab-stats .r{display:flex;justify-content:space-between;gap:10px;min-width:110px}
+.sp2-stab-stats .r .l{color:var(--mu);text-transform:uppercase;font-size:9px;font-weight:700}
+.sp2-stab-stats .r .v{font-weight:800}
+/* Total tries highlight card (per team) */
+.sp2-trycard{flex:0 0 auto;border:1px solid var(--ru);border-radius:4px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;text-align:center}
+.sp2-trycard .n{font-size:36px;font-weight:900;line-height:1;color:var(--ksd)}
+.sp2-trycard.a .n{color:var(--snm)}
+.sp2-trycard .l{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--mu);font-weight:700;margin-top:4px;line-height:1.3}
+/* Overview (middle) cards */
+.sp2-mid-donuts{display:flex;justify-content:center;gap:10px;flex:0 0 auto}
+.sp2-mid-donuts .d{text-align:center}
+.sp2-mid-donuts .d .lbl{font-size:13px;font-weight:800;margin-top:6px}
+.sp2-mid-donuts .d.h .lbl{color:var(--ksd)}
+.sp2-mid-donuts .d.a .lbl{color:var(--snm)}
+.sp2-mid .sp2-body{justify-content:center;gap:18px}
+.sp2-mid .spmt th{padding:6px 4px;font-size:10px}
+.sp2-mid .spmt td{padding:10px 4px;font-size:13px}
+
+/* ── PENALTY ── */
+.penwrap{padding:12px 16px;display:flex;gap:16px;height:100%}
+.pent{flex:1;display:flex;flex-direction:column;min-width:0}
+.penth{padding:8px 14px;font-size:13px;font-weight:800;text-transform:uppercase;color:white;display:flex;justify-content:space-between;border-radius:3px 3px 0 0;flex:0 0 auto}
+.penth.h{background:var(--ks)}.penth.a{background:var(--snm)}
+.penb{border:1px solid var(--ru);border-top:none;border-radius:0 0 3px 3px;flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+.pensc{padding:10px 16px;border-bottom:1px solid var(--ru);flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;min-height:0}
+.pensc:last-child{border-bottom:none}
+.penstitle{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);margin-bottom:6px}
+.pbr{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.pbl{font-size:11px;color:var(--ink);min-width:135px}
+.pbt{flex:1;height:11px;background:#eee;border-radius:4px;overflow:hidden}
+.pbf{height:100%;border-radius:4px}.pbf.h{background:var(--ks)}.pbf.a{background:var(--snm)}
+.pbn{font-size:13px;font-weight:700;min-width:18px;text-align:right}
+.pen-bars{display:flex;align-items:flex-end;gap:18px;height:90px;padding:0 10px}
+.pen-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;height:100%}
+.pen-bar-val{font-size:13px;font-weight:800;margin-bottom:3px}
+.pen-bar-track{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center}
+.pen-bar{width:46%;border-radius:3px 3px 0 0;min-height:3px}
+.pen-bar.h{background:var(--ks)}.pen-bar.a{background:var(--snm)}
+.pen-bar-lbl{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:.04em;margin-top:5px;font-weight:700}
+/* horizontal bar rows (errors / penalty breakdown) */
+.pen-cols{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+.pen-col{flex:1;min-width:230px}
+.pen-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.pen-bar-label{font-size:11px;color:var(--ink);min-width:155px;flex-shrink:0}
+.pen-bar-fill{height:14px;border-radius:7px;background:var(--ks)}
+.pen-bar-num{font-size:12px;font-weight:800;min-width:24px;text-align:right}
+.adbar{display:flex;height:26px;border-radius:4px;overflow:hidden;margin:6px 0 4px}
+.adbar-atk{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;background:var(--ks)}
+.adbar-def{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;background:var(--snm)}
+
+/* ── INDIV ── */
+.itwrap{padding:10px 16px;overflow-x:auto;height:100%;display:flex;flex-direction:column;justify-content:center}
+.it{border-collapse:collapse;font-size:9.5px;white-space:nowrap;width:100%}
+.it thead th{padding:5px 5px;background:var(--ks);color:white;font-size:9px;font-weight:700;text-align:center;border-right:1px solid rgba(255,255,255,.15);border-bottom:1px solid rgba(255,255,255,.2);line-height:1.3;vertical-align:bottom}
+.it thead th.ga{background:var(--snm)}.it thead th.gl{background:var(--sn)}
+.it thead tr.gr th{font-size:8px;padding:4px 5px;letter-spacing:.04em;border-bottom:2px solid rgba(255,255,255,.3)}
+.it tbody td{padding:5px 5px;text-align:center;border-bottom:1px solid var(--ru);border-right:1px solid #eee;font-size:9.5px;line-height:1.3;height:22px;box-sizing:border-box}
+.it tbody td.nc{text-align:left;font-weight:600;font-size:9.5px;min-width:115px}
+.it tbody td.pc{text-align:left;color:var(--mu);font-size:8.5px;min-width:78px}
+.it tbody td.shc{font-weight:700;background:#f5f2ed;color:var(--ksd)}
+.it tbody tr.tr td{background:var(--ks);color:white;font-weight:700}
+.it tbody tr.tr.aw td{background:var(--snm)}
+.note{font-size:9px;color:var(--mu);margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;padding:0 2px}
+.cd{color:#ccc}
+.chi{background:rgba(232,119,34,.12)!important;font-weight:700}
+.it tbody tr.grp-hdr td{background:#e8e6e0;color:#14213d;font-size:8px;font-weight:900;text-align:left;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-bottom:1px solid #ccc;}
+.it tbody tr.grp-avg td{background:rgba(232,161,60,.13);font-style:italic;font-size:8.5px;border-top:1px solid rgba(232,161,60,.2);border-bottom:2px solid rgba(232,161,60,.25);}
+.it tbody tr.grp-avg td.nc{font-weight:700;}
+
+@page{size:A4 landscape;margin:0}
+@media print{
+  body{padding:0;background:white}
+  .nav{display:none}
+  .page{width:297mm;height:210mm;margin:0;box-shadow:none;border-radius:0}
+}
+</style>
+<style>
+.sum-card,.qtr-card,.sp2-card,.sp2-trycard{box-shadow:0 1px 5px rgba(0,0,0,.10)}
+.ts2-block{box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.grp-hdr,.grp-avg{display:none!important}
+</style></head>
+<body>
+<div class="nav" id="nav"></div>
+<div id="content"></div>
+<script>
+/* ============================================================
+   DATA
+   ============================================================ */
+const D={"info": {"home": "NSW WARATAHS", "away": "MOANA PASIFIKA", "home_score": 29, "away_score": 14, "home_ht": 12, "away_ht": 14, "venue": "Allianz Stadium", "date": "17 April 2026", "round": 10, "competition": "Super Rugby Pacific"}, "home_stats": {"tries": 5, "passes": 198, "carries": 166, "metres": 518, "avg_carry": 3.1, "linebreaks": 6, "offloads": 6, "otg": 103, "def_beaten": 31, "kicks": 23, "kick_m": 787, "avg_kick": 34.2, "rucks": 141, "ruck_pct": 93.6, "rucks_won": 132, "lqb_pct": 64.5, "tack_att": 253, "tack_miss": 34, "tack_pct": 86.6, "lineouts": 19, "lo_won": 17, "lo_pct": 89.5, "lo_steal": 1, "scrums": 8, "penalties": 11, "to_won": 13, "to_con": 14, "e22": 17, "c22": 7, "s22": 10}, "away_stats": {"tries": 2, "passes": 151, "carries": 121, "metres": 378, "avg_carry": 3.1, "linebreaks": 5, "offloads": 8, "otg": 71, "def_beaten": 34, "kicks": 25, "kick_m": 787, "avg_kick": 31.5, "rucks": 89, "ruck_pct": 91.0, "rucks_won": 81, "lqb_pct": 50.6, "tack_att": 318, "tack_miss": 31, "tack_pct": 90.3, "lineouts": 11, "lo_won": 7, "lo_pct": 63.6, "lo_steal": 0, "scrums": 6, "penalties": 14, "to_won": 7, "to_con": 16, "e22": 11, "c22": 3, "s22": 8}, "ball_in_play": {"total_fmt": "40:08", "h_fmt": "22:28", "h_pct": 58, "a_fmt": "16:36", "a_pct": 42, "h_terr": 59, "a_terr": 41, "total_v2_fmt": "39:04", "h_terr_v2": 62, "a_terr_v2": 38}, "score_events": [{"team": "MOANA PASIFIKA", "min": 4}, {"team": "NSW WARATAHS", "min": 18}, {"team": "MOANA PASIFIKA", "min": 23}, {"team": "NSW WARATAHS", "min": 27}, {"team": "NSW WARATAHS", "min": 54}, {"team": "NSW WARATAHS", "min": 71}, {"team": "NSW WARATAHS", "min": 128}], "pen_events": [{"team": "NSW WARATAHS", "min": 3}, {"team": "NSW WARATAHS", "min": 4}, {"team": "MOANA PASIFIKA", "min": 6}, {"team": "MOANA PASIFIKA", "min": 6}, {"team": "MOANA PASIFIKA", "min": 7}, {"team": "MOANA PASIFIKA", "min": 14}, {"team": "MOANA PASIFIKA", "min": 15}, {"team": "NSW WARATAHS", "min": 22}, {"team": "MOANA PASIFIKA", "min": 34}, {"team": "MOANA PASIFIKA", "min": 38}, {"team": "NSW WARATAHS", "min": 40}, {"team": "NSW WARATAHS", "min": 41}, {"team": "NSW WARATAHS", "min": 42}, {"team": "MOANA PASIFIKA", "min": 44}, {"team": "MOANA PASIFIKA", "min": 47}, {"team": "MOANA PASIFIKA", "min": 50}, {"team": "MOANA PASIFIKA", "min": 52}, {"team": "NSW WARATAHS", "min": 57}, {"team": "NSW WARATAHS", "min": 58}, {"team": "NSW WARATAHS", "min": 60}, {"team": "MOANA PASIFIKA", "min": 62}, {"team": "MOANA PASIFIKA", "min": 65}, {"team": "NSW WARATAHS", "min": 120}, {"team": "NSW WARATAHS", "min": 121}, {"team": "MOANA PASIFIKA", "min": 126}], "error_events": [{"team": "MOANA PASIFIKA", "min": 0}, {"team": "NSW WARATAHS", "min": 2}, {"team": "NSW WARATAHS", "min": 3}, {"team": "MOANA PASIFIKA", "min": 6}, {"team": "NSW WARATAHS", "min": 10}, {"team": "NSW WARATAHS", "min": 11}, {"team": "NSW WARATAHS", "min": 20}, {"team": "NSW WARATAHS", "min": 32}, {"team": "MOANA PASIFIKA", "min": 33}, {"team": "NSW WARATAHS", "min": 33}, {"team": "MOANA PASIFIKA", "min": 34}, {"team": "MOANA PASIFIKA", "min": 36}, {"team": "MOANA PASIFIKA", "min": 41}, {"team": "NSW WARATAHS", "min": 41}, {"team": "NSW WARATAHS", "min": 41}, {"team": "MOANA PASIFIKA", "min": 43}, {"team": "MOANA PASIFIKA", "min": 43}, {"team": "NSW WARATAHS", "min": 56}, {"team": "MOANA PASIFIKA", "min": 58}, {"team": "MOANA PASIFIKA", "min": 61}, {"team": "MOANA PASIFIKA", "min": 64}, {"team": "NSW WARATAHS", "min": 66}, {"team": "MOANA PASIFIKA", "min": 67}, {"team": "MOANA PASIFIKA", "min": 68}, {"team": "NSW WARATAHS", "min": 117}, {"team": "MOANA PASIFIKA", "min": 119}, {"team": "MOANA PASIFIKA", "min": 124}, {"team": "NSW WARATAHS", "min": 124}, {"team": "NSW WARATAHS", "min": 125}, {"team": "MOANA PASIFIKA", "min": 126}], "kick_events": [{"team": "MOANA PASIFIKA", "min": 2}, {"team": "MOANA PASIFIKA", "min": 3}, {"team": "MOANA PASIFIKA", "min": 3}, {"team": "MOANA PASIFIKA", "min": 6}, {"team": "NSW WARATAHS", "min": 7}, {"team": "NSW WARATAHS", "min": 9}, {"team": "MOANA PASIFIKA", "min": 11}, {"team": "NSW WARATAHS", "min": 11}, {"team": "MOANA PASIFIKA", "min": 11}, {"team": "MOANA PASIFIKA", "min": 13}, {"team": "NSW WARATAHS", "min": 13}, {"team": "MOANA PASIFIKA", "min": 13}, {"team": "NSW WARATAHS", "min": 14}, {"team": "NSW WARATAHS", "min": 17}, {"team": "MOANA PASIFIKA", "min": 25}, {"team": "NSW WARATAHS", "min": 30}, {"team": "NSW WARATAHS", "min": 30}, {"team": "MOANA PASIFIKA", "min": 30}, {"team": "NSW WARATAHS", "min": 31}, {"team": "MOANA PASIFIKA", "min": 32}, {"team": "NSW WARATAHS", "min": 32}, {"team": "MOANA PASIFIKA", "min": 32}, {"team": "MOANA PASIFIKA", "min": 33}, {"team": "NSW WARATAHS", "min": 33}, {"team": "NSW WARATAHS", "min": 34}, {"team": "MOANA PASIFIKA", "min": 35}, {"team": "MOANA PASIFIKA", "min": 35}, {"team": "NSW WARATAHS", "min": 36}, {"team": "MOANA PASIFIKA", "min": 36}, {"team": "NSW WARATAHS", "min": 36}, {"team": "MOANA PASIFIKA", "min": 36}, {"team": "NSW WARATAHS", "min": 37}, {"team": "MOANA PASIFIKA", "min": 37}, {"team": "NSW WARATAHS", "min": 39}, {"team": "MOANA PASIFIKA", "min": 40}, {"team": "NSW WARATAHS", "min": 40}, {"team": "MOANA PASIFIKA", "min": 40}, {"team": "NSW WARATAHS", "min": 44}, {"team": "NSW WARATAHS", "min": 45}, {"team": "NSW WARATAHS", "min": 46}, {"team": "MOANA PASIFIKA", "min": 46}, {"team": "NSW WARATAHS", "min": 53}, {"team": "NSW WARATAHS", "min": 56}, {"team": "MOANA PASIFIKA", "min": 57}, {"team": "NSW WARATAHS", "min": 58}, {"team": "MOANA PASIFIKA", "min": 58}, {"team": "MOANA PASIFIKA", "min": 59}, {"team": "NSW WARATAHS", "min": 63}, {"team": "NSW WARATAHS", "min": 64}, {"team": "NSW WARATAHS", "min": 65}, {"team": "MOANA PASIFIKA", "min": 66}, {"team": "NSW WARATAHS", "min": 66}, {"team": "MOANA PASIFIKA", "min": 67}, {"team": "MOANA PASIFIKA", "min": 67}, {"team": "NSW WARATAHS", "min": 68}, {"team": "NSW WARATAHS", "min": 68}, {"team": "MOANA PASIFIKA", "min": 69}, {"team": "NSW WARATAHS", "min": 119}, {"team": "NSW WARATAHS", "min": 120}, {"team": "MOANA PASIFIKA", "min": 121}, {"team": "MOANA PASIFIKA", "min": 125}, {"team": "NSW WARATAHS", "min": 127}], "miss_kick_events": [{"team": "NSW WARATAHS", "min": 28}, {"team": "NSW WARATAHS", "min": 55}, {"team": "NSW WARATAHS", "min": 117}], "e22_detail": {"NSW WARATAHS": {"carried": 7, "started": 4, "bands": [3, 3, 2, 2, 1, 2, 2, 0, 2], "a22_total": 11, "a22_tries": 5, "a22_pg": 0, "a22_to": 5, "a22_pc": 1, "a22_kt": 0, "a22_sw": 0, "a22_tries_inside": 1, "a22_tries_outside": 4, "a22_to_detail": [["Dropped Ball Unforced", 2], ["Other", 3]], "a22_pos": 5, "success_rate": 45.5}, "MOANA PASIFIKA": {"carried": 3, "started": 3, "bands": [2, 0, 2, 0, 2, 1, 1, 0, 3], "a22_total": 6, "a22_tries": 2, "a22_pg": 0, "a22_to": 4, "a22_pc": 0, "a22_kt": 0, "a22_sw": 0, "a22_tries_inside": 0, "a22_tries_outside": 2, "a22_to_detail": [["Lost in Ruck or Maul", 1], ["Other", 3]], "a22_pos": 2, "success_rate": 33.3}}, "setpiece": {"NSW WARATAHS": {"lo_throwers": [{"player": "Ethan Dobbins", "total": 14, "won": 12, "lost": 2, "pct": 85.7}, {"player": "Folau Fainga'a", "total": 4, "won": 4, "lost": 0, "pct": 100.0}, {"player": "Jack Debreczeni", "total": 1, "won": 1, "lost": 0, "pct": 100.0}], "lo_jumpers": [{"player": "Matt Philip", "total": 7, "won": 7, "pct": 100.0}, {"player": "Miles Amatosero", "total": 4, "won": 4, "pct": 100.0}, {"player": "Pete Samu", "total": 5, "won": 4, "pct": 80.0}, {"player": "Angus Blyth", "total": 1, "won": 1, "pct": 100.0}, {"player": "Jack Debreczeni", "total": 1, "won": 1, "pct": 100.0}], "maul": {"total": 6, "tries": 1, "metres": 14, "avg": 2.3, "inside_22m": 4, "seq_tries": 4}, "scrum": {"total": 8, "won": 6, "pen_won": 2, "reset": 2, "stability": 100.0, "positive": 1, "neutral": 5, "negative": 2, "pen_try": 0, "seq_tries": 0}}, "MOANA PASIFIKA": {"lo_throwers": [{"player": "Mills Sanerivi", "total": 8, "won": 5, "lost": 3, "pct": 62.5}, {"player": "Samiuela Moli", "total": 3, "won": 2, "lost": 1, "pct": 66.7}], "lo_jumpers": [{"player": "Miracle Faiilagi", "total": 3, "won": 3, "pct": 100.0}, {"player": "Jimmy Tupou", "total": 2, "won": 2, "pct": 100.0}, {"player": "Ola Tauelangi", "total": 1, "won": 1, "pct": 100.0}, {"player": "Tom Savage", "total": 1, "won": 1, "pct": 100.0}], "maul": {"total": 0, "tries": 0, "metres": 0, "avg": 0.0, "inside_22m": 0, "seq_tries": 0}, "scrum": {"total": 6, "won": 6, "pen_won": 1, "reset": 0, "stability": 100.0, "positive": 0, "neutral": 6, "negative": 0, "pen_try": 0, "seq_tries": 0}}}, "teamsheet": {"NSW WARATAHS": [{"shirt": 1, "name": "Tom Lambert", "pos": "Loosehead Prop", "mins": 52}, {"shirt": 2, "name": "Ethan Dobbins", "pos": "Hooker", "mins": 55}, {"shirt": 3, "name": "Daniel Botha", "pos": "Tighthead Prop", "mins": 55}, {"shirt": 4, "name": "Matt Philip", "pos": "Lock (4)", "mins": 80}, {"shirt": 5, "name": "Miles Amatosero", "pos": "Lock (5)", "mins": 55}, {"shirt": 6, "name": "Angus Scott-Young", "pos": "Blindside Flanker", "mins": 64}, {"shirt": 7, "name": "Charlie Gamble", "pos": "Openside Flanker", "mins": 67}, {"shirt": 8, "name": "Pete Samu", "pos": "Number 8", "mins": 80}, {"shirt": 9, "name": "Jake Gordon", "pos": "Scrum Half", "mins": 67}, {"shirt": 10, "name": "Jack Debreczeni", "pos": "Fly Half", "mins": 80}, {"shirt": 11, "name": "Max Jorgensen", "pos": "Left Wing", "mins": 0}, {"shirt": 12, "name": "Lawson Creighton", "pos": "Inside Centre", "mins": 7}, {"shirt": 13, "name": "Joey Walton", "pos": "Outside Centre", "mins": 80}, {"shirt": 14, "name": "Andrew Kellaway", "pos": "Right Wing", "mins": 80}, {"shirt": 15, "name": "Sid Harvey", "pos": "Full Back", "mins": 80}, {"shirt": 16, "name": "Folau Fainga'a", "pos": "Hooker", "mins": 25}, {"shirt": 17, "name": "Isaac Kailea", "pos": "Loosehead Prop", "mins": 28}, {"shirt": 18, "name": "Siosifa Amone", "pos": "Tighthead Prop", "mins": 25}, {"shirt": 19, "name": "Angus Blyth", "pos": "Lock (5)", "mins": 25}, {"shirt": 20, "name": "Clem Halaholo", "pos": "Blindside Flanker", "mins": 16}, {"shirt": 21, "name": "Jamie Adamson", "pos": "Openside Flanker", "mins": 13}, {"shirt": 22, "name": "Teddy Wilson", "pos": "Scrum Half", "mins": 13}, {"shirt": 23, "name": "Triston Reilly", "pos": "Outside Centre", "mins": 73}], "MOANA PASIFIKA": [{"shirt": 1, "name": "Abraham Pole", "pos": "Loosehead Prop", "mins": 80}, {"shirt": 2, "name": "Mills Sanerivi", "pos": "Hooker", "mins": 80}, {"shirt": 3, "name": "Chris Apoua", "pos": "Tighthead Prop", "mins": 45}, {"shirt": 4, "name": "Tom Savage", "pos": "Lock (4)", "mins": 0}, {"shirt": 5, "name": "Veikoso Poloniati", "pos": "Lock (5)", "mins": 29}, {"shirt": 6, "name": "Miracle Faiilagi", "pos": "Blindside Flanker", "mins": 80}, {"shirt": 7, "name": "Semisi Paea", "pos": "Openside Flanker", "mins": 55}, {"shirt": 8, "name": "Semisi Tupou Ta'eiloa", "pos": "Number 8", "mins": 80}, {"shirt": 9, "name": "Melani Matavao", "pos": "Scrum Half", "mins": 49}, {"shirt": 10, "name": "Patrick Pellegrini", "pos": "Fly Half", "mins": 80}, {"shirt": 11, "name": "Glen Vaihu", "pos": "Left Wing", "mins": 56}, {"shirt": 12, "name": "Tevita Latu", "pos": "Inside Centre", "mins": 80}, {"shirt": 13, "name": "Solomon Alaimalo", "pos": "Outside Centre", "mins": 80}, {"shirt": 14, "name": "Tuna Tuitama", "pos": "Right Wing", "mins": 80}, {"shirt": 15, "name": "William Havili", "pos": "Full Back", "mins": 80}, {"shirt": 16, "name": "Samiuela Moli", "pos": "Hooker", "mins": 0}, {"shirt": 17, "name": "Malakai Hala-Ngatai", "pos": "Loosehead Prop", "mins": 0}, {"shirt": 18, "name": "Paula Latu", "pos": "Tighthead Prop", "mins": 35}, {"shirt": 19, "name": "Jimmy Tupou", "pos": "Lock (5)", "mins": 51}, {"shirt": 20, "name": "Ola Tauelangi", "pos": "Openside Flanker", "mins": 25}, {"shirt": 21, "name": "Jonathan Taumateine", "pos": "Scrum Half", "mins": 31}, {"shirt": 22, "name": "Faletoi Peni", "pos": "Inside Centre", "mins": 0}, {"shirt": 23, "name": "Tyler Pulini", "pos": "Left Wing", "mins": 0}]}};
+
+const HOME=D.info.home, AWAY=D.info.away, H=HOME, A=AWAY;
+
+// TOTAL + Q別データ (quarters_v5_retry design)
+const TOT={"h": {"pts": 29, "tries": 5, "pos_t": "22:28", "pos_p": 58, "ter_p": 59, "ter_p_v2": 62, "car": 166, "mtr": 518, "amc": 3.1, "pas": 198, "r2k": 6.1, "ta": 253, "tm": 34, "tp": 86.6, "lb": 6, "tow": 13, "toc": 14, "pen": 11, "e22": 17, "c22": 7, "s22": 10}, "a": {"pts": 14, "tries": 2, "pos_t": "16:36", "pos_p": 42, "ter_p": 41, "ter_p_v2": 38, "car": 121, "mtr": 378, "amc": 3.1, "pas": 151, "r2k": 3.6, "ta": 318, "tm": 31, "tp": 90.3, "lb": 5, "tow": 7, "toc": 16, "pen": 14, "e22": 11, "c22": 3, "s22": 8}};
+const QD={"h": {"Q1": {"pts": 7, "tries": 1, "pos_t": "04:41", "pos_p": 72, "ter_p": 71, "ter_p_v2": 81, "bip_v2_q": 387, "atk_k_q": 239, "bip_o_q": 107, "atk_o_q": 32, "car": 35, "mtr": 130, "amc": 3.7, "pas": 37, "r2k": 4.7, "ta": 15, "tm": 2, "tp": 86.7, "lb": 1, "def_beaten": 5, "tow": 0, "toc": 5, "pen": 2, "e22": 6, "c22": 1, "s22": 5}, "Q2": {"pts": 5, "tries": 1, "pos_t": "06:36", "pos_p": 52, "ter_p": 64, "ter_p_v2": 63, "bip_v2_q": 764, "atk_k_q": 359, "bip_o_q": 368, "atk_o_q": 244, "car": 48, "mtr": 211, "amc": 4.4, "pas": 69, "r2k": 3.7, "ta": 101, "tm": 13, "tp": 87.1, "lb": 2, "def_beaten": 12, "tow": 2, "toc": 2, "pen": 2, "e22": 4, "c22": 3, "s22": 1}, "Q3": {"pts": 5, "tries": 1, "pos_t": "06:22", "pos_p": 70, "ter_p": 79, "ter_p_v2": 63, "bip_v2_q": 543, "atk_k_q": 279, "bip_o_q": 161, "atk_o_q": 98, "car": 49, "mtr": 88, "amc": 1.8, "pas": 54, "r2k": 6.6, "ta": 41, "tm": 7, "tp": 82.9, "lb": 1, "def_beaten": 7, "tow": 3, "toc": 3, "pen": 5, "e22": 3, "c22": 1, "s22": 2}, "Q4": {"pts": 12, "tries": 2, "pos_t": "04:49", "pos_p": 45, "ter_p": 24, "ter_p_v2": 50, "bip_v2_q": 649, "atk_k_q": 239, "bip_o_q": 360, "atk_o_q": 276, "car": 34, "mtr": 89, "amc": 2.6, "pas": 38, "r2k": 3.3, "ta": 96, "tm": 12, "tp": 87.5, "lb": 2, "def_beaten": 7, "tow": 8, "toc": 4, "pen": 2, "e22": 4, "c22": 2, "s22": 2}}, "a": {"Q1": {"pts": 7, "tries": 1, "pos_t": "01:47", "pos_p": 28, "ter_p": 32, "ter_p_v2": 19, "bip_v2_q": 387, "atk_k_q": 32, "bip_o_q": 281, "atk_o_q": 239, "car": 8, "mtr": 27, "amc": 3.4, "pas": 11, "r2k": 0.9, "ta": 60, "tm": 5, "tp": 91.7, "lb": 0, "def_beaten": 2, "tow": 2, "toc": 2, "pen": 5, "e22": 2, "c22": 0, "s22": 2}, "Q2": {"pts": 7, "tries": 1, "pos_t": "06:08", "pos_p": 48, "ter_p": 54, "ter_p_v2": 37, "bip_v2_q": 764, "atk_k_q": 244, "bip_o_q": 396, "atk_o_q": 359, "car": 47, "mtr": 114, "amc": 2.4, "pas": 54, "r2k": 3.3, "ta": 96, "tm": 12, "tp": 87.5, "lb": 2, "def_beaten": 13, "tow": 1, "toc": 3, "pen": 2, "e22": 2, "c22": 1, "s22": 1}, "Q3": {"pts": 0, "tries": 0, "pos_t": "02:41", "pos_p": 30, "ter_p": 59, "ter_p_v2": 37, "bip_v2_q": 543, "atk_k_q": 98, "bip_o_q": 382, "atk_o_q": 279, "car": 19, "mtr": 81, "amc": 4.3, "pas": 19, "r2k": 2.0, "ta": 102, "tm": 7, "tp": 93.1, "lb": 0, "def_beaten": 7, "tow": 2, "toc": 4, "pen": 4, "e22": 3, "c22": 1, "s22": 2}, "Q4": {"pts": 0, "tries": 0, "pos_t": "06:00", "pos_p": 55, "ter_p": 64, "ter_p_v2": 50, "bip_v2_q": 649, "atk_k_q": 276, "bip_o_q": 289, "atk_o_q": 239, "car": 47, "mtr": 156, "amc": 3.3, "pas": 67, "r2k": 6.2, "ta": 60, "tm": 7, "tp": 88.3, "lb": 3, "def_beaten": 12, "tow": 2, "toc": 7, "pen": 3, "e22": 4, "c22": 1, "s22": 3}}};
+
+// 統計定義: [ラベル, キー, %suffix, グループ区切り, 高いほど良い(h)?]
+const ST=[
+  ['Points Scored',       'pts',   false,false,true],
+  ['Tries',               'tries', false,true, true],
+  ['Possession Time',     'pos_t', false,false,true],
+  ['Possession %',        'pos_p', true, false,true],
+  ['Territory %',         'ter_p_v2', true, true, true],
+  ['Ball Carries',        'car',   false,false,true],
+  ['Carry Metres',        'mtr',   false,false,true],
+  ['Avg Metres / Carry',  'amc',   false,false,true],
+  ['Passes',              'pas',   false,false,true],
+  ['Ruck : Kick Ratio',   'r2k',   false,true, false],
+  ['Tackle Attempts',     'ta',    false,false,false],
+  ['Tackles Missed',      'tm',    false,false,false],
+  ['Tackle %',            'tp',    true, false,true],
+  ['Linebreaks',          'lb',    false,true, true],
+  ['Defenders Beaten',    'def_beaten', false,false, true],
+  ['Turnovers Won',       'tow',   false,false,true],
+  ['Turnovers Conceded',  'toc',   false,false,false],
+  ['Penalties Conceded',  'pen',   false,true, false],
+  ['22m Entries',         'e22',   false,false,true],
+  ['Carried into 22m',    'c22',   false,false,true],
+  ['Started in 22m',      's22',   false,false,true],
+];
+
+// Momentum page (quarters_v5_retry design) expects {t,m} shaped event arrays
+const toTM=arr=>arr.map(e=>({t:e.team,m:e.min}));
+const SEV=toTM(D.score_events), PEV=toTM(D.pen_events), EEV=toTM(D.error_events), KEV=toTM(D.kick_events), MEV=toTM(D.miss_kick_events);
+
+// Penalty detail incl. Attack/Defence split (penalty_individual_attack design)
+const PD={"NSW WARATAHS": {"by_type": {"Not Releasing": 3, "Wrong Side at Ruck": 2, "Not Rolling Away": 1, "Scrum Offence": 2, "Offside": 2, "Foul Play - Dangerous Throw": 1}, "by_pos_group": {"Front Row": 4, "Lock": 2, "Loosie": 1, "Inside": 1, "Midfield": 3, "Back 3": 0}, "attack_count": 3, "defence_count": 8, "by_half": {"Q1": 2, "Q2": 2, "Q3": 5, "Q4": 2}}, "MOANA PASIFIKA": {"by_type": {"Other Offence": 2, "Offside": 4, "Foul Play - High Tackle": 2, "Wrong Side at Ruck": 1, "Lineout Offence": 1, "Scrum Offence": 3, "Foul Play - Dangerous Throw": 1}, "by_pos_group": {"Front Row": 5, "Lock": 1, "Loosie": 5, "Inside": 1, "Midfield": 1, "Back 3": 1}, "attack_count": 1, "defence_count": 13, "by_half": {"Q1": 5, "Q2": 2, "Q3": 4, "Q4": 3}}};
+
+// Individual Attack incl. Avg PC m/Carry (individual_attack_defence_v2 design)
+const ATK={"NSW WARATAHS": [{"shirt": 1, "player": "Tom Lambert", "pos": "Loosehead Prop", "carries": 8, "metres": 13, "avg_carry": 1.6, "pcm": 26, "linebreaks": 0, "def_beaten": 3, "offloads": 0, "tries": 0, "gl_pct": 100.0, "dom_carry": 1, "ooa_1_3": 5, "ooa_4p": 3, "ooa_eff": 62.5, "handle_count": 9, "passes": 1, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 1}, {"shirt": 2, "player": "Ethan Dobbins", "pos": "Hooker", "carries": 14, "metres": 33, "avg_carry": 2.4, "pcm": 35, "linebreaks": 1, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 64.3, "dom_carry": 4, "ooa_1_3": 7, "ooa_4p": 6, "ooa_eff": 53.8, "handle_count": 18, "passes": 4, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 1}, {"shirt": 3, "player": "Daniel Botha", "pos": "Tighthead Prop", "carries": 4, "metres": 2, "avg_carry": 0.5, "pcm": 2, "linebreaks": 0, "def_beaten": 0, "offloads": 1, "tries": 0, "gl_pct": 50.0, "dom_carry": 1, "ooa_1_3": 1, "ooa_4p": 2, "ooa_eff": 33.3, "handle_count": 12, "passes": 7, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 4, "player": "Matt Philip", "pos": "Lock (4)", "carries": 11, "metres": 19, "avg_carry": 1.7, "pcm": 25, "linebreaks": 0, "def_beaten": 2, "offloads": 0, "tries": 0, "gl_pct": 36.4, "dom_carry": 0, "ooa_1_3": 6, "ooa_4p": 3, "ooa_eff": 66.7, "handle_count": 23, "passes": 12, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 3}, {"shirt": 5, "player": "Miles Amatosero", "pos": "Lock (5)", "carries": 13, "metres": 14, "avg_carry": 1.1, "pcm": 21, "linebreaks": 0, "def_beaten": 2, "offloads": 0, "tries": 0, "gl_pct": 38.5, "dom_carry": 1, "ooa_1_3": 4, "ooa_4p": 4, "ooa_eff": 50.0, "handle_count": 18, "passes": 5, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 1}, {"shirt": 6, "player": "Angus Scott-Young", "pos": "Blindside Flanker", "carries": 12, "metres": 43, "avg_carry": 3.6, "pcm": 27, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 66.7, "dom_carry": 0, "ooa_1_3": 10, "ooa_4p": 2, "ooa_eff": 83.3, "handle_count": 14, "passes": 2, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 7, "player": "Charlie Gamble", "pos": "Openside Flanker", "carries": 9, "metres": 40, "avg_carry": 4.4, "pcm": 25, "linebreaks": 0, "def_beaten": 2, "offloads": 0, "tries": 0, "gl_pct": 88.9, "dom_carry": 2, "ooa_1_3": 3, "ooa_4p": 4, "ooa_eff": 42.9, "handle_count": 19, "passes": 10, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 8, "player": "Pete Samu", "pos": "Number 8", "carries": 13, "metres": 45, "avg_carry": 3.5, "pcm": 39, "linebreaks": 0, "def_beaten": 3, "offloads": 2, "tries": 0, "gl_pct": 61.5, "dom_carry": 0, "ooa_1_3": 7, "ooa_4p": 2, "ooa_eff": 77.8, "handle_count": 24, "passes": 9, "pass_acc": 88.9, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 2}, {"shirt": 9, "player": "Jake Gordon", "pos": "Scrum Half", "carries": 7, "metres": 38, "avg_carry": 5.4, "pcm": 20, "linebreaks": 1, "def_beaten": 2, "offloads": 0, "tries": 0, "gl_pct": 57.1, "dom_carry": 1, "ooa_1_3": 5, "ooa_4p": 0, "ooa_eff": 100.0, "handle_count": 84, "passes": 71, "pass_acc": 95.8, "kicks": 6, "kick_m": 198, "avg_kick": 33.0, "errors": 0}, {"shirt": 10, "player": "Jack Debreczeni", "pos": "Fly Half", "carries": 6, "metres": 26, "avg_carry": 4.3, "pcm": 8, "linebreaks": 0, "def_beaten": 1, "offloads": 1, "tries": 0, "gl_pct": 66.7, "dom_carry": 2, "ooa_1_3": 1, "ooa_4p": 1, "ooa_eff": 50.0, "handle_count": 51, "passes": 27, "pass_acc": 96.3, "kicks": 17, "kick_m": 460, "avg_kick": 27.1, "errors": 0}, {"shirt": 11, "player": "Max Jorgensen", "pos": "Left Wing", "carries": 6, "metres": 53, "avg_carry": 8.8, "pcm": 23, "linebreaks": 1, "def_beaten": 3, "offloads": 0, "tries": 0, "gl_pct": 83.3, "dom_carry": 1, "ooa_1_3": 2, "ooa_4p": 2, "ooa_eff": 50.0, "handle_count": 11, "passes": 3, "pass_acc": 66.7, "kicks": 2, "kick_m": 29, "avg_kick": 14.5, "errors": 2}, {"shirt": 12, "player": "Lawson Creighton", "pos": "Inside Centre", "carries": 2, "metres": 8, "avg_carry": 4.0, "pcm": 9, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 50.0, "dom_carry": 1, "ooa_1_3": 1, "ooa_4p": 0, "ooa_eff": 100.0, "handle_count": 3, "passes": 1, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 13, "player": "Joey Walton", "pos": "Outside Centre", "carries": 17, "metres": 23, "avg_carry": 1.4, "pcm": 49, "linebreaks": 0, "def_beaten": 4, "offloads": 2, "tries": 0, "gl_pct": 41.2, "dom_carry": 5, "ooa_1_3": 14, "ooa_4p": 1, "ooa_eff": 93.3, "handle_count": 29, "passes": 10, "pass_acc": 90.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 14, "player": "Andrew Kellaway", "pos": "Right Wing", "carries": 3, "metres": 6, "avg_carry": 2.0, "pcm": 10, "linebreaks": 0, "def_beaten": 1, "offloads": 0, "tries": 0, "gl_pct": 66.7, "dom_carry": 1, "ooa_1_3": 2, "ooa_4p": 1, "ooa_eff": 66.7, "handle_count": 6, "passes": 2, "pass_acc": 100.0, "kicks": 1, "kick_m": 41, "avg_kick": 41.0, "errors": 1}, {"shirt": 15, "player": "Sid Harvey", "pos": "Full Back", "carries": 10, "metres": 70, "avg_carry": 7.0, "pcm": 44, "linebreaks": 1, "def_beaten": 4, "offloads": 0, "tries": 2, "gl_pct": 90.0, "dom_carry": 2, "ooa_1_3": 5, "ooa_4p": 1, "ooa_eff": 83.3, "handle_count": 20, "passes": 5, "pass_acc": 80.0, "kicks": 5, "kick_m": 157, "avg_kick": 31.4, "errors": 0}, {"shirt": 16, "player": "Folau Fainga'a", "pos": "Hooker", "carries": 4, "metres": 8, "avg_carry": 2.0, "pcm": 5, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 1, "gl_pct": 75.0, "dom_carry": 0, "ooa_1_3": 0, "ooa_4p": 2, "ooa_eff": 0.0, "handle_count": 7, "passes": 3, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 1}, {"shirt": 17, "player": "Isaac Kailea", "pos": "Loosehead Prop", "carries": 6, "metres": 5, "avg_carry": 0.8, "pcm": 12, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 1, "gl_pct": 50.0, "dom_carry": 0, "ooa_1_3": 4, "ooa_4p": 1, "ooa_eff": 80.0, "handle_count": 7, "passes": 1, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 18, "player": "Siosifa Amone", "pos": "Tighthead Prop", "carries": 3, "metres": 8, "avg_carry": 2.7, "pcm": 9, "linebreaks": 0, "def_beaten": 1, "offloads": 0, "tries": 0, "gl_pct": 66.7, "dom_carry": 0, "ooa_1_3": 2, "ooa_4p": 1, "ooa_eff": 66.7, "handle_count": 4, "passes": 1, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 19, "player": "Angus Blyth", "pos": "Lock (5)", "carries": 2, "metres": 4, "avg_carry": 2.0, "pcm": 6, "linebreaks": 0, "def_beaten": 1, "offloads": 0, "tries": 0, "gl_pct": 100.0, "dom_carry": 0, "ooa_1_3": 1, "ooa_4p": 1, "ooa_eff": 50.0, "handle_count": 3, "passes": 1, "pass_acc": 0.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 20, "player": "Clem Halaholo", "pos": "Blindside Flanker", "carries": 4, "metres": 10, "avg_carry": 2.5, "pcm": 7, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 75.0, "dom_carry": 0, "ooa_1_3": 2, "ooa_4p": 2, "ooa_eff": 50.0, "handle_count": 4, "passes": 0, "pass_acc": null, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 21, "player": "Jamie Adamson", "pos": "Openside Flanker", "carries": 5, "metres": 14, "avg_carry": 2.8, "pcm": 10, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 20.0, "dom_carry": 2, "ooa_1_3": 4, "ooa_4p": 1, "ooa_eff": 80.0, "handle_count": 7, "passes": 2, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 22, "player": "Teddy Wilson", "pos": "Scrum Half", "carries": 4, "metres": 35, "avg_carry": 8.8, "pcm": 19, "linebreaks": 1, "def_beaten": 2, "offloads": 0, "tries": 0, "gl_pct": 100.0, "dom_carry": 2, "ooa_1_3": 4, "ooa_4p": 0, "ooa_eff": 100.0, "handle_count": 22, "passes": 17, "pass_acc": 100.0, "kicks": 1, "kick_m": 21, "avg_kick": 21.0, "errors": 1}, {"shirt": 23, "player": "Triston Reilly", "pos": "Outside Centre", "carries": 3, "metres": 1, "avg_carry": 0.3, "pcm": 5, "linebreaks": 1, "def_beaten": 0, "offloads": 0, "tries": 1, "gl_pct": 33.3, "dom_carry": 1, "ooa_1_3": 1, "ooa_4p": 1, "ooa_eff": 50.0, "handle_count": 7, "passes": 4, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 1}], "MOANA PASIFIKA": [{"shirt": 1, "player": "Abraham Pole", "pos": "Loosehead Prop", "carries": 4, "metres": 4, "avg_carry": 1.0, "pcm": 10, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 25.0, "dom_carry": 0, "ooa_1_3": 3, "ooa_4p": 1, "ooa_eff": 75.0, "handle_count": 5, "passes": 1, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 2, "player": "Mills Sanerivi", "pos": "Hooker", "carries": 11, "metres": 20, "avg_carry": 1.8, "pcm": 26, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 63.6, "dom_carry": 1, "ooa_1_3": 4, "ooa_4p": 5, "ooa_eff": 44.4, "handle_count": 15, "passes": 4, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 1}, {"shirt": 3, "player": "Chris Apoua", "pos": "Tighthead Prop", "carries": 3, "metres": 1, "avg_carry": 0.3, "pcm": 6, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 33.3, "dom_carry": 0, "ooa_1_3": 2, "ooa_4p": 1, "ooa_eff": 66.7, "handle_count": 3, "passes": 0, "pass_acc": null, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 1}, {"shirt": 4, "player": "Tom Savage", "pos": "Lock (4)", "carries": 3, "metres": 3, "avg_carry": 1.0, "pcm": 8, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 33.3, "dom_carry": 0, "ooa_1_3": 1, "ooa_4p": 1, "ooa_eff": 50.0, "handle_count": 4, "passes": 1, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 2}, {"shirt": 5, "player": "Veikoso Poloniati", "pos": "Lock (5)", "carries": 0, "metres": 0, "avg_carry": 0.0, "pcm": 0, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 0.0, "dom_carry": 0, "ooa_1_3": 0, "ooa_4p": 1, "ooa_eff": 0.0, "handle_count": 0, "passes": 0, "pass_acc": null, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 6, "player": "Miracle Faiilagi", "pos": "Blindside Flanker", "carries": 5, "metres": 19, "avg_carry": 3.8, "pcm": 18, "linebreaks": 0, "def_beaten": 1, "offloads": 0, "tries": 0, "gl_pct": 80.0, "dom_carry": 2, "ooa_1_3": 2, "ooa_4p": 3, "ooa_eff": 40.0, "handle_count": 8, "passes": 3, "pass_acc": 66.7, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 7, "player": "Semisi Paea", "pos": "Openside Flanker", "carries": 3, "metres": 5, "avg_carry": 1.7, "pcm": 5, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 66.7, "dom_carry": 0, "ooa_1_3": 0, "ooa_4p": 1, "ooa_eff": 0.0, "handle_count": 6, "passes": 3, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 8, "player": "Semisi Tupou Ta'eiloa", "pos": "Number 8", "carries": 21, "metres": 102, "avg_carry": 4.9, "pcm": 88, "linebreaks": 1, "def_beaten": 10, "offloads": 0, "tries": 0, "gl_pct": 76.2, "dom_carry": 7, "ooa_1_3": 8, "ooa_4p": 4, "ooa_eff": 66.7, "handle_count": 28, "passes": 7, "pass_acc": 71.4, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 2}, {"shirt": 9, "player": "Melani Matavao", "pos": "Scrum Half", "carries": 7, "metres": 26, "avg_carry": 3.7, "pcm": 10, "linebreaks": 0, "def_beaten": 3, "offloads": 1, "tries": 2, "gl_pct": 71.4, "dom_carry": 3, "ooa_1_3": 1, "ooa_4p": 1, "ooa_eff": 50.0, "handle_count": 50, "passes": 38, "pass_acc": 100.0, "kicks": 4, "kick_m": 104, "avg_kick": 26.0, "errors": 2}, {"shirt": 10, "player": "Patrick Pellegrini", "pos": "Fly Half", "carries": 8, "metres": 28, "avg_carry": 3.5, "pcm": 8, "linebreaks": 0, "def_beaten": 1, "offloads": 1, "tries": 0, "gl_pct": 62.5, "dom_carry": 1, "ooa_1_3": 0, "ooa_4p": 2, "ooa_eff": 0.0, "handle_count": 48, "passes": 22, "pass_acc": 100.0, "kicks": 17, "kick_m": 427, "avg_kick": 25.1, "errors": 2}, {"shirt": 11, "player": "Glen Vaihu", "pos": "Left Wing", "carries": 4, "metres": 25, "avg_carry": 6.2, "pcm": 2, "linebreaks": 1, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 100.0, "dom_carry": 0, "ooa_1_3": 1, "ooa_4p": 0, "ooa_eff": 100.0, "handle_count": 10, "passes": 6, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 12, "player": "Tevita Latu", "pos": "Inside Centre", "carries": 10, "metres": 27, "avg_carry": 2.7, "pcm": 36, "linebreaks": 0, "def_beaten": 2, "offloads": 0, "tries": 0, "gl_pct": 50.0, "dom_carry": 6, "ooa_1_3": 6, "ooa_4p": 3, "ooa_eff": 66.7, "handle_count": 16, "passes": 6, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 1}, {"shirt": 13, "player": "Solomon Alaimalo", "pos": "Outside Centre", "carries": 9, "metres": 35, "avg_carry": 3.9, "pcm": 31, "linebreaks": 0, "def_beaten": 5, "offloads": 2, "tries": 0, "gl_pct": 55.6, "dom_carry": 2, "ooa_1_3": 3, "ooa_4p": 2, "ooa_eff": 60.0, "handle_count": 14, "passes": 3, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 1}, {"shirt": 14, "player": "Tuna Tuitama", "pos": "Right Wing", "carries": 7, "metres": 29, "avg_carry": 4.1, "pcm": 14, "linebreaks": 1, "def_beaten": 3, "offloads": 1, "tries": 0, "gl_pct": 71.4, "dom_carry": 3, "ooa_1_3": 2, "ooa_4p": 1, "ooa_eff": 66.7, "handle_count": 12, "passes": 2, "pass_acc": 100.0, "kicks": 2, "kick_m": 41, "avg_kick": 20.5, "errors": 2}, {"shirt": 15, "player": "William Havili", "pos": "Full Back", "carries": 10, "metres": 34, "avg_carry": 3.4, "pcm": 38, "linebreaks": 2, "def_beaten": 4, "offloads": 1, "tries": 0, "gl_pct": 40.0, "dom_carry": 3, "ooa_1_3": 2, "ooa_4p": 3, "ooa_eff": 40.0, "handle_count": 20, "passes": 2, "pass_acc": 100.0, "kicks": 7, "kick_m": 326, "avg_kick": 46.6, "errors": 1}, {"shirt": 16, "player": "Samiuela Moli", "pos": "Hooker", "carries": 5, "metres": 8, "avg_carry": 1.6, "pcm": 14, "linebreaks": 0, "def_beaten": 1, "offloads": 0, "tries": 0, "gl_pct": 40.0, "dom_carry": 1, "ooa_1_3": 3, "ooa_4p": 2, "ooa_eff": 60.0, "handle_count": 7, "passes": 2, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 17, "player": "Malakai Hala-Ngatai", "pos": "Loosehead Prop", "carries": 1, "metres": 2, "avg_carry": 2.0, "pcm": 3, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 100.0, "dom_carry": 0, "ooa_1_3": 1, "ooa_4p": 0, "ooa_eff": 100.0, "handle_count": 1, "passes": 0, "pass_acc": null, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 18, "player": "Paula Latu", "pos": "Tighthead Prop", "carries": 5, "metres": 6, "avg_carry": 1.2, "pcm": 12, "linebreaks": 0, "def_beaten": 2, "offloads": 0, "tries": 0, "gl_pct": 40.0, "dom_carry": 1, "ooa_1_3": 4, "ooa_4p": 1, "ooa_eff": 80.0, "handle_count": 5, "passes": 0, "pass_acc": null, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 1}, {"shirt": 19, "player": "Jimmy Tupou", "pos": "Lock (5)", "carries": 3, "metres": 1, "avg_carry": 0.3, "pcm": 6, "linebreaks": 0, "def_beaten": 0, "offloads": 1, "tries": 0, "gl_pct": 0.0, "dom_carry": 0, "ooa_1_3": 2, "ooa_4p": 0, "ooa_eff": 100.0, "handle_count": 12, "passes": 8, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 20, "player": "Ola Tauelangi", "pos": "Openside Flanker", "carries": 0, "metres": 0, "avg_carry": 0.0, "pcm": 0, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 0.0, "dom_carry": 0, "ooa_1_3": 0, "ooa_4p": 1, "ooa_eff": 0.0, "handle_count": 2, "passes": 2, "pass_acc": 50.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 21, "player": "Jonathan Taumateine", "pos": "Scrum Half", "carries": 2, "metres": 3, "avg_carry": 1.5, "pcm": 7, "linebreaks": 0, "def_beaten": 2, "offloads": 1, "tries": 0, "gl_pct": 50.0, "dom_carry": 0, "ooa_1_3": 0, "ooa_4p": 1, "ooa_eff": 0.0, "handle_count": 42, "passes": 39, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 22, "player": "Faletoi Peni", "pos": "Inside Centre", "carries": 0, "metres": 0, "avg_carry": 0.0, "pcm": 0, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 0.0, "dom_carry": 0, "ooa_1_3": 0, "ooa_4p": 0, "ooa_eff": 0.0, "handle_count": 1, "passes": 1, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}, {"shirt": 23, "player": "Tyler Pulini", "pos": "Left Wing", "carries": 0, "metres": 0, "avg_carry": 0.0, "pcm": 0, "linebreaks": 0, "def_beaten": 0, "offloads": 0, "tries": 0, "gl_pct": 0.0, "dom_carry": 0, "ooa_1_3": 0, "ooa_4p": 0, "ooa_eff": 0.0, "handle_count": 1, "passes": 1, "pass_acc": 100.0, "kicks": 0, "kick_m": 0, "avg_kick": 0, "errors": 0}]};
+
+// Individual Defence (defence_corrected_v5 design)
+// qualifier4Name=='Dominant Tackle' = 正しいDominant
+// qualifier6Name Legs% = Height Leg %
+const DEFV5={"NSW WARATAHS": [{"shirt": 1, "player": "Tom Lambert", "pos": "Loosehead Prop", "mins": 52, "att": 12, "made": 10, "miss": 2, "tkl_assist": 5, "pct": 83.3, "dom": 2, "dom_pct": 16.7, "hl": 12.5, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 1, "jck": 0, "tow": 0, "infr": 1}, {"shirt": 2, "player": "Ethan Dobbins", "pos": "Hooker", "mins": 55, "att": 12, "made": 10, "miss": 2, "tkl_assist": 5, "pct": 83.3, "dom": 2, "dom_pct": 16.7, "hl": 33.3, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 1, "jck": 0, "tow": 0, "infr": 2}, {"shirt": 3, "player": "Daniel Botha", "pos": "Tighthead Prop", "mins": 55, "att": 12, "made": 10, "miss": 2, "tkl_assist": 5, "pct": 83.3, "dom": 1, "dom_pct": 8.3, "hl": 60.0, "try_saver": 0, "fit": 0, "to_t": 1, "oa": 0, "pas": 0, "jck": 0, "tow": 1, "infr": 0}, {"shirt": 4, "player": "Matt Philip", "pos": "Lock (4)", "mins": 80, "att": 14, "made": 13, "miss": 1, "tkl_assist": 5, "pct": 92.9, "dom": 0, "dom_pct": 0.0, "hl": 15.4, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 1, "pas": 1, "jck": 0, "tow": 0, "infr": 1}, {"shirt": 5, "player": "Miles Amatosero", "pos": "Lock (5)", "mins": 55, "att": 10, "made": 9, "miss": 1, "tkl_assist": 5, "pct": 90.0, "dom": 1, "dom_pct": 10.0, "hl": 25.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 1, "jck": 0, "tow": 2, "infr": 0}, {"shirt": 6, "player": "Angus Scott-Young", "pos": "Blindside Flanker", "mins": 64, "att": 15, "made": 15, "miss": 0, "tkl_assist": 7, "pct": 100.0, "dom": 0, "dom_pct": 0.0, "hl": 53.3, "try_saver": 0, "fit": 0, "to_t": 2, "oa": 0, "pas": 4, "jck": 0, "tow": 2, "infr": 0}, {"shirt": 7, "player": "Charlie Gamble", "pos": "Openside Flanker", "mins": 67, "att": 9, "made": 9, "miss": 0, "tkl_assist": 5, "pct": 100.0, "dom": 1, "dom_pct": 11.1, "hl": 55.6, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 1, "jck": 0, "tow": 0, "infr": 1}, {"shirt": 8, "player": "Pete Samu", "pos": "Number 8", "mins": 80, "att": 18, "made": 16, "miss": 2, "tkl_assist": 8, "pct": 88.9, "dom": 3, "dom_pct": 16.7, "hl": 26.7, "try_saver": 1, "fit": 0, "to_t": 0, "oa": 1, "pas": 1, "jck": 0, "tow": 1, "infr": 0}, {"shirt": 9, "player": "Jake Gordon", "pos": "Scrum Half", "mins": 67, "att": 13, "made": 11, "miss": 2, "tkl_assist": 3, "pct": 84.6, "dom": 0, "dom_pct": 0.0, "hl": 45.5, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 2, "pas": 1, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 10, "player": "Jack Debreczeni", "pos": "Fly Half", "mins": 80, "att": 12, "made": 8, "miss": 4, "tkl_assist": 3, "pct": 66.7, "dom": 0, "dom_pct": 0.0, "hl": 12.5, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 1, "pas": 2, "jck": 0, "tow": 0, "infr": 1}, {"shirt": 11, "player": "Max Jorgensen", "pos": "Left Wing", "mins": 0, "att": 8, "made": 7, "miss": 1, "tkl_assist": 1, "pct": 87.5, "dom": 0, "dom_pct": 0.0, "hl": 57.1, "try_saver": 0, "fit": 1, "to_t": 1, "oa": 1, "pas": 3, "jck": 0, "tow": 1, "infr": 0}, {"shirt": 12, "player": "Lawson Creighton", "pos": "Inside Centre", "mins": 7, "att": 1, "made": 1, "miss": 0, "tkl_assist": 0, "pct": 100.0, "dom": 0, "dom_pct": 0.0, "hl": 0.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 1, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 13, "player": "Joey Walton", "pos": "Outside Centre", "mins": 80, "att": 24, "made": 22, "miss": 2, "tkl_assist": 10, "pct": 91.7, "dom": 2, "dom_pct": 8.3, "hl": 28.6, "try_saver": 1, "fit": 0, "to_t": 0, "oa": 3, "pas": 9, "jck": 0, "tow": 0, "infr": 3}, {"shirt": 14, "player": "Andrew Kellaway", "pos": "Right Wing", "mins": 80, "att": 13, "made": 9, "miss": 4, "tkl_assist": 2, "pct": 69.2, "dom": 0, "dom_pct": 0.0, "hl": 50.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 1, "pas": 3, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 15, "player": "Sid Harvey", "pos": "Full Back", "mins": 80, "att": 7, "made": 6, "miss": 1, "tkl_assist": 1, "pct": 85.7, "dom": 1, "dom_pct": 14.3, "hl": 50.0, "try_saver": 0, "fit": 0, "to_t": 1, "oa": 1, "pas": 0, "jck": 0, "tow": 1, "infr": 0}, {"shirt": 16, "player": "Folau Fainga'a", "pos": "Hooker", "mins": 25, "att": 8, "made": 6, "miss": 2, "tkl_assist": 4, "pct": 75.0, "dom": 1, "dom_pct": 12.5, "hl": 80.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 0, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 17, "player": "Isaac Kailea", "pos": "Loosehead Prop", "mins": 28, "att": 6, "made": 5, "miss": 1, "tkl_assist": 2, "pct": 83.3, "dom": 0, "dom_pct": 0.0, "hl": 0.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 0, "jck": 0, "tow": 0, "infr": 1}, {"shirt": 18, "player": "Siosifa Amone", "pos": "Tighthead Prop", "mins": 25, "att": 13, "made": 10, "miss": 3, "tkl_assist": 4, "pct": 76.9, "dom": 0, "dom_pct": 0.0, "hl": 50.0, "try_saver": 0, "fit": 0, "to_t": 1, "oa": 1, "pas": 1, "jck": 2, "tow": 5, "infr": 0}, {"shirt": 19, "player": "Angus Blyth", "pos": "Lock (5)", "mins": 25, "att": 13, "made": 12, "miss": 1, "tkl_assist": 10, "pct": 92.3, "dom": 3, "dom_pct": 23.1, "hl": 25.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 1, "pas": 0, "jck": 0, "tow": 0, "infr": 1}, {"shirt": 20, "player": "Clem Halaholo", "pos": "Blindside Flanker", "mins": 16, "att": 9, "made": 7, "miss": 2, "tkl_assist": 1, "pct": 77.8, "dom": 0, "dom_pct": 0.0, "hl": 57.1, "try_saver": 0, "fit": 0, "to_t": 1, "oa": 0, "pas": 1, "jck": 0, "tow": 1, "infr": 0}, {"shirt": 21, "player": "Jamie Adamson", "pos": "Openside Flanker", "mins": 13, "att": 7, "made": 7, "miss": 0, "tkl_assist": 2, "pct": 100.0, "dom": 1, "dom_pct": 14.3, "hl": 71.4, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 2, "pas": 1, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 22, "player": "Teddy Wilson", "pos": "Scrum Half", "mins": 13, "att": 6, "made": 6, "miss": 0, "tkl_assist": 6, "pct": 100.0, "dom": 1, "dom_pct": 16.7, "hl": 16.7, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 2, "jck": 1, "tow": 2, "infr": 0}, {"shirt": 23, "player": "Triston Reilly", "pos": "Outside Centre", "mins": 73, "att": 11, "made": 10, "miss": 1, "tkl_assist": 7, "pct": 90.9, "dom": 3, "dom_pct": 27.3, "hl": 33.3, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 1, "pas": 1, "jck": 0, "tow": 0, "infr": 0}], "MOANA PASIFIKA": [{"shirt": 1, "player": "Abraham Pole", "pos": "Loosehead Prop", "mins": 80, "att": 22, "made": 21, "miss": 1, "tkl_assist": 5, "pct": 95.5, "dom": 1, "dom_pct": 4.5, "hl": 38.1, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 4, "jck": 0, "tow": 0, "infr": 2}, {"shirt": 2, "player": "Mills Sanerivi", "pos": "Hooker", "mins": 80, "att": 31, "made": 27, "miss": 4, "tkl_assist": 11, "pct": 87.1, "dom": 0, "dom_pct": 0.0, "hl": 44.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 2, "jck": 0, "tow": 0, "infr": 1}, {"shirt": 3, "player": "Chris Apoua", "pos": "Tighthead Prop", "mins": 45, "att": 10, "made": 10, "miss": 0, "tkl_assist": 7, "pct": 100.0, "dom": 1, "dom_pct": 10.0, "hl": 20.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 1, "pas": 1, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 4, "player": "Tom Savage", "pos": "Lock (4)", "mins": 0, "att": 30, "made": 28, "miss": 2, "tkl_assist": 11, "pct": 93.3, "dom": 4, "dom_pct": 13.3, "hl": 37.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 1, "pas": 6, "jck": 0, "tow": 0, "infr": 1}, {"shirt": 5, "player": "Veikoso Poloniati", "pos": "Lock (5)", "mins": 29, "att": 11, "made": 8, "miss": 3, "tkl_assist": 3, "pct": 72.7, "dom": 0, "dom_pct": 0.0, "hl": 50.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 2, "pas": 0, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 6, "player": "Miracle Faiilagi", "pos": "Blindside Flanker", "mins": 80, "att": 20, "made": 19, "miss": 1, "tkl_assist": 9, "pct": 95.0, "dom": 1, "dom_pct": 5.0, "hl": 63.2, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 2, "pas": 2, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 7, "player": "Semisi Paea", "pos": "Openside Flanker", "mins": 55, "att": 20, "made": 18, "miss": 2, "tkl_assist": 7, "pct": 90.0, "dom": 4, "dom_pct": 20.0, "hl": 70.6, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 2, "pas": 0, "jck": 0, "tow": 1, "infr": 1}, {"shirt": 8, "player": "Semisi Tupou Ta'eiloa", "pos": "Number 8", "mins": 80, "att": 28, "made": 27, "miss": 1, "tkl_assist": 14, "pct": 96.4, "dom": 2, "dom_pct": 7.1, "hl": 42.3, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 1, "pas": 2, "jck": 0, "tow": 1, "infr": 4}, {"shirt": 9, "player": "Melani Matavao", "pos": "Scrum Half", "mins": 49, "att": 15, "made": 13, "miss": 2, "tkl_assist": 6, "pct": 86.7, "dom": 2, "dom_pct": 13.3, "hl": 38.5, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 1, "pas": 1, "jck": 2, "tow": 2, "infr": 1}, {"shirt": 10, "player": "Patrick Pellegrini", "pos": "Fly Half", "mins": 80, "att": 11, "made": 9, "miss": 2, "tkl_assist": 5, "pct": 81.8, "dom": 0, "dom_pct": 0.0, "hl": 62.5, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 1, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 11, "player": "Glen Vaihu", "pos": "Left Wing", "mins": 56, "att": 13, "made": 10, "miss": 3, "tkl_assist": 4, "pct": 76.9, "dom": 0, "dom_pct": 0.0, "hl": 22.2, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 0, "jck": 0, "tow": 0, "infr": 1}, {"shirt": 12, "player": "Tevita Latu", "pos": "Inside Centre", "mins": 80, "att": 17, "made": 16, "miss": 1, "tkl_assist": 8, "pct": 94.1, "dom": 0, "dom_pct": 0.0, "hl": 37.5, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 0, "jck": 1, "tow": 1, "infr": 0}, {"shirt": 13, "player": "Solomon Alaimalo", "pos": "Outside Centre", "mins": 80, "att": 12, "made": 11, "miss": 1, "tkl_assist": 6, "pct": 91.7, "dom": 1, "dom_pct": 8.3, "hl": 36.4, "try_saver": 1, "fit": 0, "to_t": 0, "oa": 1, "pas": 1, "jck": 0, "tow": 1, "infr": 1}, {"shirt": 14, "player": "Tuna Tuitama", "pos": "Right Wing", "mins": 80, "att": 19, "made": 16, "miss": 3, "tkl_assist": 6, "pct": 84.2, "dom": 0, "dom_pct": 0.0, "hl": 53.8, "try_saver": 1, "fit": 0, "to_t": 1, "oa": 0, "pas": 2, "jck": 0, "tow": 1, "infr": 0}, {"shirt": 15, "player": "William Havili", "pos": "Full Back", "mins": 80, "att": 5, "made": 4, "miss": 1, "tkl_assist": 1, "pct": 80.0, "dom": 0, "dom_pct": 0.0, "hl": 25.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 2, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 16, "player": "Samiuela Moli", "pos": "Hooker", "mins": 0, "att": 2, "made": 1, "miss": 1, "tkl_assist": 0, "pct": 50.0, "dom": 0, "dom_pct": 0.0, "hl": 100.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 0, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 17, "player": "Malakai Hala-Ngatai", "pos": "Loosehead Prop", "mins": 0, "att": 1, "made": 1, "miss": 0, "tkl_assist": 1, "pct": 100.0, "dom": 0, "dom_pct": 0.0, "hl": 0.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 0, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 18, "player": "Paula Latu", "pos": "Tighthead Prop", "mins": 35, "att": 12, "made": 12, "miss": 0, "tkl_assist": 7, "pct": 100.0, "dom": 3, "dom_pct": 25.0, "hl": 25.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 0, "jck": 1, "tow": 2, "infr": 2}, {"shirt": 19, "player": "Jimmy Tupou", "pos": "Lock (5)", "mins": 51, "att": 21, "made": 19, "miss": 2, "tkl_assist": 9, "pct": 90.5, "dom": 0, "dom_pct": 0.0, "hl": 44.4, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 1, "pas": 1, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 20, "player": "Ola Tauelangi", "pos": "Openside Flanker", "mins": 25, "att": 8, "made": 8, "miss": 0, "tkl_assist": 2, "pct": 100.0, "dom": 2, "dom_pct": 25.0, "hl": 75.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 1, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 21, "player": "Jonathan Taumateine", "pos": "Scrum Half", "mins": 31, "att": 7, "made": 7, "miss": 0, "tkl_assist": 5, "pct": 100.0, "dom": 0, "dom_pct": 0.0, "hl": 42.9, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 1, "pas": 1, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 22, "player": "Faletoi Peni", "pos": "Inside Centre", "mins": 0, "att": 2, "made": 1, "miss": 1, "tkl_assist": 0, "pct": 50.0, "dom": 0, "dom_pct": 0.0, "hl": null, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 0, "jck": 0, "tow": 0, "infr": 0}, {"shirt": 23, "player": "Tyler Pulini", "pos": "Left Wing", "mins": 0, "att": 1, "made": 1, "miss": 0, "tkl_assist": 0, "pct": 100.0, "dom": 0, "dom_pct": 0.0, "hl": 100.0, "try_saver": 0, "fit": 0, "to_t": 0, "oa": 0, "pas": 0, "jck": 0, "tow": 0, "infr": 0}]};
+
+/* ============================================================
+   SHARED HELPERS
+   ============================================================ */
+function hdr(t){
+  return`<div class="ph"><div><div class="sub">${D.info.competition} · Round ${D.info.round}</div><h1>${t}</h1><div style="font-size:9px;color:rgba(255,255,255,.7);margin-top:1px">${D.info.venue} · ${D.info.date}</div></div><div class="score-pill">${HOME} ${D.info.home_score} – ${D.info.away_score} ${AWAY}</div><div class="meta">HT: ${D.info.home_ht}–${D.info.away_ht}</div></div>`;
+}
+
+function f(v,pct){if(v===null||v===undefined)return'-';return pct?v+'%':v;}
+function cls(hv,av,good){
+  const h=parseFloat(hv),a=parseFloat(av);
+  if(isNaN(h)||isNaN(a))return{h:'',a:''};
+  if(h===a)return{h:'',a:''};
+  if(good)return h>a?{h:'cg',a:'cw'}:{h:'cw',a:'cg'};
+  return h<a?{h:'cg',a:'cw'}:{h:'cw',a:'cg'};
+}
+
+// comparison bar row (home vs away) — shared by dashboard-style pages
+function barRow(label,hDisp,aDisp,hPct){
+  const aPct=100-hPct;
+  return`<div class="stat-row">
+    <div class="stat-row-top"><span class="sv h">${hDisp}</span><span class="sl">${label}</span><span class="sv a">${aDisp}</span></div>
+    <div class="stat-bar"><div class="stat-bar-h" style="width:${hPct}%"></div><div class="stat-bar-a" style="width:${aPct}%"></div></div>
+  </div>`;
+}
+function statRow(label,hv,av,sfx){
+  const total=(+hv)+(+av)||1;
+  const hPct=Math.round(+hv/total*100);
+  const sfxStr=sfx||'';
+  return barRow(label,hv+sfxStr,av+sfxStr,hPct);
+}
+
+// single-value donut (0-100%, for success rates)
+function donutSingle(pct,color){
+  const r=36,c=2*Math.PI*r,len=c*Math.min(Math.max(pct,0),100)/100;
+  return`<svg viewBox="0 0 110 110" style="width:84px;height:84px;flex-shrink:0">
+    <circle cx="55" cy="55" r="${r}" fill="none" stroke="#eee" stroke-width="13"/>
+    <circle cx="55" cy="55" r="${r}" fill="none" style="stroke:${color}" stroke-width="13" stroke-linecap="round" stroke-dasharray="${len.toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 55 55)"/>
+    <text x="55" y="61" text-anchor="middle" font-size="21" font-weight="900" style="fill:${color}">${pct}%</text>
+  </svg>`;
+}
+
+// Half-donut "speedometer" gauge with a target-line marker (used on Set Piece overview cards)
+function gaugeHalf(pct,color,target=90){
+  const cx=100,cy=100,r=85,sw=20;
+  const startA=Math.PI,endA=2*Math.PI;
+  const valA=startA+(endA-startA)*Math.min(Math.max(pct,0),100)/100;
+  const tgtA=startA+(endA-startA)*(target/100);
+  const pt=(a,radius)=>({x:cx+radius*Math.cos(a),y:cy+radius*Math.sin(a)});
+  const s=pt(startA,r),e=pt(valA,r),bgEnd=pt(endA,r);
+  const largeArc=(valA-startA)>Math.PI?1:0;
+  const t1=pt(tgtA,r-sw/2-4),t2=pt(tgtA,r+sw/2+4);
+  return`<svg viewBox="0 0 210 112" style="width:240px;height:128px;flex-shrink:0">
+    <path d="M ${s.x.toFixed(1)} ${s.y.toFixed(1)} A ${r} ${r} 0 1 1 ${bgEnd.x.toFixed(1)} ${bgEnd.y.toFixed(1)}" fill="none" stroke="#eee" stroke-width="${sw}" stroke-linecap="round"/>
+    <path d="M ${s.x.toFixed(1)} ${s.y.toFixed(1)} A ${r} ${r} 0 ${largeArc} 1 ${e.x.toFixed(1)} ${e.y.toFixed(1)}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round"/>
+    <line x1="${t1.x.toFixed(1)}" y1="${t1.y.toFixed(1)}" x2="${t2.x.toFixed(1)}" y2="${t2.y.toFixed(1)}" stroke="#555" stroke-width="3"/>
+    <text x="${t2.x.toFixed(1)}" y="${(t2.y-6).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="700" fill="#555">${target}%</text>
+    <text x="${cx}" y="${cy-8}" text-anchor="middle" font-size="34" font-weight="900" fill="${color}">${pct}%</text>
+  </svg>`;
+}
+
+// Two-segment donut (positive/negative split, used on Set Piece scrum "Stability" cards)
+function donutDuo(posPct,posColor,negColor){
+  const r=36,c=2*Math.PI*r,posLen=c*Math.min(Math.max(posPct,0),100)/100;
+  return`<svg viewBox="0 0 110 110" style="width:84px;height:84px;flex-shrink:0">
+    <circle cx="55" cy="55" r="${r}" fill="none" style="stroke:${negColor}" stroke-width="13"/>
+    <circle cx="55" cy="55" r="${r}" fill="none" style="stroke:${posColor}" stroke-width="13" stroke-linecap="butt" stroke-dasharray="${posLen.toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 55 55)"/>
+    <text x="55" y="61" text-anchor="middle" font-size="21" font-weight="900" style="fill:${posColor}">${posPct}%</text>
+  </svg>`;
+}
+
+function gaugeArc(pct,color,target=50){
+  const r=38,cx=55,cy=55,sw=10;
+  const startAngle=Math.PI,endAngle=2*Math.PI;
+  const angle=startAngle+(endAngle-startAngle)*Math.min(pct/100,1);
+  const tAngle=startAngle+(endAngle-startAngle)*(target/100);
+  function pt(a,radius){return{x:cx+radius*Math.cos(a),y:cy+radius*Math.sin(a)};}
+  const s=pt(startAngle,r),e=pt(angle,r);
+  const t=pt(tAngle,r+sw/2+2);
+  const largeArc=angle-startAngle>Math.PI?1:0;
+  return`<svg width="110" height="80" viewBox="0 0 110 80">
+    <path d="M ${pt(startAngle,r).x} ${pt(startAngle,r).y} A ${r} ${r} 0 1 1 ${pt(endAngle,r).x} ${pt(endAngle,r).y}" fill="none" stroke="#eee" stroke-width="${sw}" stroke-linecap="round"/>
+    <path d="M ${s.x} ${s.y} A ${r} ${r} 0 ${largeArc} 1 ${e.x} ${e.y}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round"/>
+    <circle cx="${t.x}" cy="${t.y}" r="3" fill="#999"/>
+    <text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="14" font-weight="700" fill="${color}">${pct}%</text>
+    <text x="${cx}" y="${cy+16}" text-anchor="middle" font-size="8" fill="#999">Target: ${target}%</text>
+  </svg>`;
+}
+
+/* ============================================================
+   PAGE BUILDERS
+   ============================================================ */
+function pTeamSheet(){
+  function row(r,side,isSub){
+    return`<div class="ts2-row${isSub?' sub':''}">
+      <div class="ts2-shirt${side==='a'?' a':''}">${r.shirt}</div>
+      <div class="ts2-info"><div class="ts2-name">${r.name}</div><div class="ts2-pos">${r.pos}</div></div>
+      <div class="ts2-mins">${r.mins}'</div>
+    </div>`;
+  }
+  function starterCol(team,side){
+    const rows=D.teamsheet[team].filter(r=>r.shirt<=15);
+    return`<div class="ts2-block">
+      <div class="ts2-head ${side}"><span class="nm">${team}</span><span class="tag">Starting XV</span></div>
+      <div class="ts2-body">${rows.map(r=>row(r,side,false)).join('')}</div>
+    </div>`;
+  }
+  function reserveCol(team,side){
+    const rows=D.teamsheet[team].filter(r=>r.shirt>15);
+    return`<div class="ts2-block ts2-reserves">
+      <div class="ts2-toprow-spacer"></div>
+      <div class="ts2-head ${side}"><span class="nm">${team}</span><span class="tag">Reserves</span></div>
+      <div class="ts2-body">${rows.map(r=>row(r,side,true)).join('')}</div>
+    </div>`;
+  }
+  return`<div class="page">${hdr('Team Sheets')}<div class="ts2-wrap">
+    ${reserveCol(HOME,'h')}
+    <div class="ts2-main">${starterCol(HOME,'h')}${starterCol(AWAY,'a')}</div>
+    ${reserveCol(AWAY,'a')}
+  </div></div>`;
+}
+
+function pSummary(){
+  const h=D.home_stats,a=D.away_stats,bip=D.ball_in_play;
+
+  // ── SVG helpers ──────────────────────────────────────────
+  // two-team split donut (hPct + aPct = 100)
+  function donut(hPct,cap){
+    const r=42,c=2*Math.PI*r,hLen=c*hPct/100;
+    return`<svg viewBox="0 0 110 110" style="width:92px;height:92px;flex-shrink:0">
+      <circle cx="55" cy="55" r="${r}" fill="none" style="stroke:var(--snm)" stroke-width="16"/>
+      <circle cx="55" cy="55" r="${r}" fill="none" style="stroke:var(--ks)" stroke-width="16" stroke-linecap="round" stroke-dasharray="${hLen.toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 55 55)"/>
+      <text x="55" y="51" text-anchor="middle" font-size="26" font-weight="900" style="fill:var(--ksd)">${hPct}%</text>
+      <text x="55" y="68" text-anchor="middle" font-size="9" style="fill:var(--mu)">${cap}</text>
+    </svg>`;
+  }
+  // half-circle gauge (0-100%)
+  function semiGauge(pct,color){
+    const r=40,c=Math.PI*r,len=c*Math.min(Math.max(pct,0),100)/100;
+    return`<svg viewBox="0 0 100 58" style="width:140px;height:78px;display:block;margin:0 auto">
+      <path d="M10 54 A40 40 0 0 1 90 54" fill="none" stroke="#eee" stroke-width="10" stroke-linecap="round"/>
+      <path d="M10 54 A40 40 0 0 1 90 54" fill="none" style="stroke:${color}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${len.toFixed(1)} ${c.toFixed(1)}"/>
+    </svg>`;
+  }
+  function mmss2sec(s){const[m,sec]=s.split(':').map(Number);return m*60+sec;}
+
+  // ── cards ────────────────────────────────────────────────
+  const scoreCard=`<div class="sum-card wide">
+    <div class="score-board">
+      <div class="score-team h">
+        <div class="score-team-name">${HOME}</div>
+        <div class="score-team-pts">${D.info.home_score}</div>
+        <div class="score-ht">HT ${D.info.home_ht}</div>
+      </div>
+      <div class="score-mid">
+        <div class="vs">VS</div>
+        <div class="comp">${D.info.competition} · Round ${D.info.round}</div>
+        <div class="venue">${D.info.venue}</div>
+        <div class="venue">${D.info.date}</div>
+      </div>
+      <div class="score-team a">
+        <div class="score-team-name">${AWAY}</div>
+        <div class="score-team-pts">${D.info.away_score}</div>
+        <div class="score-ht">HT ${D.info.away_ht}</div>
+      </div>
+    </div>
+    <div class="score-bip"><div><b>${bip.total_v2_fmt}</b>Ball In Play (of 80:00)</div></div>
+  </div>`;
+
+  const possCard=`<div class="sum-card">
+    <div class="sum-card-title">Possession</div>
+    <div class="gauge-wrap">
+      ${semiGauge(TOT.h.pos_p,'var(--ks)')}
+      <div class="gauge-val">${TOT.h.pos_p}%</div>
+      <div class="gauge-cap">${HOME}</div>
+    </div>
+    <div class="gauge-split">${barRow('Attacking Time',TOT.h.pos_t,TOT.a.pos_t,TOT.h.pos_p)}</div>
+  </div>`;
+
+  const terrCard=`<div class="sum-card">
+    <div class="sum-card-title">Territory</div>
+    <div class="gauge-wrap">
+      ${semiGauge(bip.h_terr_v2,'var(--ks)')}
+      <div class="gauge-val">${bip.h_terr_v2}%</div>
+      <div class="gauge-cap">${HOME}</div>
+    </div>
+    <div class="gauge-split">${barRow('',bip.h_terr_v2+'%',bip.a_terr_v2+'%',bip.h_terr_v2)}</div>
+  </div>`;
+
+  const bipPct=Math.round(mmss2sec(bip.total_v2_fmt)/4800*100);
+  const bipCard=`<div class="sum-card">
+    <div class="sum-card-title">Ball In Play</div>
+    <div class="gauge-wrap">
+      ${semiGauge(bipPct,'var(--ks)')}
+      <div class="gauge-val">${bip.total_v2_fmt}</div>
+      <div class="gauge-cap">of 80:00 (${bipPct}%)</div>
+    </div>
+    <div class="gauge-split">${barRow('Attacking Time',bip.h_fmt,bip.a_fmt,bip.h_pct)}</div>
+  </div>`;
+
+  const attackCard=`<div class="sum-card">
+    <div class="sum-card-title">Attack</div>
+    ${statRow('Tries',h.tries,a.tries,'')}
+    ${statRow('Ball Carries',h.carries,a.carries,'')}
+    ${statRow('Carry Metres',h.metres,a.metres,'')}
+    ${statRow('Avg Metres / Carry',h.avg_carry,a.avg_carry,'')}
+    ${statRow('Linebreaks',h.linebreaks,a.linebreaks,'')}
+    ${statRow('Defenders Beaten',h.def_beaten,a.def_beaten,'')}
+    ${statRow('Offloads',h.offloads,a.offloads,'')}
+    ${statRow('Over the Gainline',(h.otg/h.carries*100).toFixed(1),(a.otg/a.carries*100).toFixed(1),'%')}
+    ${statRow('Turnovers Conceded',h.to_con,a.to_con,'')}
+  </div>`;
+
+  const kickCard=`<div class="sum-card">
+    <div class="sum-card-title">Kicking &amp; Rucks</div>
+    ${statRow('Kicks in Play',h.kicks,a.kicks,'')}
+    ${statRow('Kick Metres',h.kick_m,a.kick_m,'')}
+    ${statRow('Avg Metres / Kick',h.avg_kick,a.avg_kick,'')}
+    ${statRow('Rucks',h.rucks,a.rucks,'')}
+    ${statRow('Rucks Won',h.rucks_won,a.rucks_won,'')}
+    ${statRow('Ruck Win %',h.ruck_pct,a.ruck_pct,'%')}
+    ${statRow('LQB %',h.lqb_pct,a.lqb_pct,'%')}
+  </div>`;
+
+  const spH=D.setpiece[HOME].scrum,spA=D.setpiece[AWAY].scrum;
+  const mlH=D.setpiece[HOME].maul,mlA=D.setpiece[AWAY].maul;
+  const setPieceCard=`<div class="sum-card">
+    <div class="sum-card-title">Set Piece</div>
+    ${statRow('Lineouts',h.lineouts,a.lineouts,'')}
+    ${statRow('Lineout Won %',h.lo_pct,a.lo_pct,'%')}
+    ${statRow('Mauls',mlH.total,mlA.total,'')}
+    <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--mu);padding:0 2px;margin-top:-2px;margin-bottom:4px"><span>(${mlH.inside_22m} inside 22m)</span><span>(${mlA.inside_22m} inside 22m)</span></div>
+    ${statRow('Metres / Maul',mlH.avg,mlA.avg,'')}
+    ${statRow('Metres / Maul',mlH.avg,mlA.avg,'')}
+    ${statRow('Scrums',h.scrums,a.scrums,'')}
+    ${statRow('Scrum Won %',spH.stability,spA.stability,'%')}
+  </div>`;
+
+  const defCard=`<div class="sum-card">
+    <div class="sum-card-title">Defence</div>
+    ${statRow('Tackles Made',h.tack_att-h.tack_miss,a.tack_att-a.tack_miss,'')}
+    ${statRow('Tackle Success %',h.tack_pct,a.tack_pct,'%')}
+    ${statRow('Tackles Missed',h.tack_miss,a.tack_miss,'')}
+    ${statRow('Turnovers Won',h.to_won,a.to_won,'')}
+    ${statRow('Penalties Conceded',h.penalties,a.penalties,'')}
+  </div>`;
+
+  const edH=D.e22_detail[HOME],edA=D.e22_detail[AWAY];
+  const scH=edH?edH.success_rate:0, scA=edA?edA.success_rate:0;
+  const scHi=Math.round(scH), scAi=Math.round(scA);
+  const scHc=scH>=50?'var(--gd)':scH>=35?'#e8a020':'var(--wn)';
+  const scAc=scA>=50?'var(--gd)':scA>=35?'#e8a020':'var(--wn)';
+  const e22Card=`<div class="sum-card">
+    <div class="sum-card-title">22m Strike Conversion</div>
+    <div style="display:flex;justify-content:center;align-items:center;text-align:center;gap:24px;padding:4px 0">
+      <div>
+        <svg viewBox="0 0 110 110" style="width:72px;height:72px">
+          <circle cx="55" cy="55" r="42" fill="none" stroke="#eee" stroke-width="12"/>
+          <circle cx="55" cy="55" r="42" fill="none" stroke="${scHc}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(2*Math.PI*42*scHi/100).toFixed(1)} ${(2*Math.PI*42).toFixed(1)}" transform="rotate(-90 55 55)"/>
+          <text x="55" y="52" text-anchor="middle" font-size="20" font-weight="900" style="fill:${scHc}">${scH}%</text>
+          <text x="55" y="68" text-anchor="middle" font-size="8" style="fill:var(--mu)">strike conv</text>
+        </svg>
+        <div style="font-size:9px;font-weight:800;color:var(--ksd);margin-top:2px">${HOME}</div>
+        <div style="font-size:8px;color:var(--mu)">${edH?edH.a22_pos:'-'} pos / ${edH?edH.a22_total:'-'} entries</div>
+      </div>
+      <div>
+        <svg viewBox="0 0 110 110" style="width:72px;height:72px">
+          <circle cx="55" cy="55" r="42" fill="none" stroke="#eee" stroke-width="12"/>
+          <circle cx="55" cy="55" r="42" fill="none" stroke="${scAc}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(2*Math.PI*42*scAi/100).toFixed(1)} ${(2*Math.PI*42).toFixed(1)}" transform="rotate(-90 55 55)"/>
+          <text x="55" y="52" text-anchor="middle" font-size="20" font-weight="900" style="fill:${scAc}">${scA}%</text>
+          <text x="55" y="68" text-anchor="middle" font-size="8" style="fill:var(--mu)">strike conv</text>
+        </svg>
+        <div style="font-size:9px;font-weight:800;color:var(--snm);margin-top:2px">${AWAY}</div>
+        <div style="font-size:8px;color:var(--mu)">${edA?edA.a22_pos:'-'} pos / ${edA?edA.a22_total:'-'} entries</div>
+      </div>
+    </div>
+    ${statRow('22m Entries',h.e22,a.e22,'')}
+  </div>`;
+
+  return`<div class="page">${hdr('Match Summary')}<div class="sum-grid">
+    ${scoreCard}${bipCard}${possCard}${terrCard}${e22Card}${attackCard}${kickCard}${defCard}${setPieceCard}
+  </div></div>`;
+}
+
+function pQuarters(){
+  const QS=['Q1','Q2','Q3','Q4'],QL=["0–20'","20–40'","40–60'","60–80'"];
+  const QBG=['#E69E4D','#E69233','#E87722','#A5461D'];
+
+  // ── Match Totals card (two-column stat list, same look as Match Summary) ──
+  function totalRow([lbl,key,pct]){
+    if(key==='pos_t')return barRow(lbl,TOT.h.pos_t,TOT.a.pos_t,TOT.h.pos_p);
+    return statRow(lbl,TOT.h[key],TOT.a[key],pct?'%':'');
+  }
+  const half=Math.ceil(ST.length/2);
+  const totalCard=`<div class="sum-card wide">
+    <div class="sum-card-title">Match Totals</div>
+    <div class="qtot-cols">
+      <div>${ST.slice(0,half).map(totalRow).join('')}</div>
+      <div>${ST.slice(half).map(totalRow).join('')}</div>
+    </div>
+  </div>`;
+
+  // ── Per-quarter card function ──
+  function qCardFn(q,i){
+    const rows=ST.map(([lbl,key,pct,sep,good])=>{
+      const hv=f(QD.h[q][key],pct),av=f(QD.a[q][key],pct);
+      const c=key==='pos_t'?cls(QD.h[q].pos_p,QD.a[q].pos_p,good):cls(hv,av,good);
+      return`<div class="qtr-row"><span class="ql-v h ${c.h}">${hv}</span><span class="ql-lbl">${lbl}</span><span class="ql-v a ${c.a}">${av}</span></div>`;
+    }).join('');
+    return`<div class="qtr-card">
+      <div class="qtr-head" style="background:${QBG[i]}"><span class="qh-name">${q}</span><span class="qh-range">${QL[i]}</span></div>
+      <div class="qtr-body">
+        <div style="display:flex;justify-content:space-between;padding:2px 0 4px;border-bottom:2px solid var(--ru)"><span style="font-size:10px;font-weight:800;color:var(--ksd)">WAR</span><span style="font-size:10px;font-weight:800;color:var(--snm)">MOP</span></div>
+        ${rows}
+      </div>
+    </div>`;
+  }
+
+  const teamBand=`<div class="qtr-teamband"><div class="qtb h">${HOME}</div><div class="qtb a">${AWAY}</div></div>`;
+
+  // Match Totals を中央カード形式に変更
+  const totalCenter=`<div class="qtr-card" style="border:2px solid var(--ks)">
+    <div class="qtr-head" style="background:linear-gradient(135deg,var(--ks),var(--ksd));justify-content:center">
+      <span class="qh-name" style="font-size:13px;letter-spacing:.08em">MATCH TOTAL</span>
+    </div>
+    <div class="qtr-body" style="padding:4px 8px">
+        <div style="display:flex;justify-content:space-between;padding:2px 0 4px;border-bottom:2px solid var(--ru)"><span style="font-size:11px;font-weight:800;color:var(--ksd)">WAR</span><span style="font-size:11px;font-weight:800;color:var(--snm)">MOP</span></div>
+      ${ST.map(([lbl,key,pct,sep,good])=>{
+        const hv=f(TOT.h[key],pct),av=f(TOT.a[key],pct);
+        const c=key==='pos_t'?cls(TOT.h.pos_p,TOT.a.pos_p,good):cls(hv,av,good);
+        return'<div class="qtr-row"><span class="ql-v h '+c.h+'" style="font-size:12px;font-weight:800">'+hv+'</span><span class="ql-lbl" style="font-size:9px;font-weight:700">'+lbl+'</span><span class="ql-v a '+c.a+'" style="font-size:12px;font-weight:800">'+av+'</span></div>';
+      }).join('')}
+    </div>
+  </div>`;
+
+  // Q1 Q2 の配列
+  const qLeft=QS.slice(0,2).map((q,i)=>qCardFn(q,i)).join('');
+  const qRight=QS.slice(2).map((q,i)=>qCardFn(q,i+2)).join('');
+
+  return`<div class="page">${hdr('Summary – Quarters')}
+    <div class="qtr-grid">${qLeft}${totalCenter}${qRight}</div>
+    <div class="qtr-foot">
+      <span>Try=5 · Conv=2 · PG/DG=3</span>
+      <span style="color:var(--gd)">■ Better</span><span style="color:var(--wn)">■ Worse</span>
+    </div>
+  </div>`;
+}
+
+function pMomentum(){
+  const MAX=85;
+  function tl(ev,label){
+    const bm={};ev.forEach(e=>{if(!bm[e.m])bm[e.m]={h:0,a:0};if(e.t===H)bm[e.m].h++;else bm[e.m].a++;});
+    const dots=Object.entries(bm).map(([m,c])=>{
+      const l=Math.min(+m/MAX*100,99);
+      let d='';
+      if(c.h)d+=`<div class="tldot h" style="left:${l}%"></div><div class="tlml h" style="left:${l}%">${m}'${c.h>1?'×'+c.h:''}</div>`;
+      if(c.a)d+=`<div class="tldot a" style="left:${l}%"></div><div class="tlml a" style="left:${l}%">${m}'${c.a>1?'×'+c.a:''}</div>`;
+      return d;
+    }).join('');
+    const ht=40/MAX*100;
+    return`<div><div class="tlt">${label}</div>
+      <div class="tlleg"><span><span class="dot" style="background:var(--ks)"></span>${H}</span><span><span class="dot" style="background:var(--sn);border:1px solid #888"></span>${A}</span></div>
+      <div class="tlch"><div class="tlax"></div><div class="htl" style="left:${ht}%"><span class="htlb">HT</span></div>${dots}</div>
+      <div class="tlla">${[0,10,20,30,40,50,60,70,80].map(m=>`<span>${m}'</span>`).join('')}</div>
+    </div>`;
+  }
+
+  // 累積折れ線
+  const all=[];
+  SEV.forEach(e=>all.push({t:e.t,m:e.m,v:1}));
+  KEV.forEach(e=>all.push({t:e.t,m:e.m,v:0.5}));
+  MEV.forEach(e=>all.push({t:e.t,m:e.m,v:-0.5}));
+  PEV.forEach(e=>all.push({t:e.t,m:e.m,v:-0.5}));
+  all.sort((a,b)=>a.m-b.m);
+
+  let hs=0,as2=0;
+  const hP=[{m:0,v:0}],aP=[{m:0,v:0}];
+  all.forEach(e=>{
+    if(e.t===H){hs=Math.round((hs+e.v)*10)/10;hP.push({m:e.m,v:hs});}
+    else{as2=Math.round((as2+e.v)*10)/10;aP.push({m:e.m,v:as2});}
+  });
+  hP.push({m:MAX,v:hs}); aP.push({m:MAX,v:as2});
+
+  const allV=[...hP,...aP].map(p=>p.v);
+  const minV=Math.min(...allV)-0.3, maxV=Math.max(...allV)+0.3, rng=maxV-minV;
+
+  // SVG: viewBox幅を固定してタイムラインと同じ幅感に
+  const VW=900,VH=150,PL=28,PR=10,PT=18,PB=24;
+  const GW=VW-PL-PR, GH=VH-PT-PB;
+  const tx=m=>PL+m/MAX*GW;
+  const ty=v=>PT+(maxV-v)/rng*GH;
+
+  // グリッド
+  const gVals=[];
+  for(let v=Math.ceil(minV);v<=Math.floor(maxV)+1;v++) gVals.push(v);
+  const grid=gVals.map(v=>{
+    const y=ty(v);
+    if(y<PT||y>VH-PB)return'';
+    return`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${VW-PR}" y2="${y.toFixed(1)}" stroke="${v===0?'#aaa':'#ebebeb'}" stroke-width="${v===0?0.8:0.4}"/>
+    <text x="${PL-2}" y="${(y+1.8).toFixed(1)}" font-size="7" fill="${v===0?'#888':'#ccc'}" text-anchor="end">${v}</text>`;
+  }).join('');
+
+  // Q区切り線（HTと重なる40分線は除外）
+  const QBC=['#E87722','#2E7D32','#7B1FA2','#C62828'];
+  const qlines=[[20,'Q2',QBC[1]],[60,'Q4',QBC[3]]].map(([m,lbl,col])=>{
+    const x=tx(m);
+    return`<line x1="${x.toFixed(1)}" y1="${PT}" x2="${x.toFixed(1)}" y2="${(VH-PB).toFixed(1)}" stroke="${col}" stroke-width="1" stroke-dasharray="3,2" opacity="0.5"/>
+    <text x="${(x+2).toFixed(1)}" y="${(PT+6).toFixed(1)}" font-size="8" fill="${col}" opacity="0.8">${lbl}</text>`;
+  }).join('');
+
+  // HT線
+  const htl=`<line x1="${tx(40).toFixed(1)}" y1="${PT}" x2="${tx(40).toFixed(1)}" y2="${(VH-PB).toFixed(1)}" stroke="#bbb" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="${tx(40).toFixed(1)}" y="${(PT-2).toFixed(1)}" font-size="7" fill="#aaa" text-anchor="middle">HT</text>`;
+
+  // エリア
+  function area(pts,col){
+    const zy=ty(0);
+    const top=pts.map((p,i)=>`${i===0?'M':'L'}${tx(p.m).toFixed(1)},${ty(p.v).toFixed(1)}`).join(' ');
+    return`<path d="${top} L${tx(pts[pts.length-1].m).toFixed(1)},${zy.toFixed(1)} L${tx(pts[0].m).toFixed(1)},${zy.toFixed(1)} Z" fill="${col}" opacity="0.1"/>`;
+  }
+  function line(pts,col,dash=false){
+    const d=pts.map((p,i)=>`${i===0?'M':'L'}${tx(p.m).toFixed(1)},${ty(p.v).toFixed(1)}`).join(' ');
+    return`<path d="${d}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" ${dash?'stroke-dasharray="4,2.5"':''}/>`;
+  }
+  function ndots(pts,col){
+    return pts.filter((_,i)=>i>0&&i<pts.length-1).map(p=>`<circle cx="${tx(p.m).toFixed(1)}" cy="${ty(p.v).toFixed(1)}" r="2.6" fill="${col}" stroke="white" stroke-width="0.6"/>`).join('');
+  }
+
+  // X軸ラベル
+  const xl=[0,10,20,30,40,50,60,70,80].map(m=>`<text x="${tx(m).toFixed(1)}" y="${(VH-PB+8).toFixed(1)}" font-size="7.5" fill="#999" text-anchor="middle">${m}'</text>`).join('');
+
+  // 最終値
+  const hEnd=hP[hP.length-1], aEnd=aP[aP.length-1];
+  const hEy=Math.max(Math.min(ty(hEnd.v),VH-PB-2),PT+2);
+  const aEy=Math.max(Math.min(ty(aEnd.v),VH-PB-8),PT+2);
+
+  const svg=`<svg viewBox="0 0 ${VW} ${VH}" style="width:100%;height:220px;display:block">
+    <rect x="${PL}" y="${PT}" width="${GW}" height="${GH}" fill="#fafaf8" rx="2"/>
+    ${grid}${qlines}${htl}
+    ${area(hP,'#1B2A4A')}${area(aP,'#722F37')}
+    ${line(hP,'#1B2A4A')}${line(aP,'#722F37',true)}
+    ${ndots(hP,'#1B2A4A')}${ndots(aP,'#722F37')}
+    <text x="${(tx(hEnd.m)-3).toFixed(1)}" y="${hEy.toFixed(1)}" text-anchor="end" font-size="8" fill="#0F1A2E" font-weight="700">WAR ${hEnd.v>0?'+':''}${hEnd.v}</text>
+    <text x="${(tx(aEnd.m)-3).toFixed(1)}" y="${(aEy+6).toFixed(1)}" text-anchor="end" font-size="8" fill="#722F37" font-weight="700">MOP ${aEnd.v>0?'+':''}${aEnd.v}</text>
+    ${xl}
+  </svg>`;
+
+  return`<div class="page">${hdr('Match Momentum')}<div class="tlwrap">
+    ${tl(SEV,'Points Scored')}
+    ${tl(PEV,'Penalties Conceded')}
+    ${tl(EEV,'Errors / Turnovers')}
+    ${tl(KEV,'Kicks in Play')}
+    <div>
+      <div class="tlt">Cumulative Momentum — Score +1 · Kick +0.5 · Pen / Miss Kick −0.5</div>
+      <div class="tlleg" style="margin-bottom:5px">
+        <span><span style="display:inline-block;width:18px;height:2px;background:var(--ks);vertical-align:middle"></span> ${H}</span>
+        <span><span style="display:inline-block;width:18px;height:0;border-top:2px dashed #722F37;vertical-align:middle"></span> ${A}</span>
+        <span style="font-size:7px;color:var(--mu)">Dashed lines = Quarter boundaries</span>
+      </div>
+      <div style="background:#fafaf8;border:1px solid var(--ru);border-radius:3px;overflow:hidden;padding:4px">
+        ${svg}
+      </div>
+    </div>
+  </div></div>`;
+}
+
+function pE22(){
+  const ed=D.e22_detail;
+  const periods=['0–10','10–20','20–30','30–40','40–50','50–60','60–70','70–80','80+'];
+  const hB=ed[HOME].bands,aB=ed[AWAY].bands;
+  const mx=Math.max(...hB,...aB,1);
+
+  function gaugeHtml(pct,total,col){
+    const r=70,cx=100,cy=78;
+    const gc=pct>=50?'var(--gd)':pct>=35?'#e8a020':'var(--wn)';
+    const aRad=(180-pct*1.8)*Math.PI/180;
+    const ex=(cx+r*Math.cos(aRad)).toFixed(1);
+    const ey=(cy-r*Math.sin(aRad)).toFixed(1);
+    const arc=pct>0?`<path d="M ${cx-r},${cy} A ${r},${r} 0 0,1 ${ex},${ey}" fill="none" stroke="${gc}" stroke-width="11" stroke-linecap="round"/>`:'';
+    return`<svg viewBox="0 0 200 112" style="width:100%;display:block">
+      <path d="M ${cx-r},${cy} A ${r},${r} 0 0,1 ${cx+r},${cy}" fill="none" stroke="#e5e3de" stroke-width="11" stroke-linecap="round"/>
+      ${arc}
+      <text x="${cx}" y="23" text-anchor="middle" font-size="8.5" fill="#bbb" font-weight="700">▲ 50%</text>
+      <text x="${cx}" y="63" text-anchor="middle" font-size="34" font-weight="900" fill="${gc}">${pct}%</text>
+      <text x="${cx}" y="91" text-anchor="middle" font-size="9.5" fill="var(--mu)" font-weight="700" letter-spacing=".05em">22M STRIKE CONVERSION</text>
+      <text x="${cx}" y="106" text-anchor="middle" font-size="8" fill="var(--mu)">÷ ${total} A22 entries</text>
+    </svg>`;
+  }
+
+  function tc(team,side){
+    const det=ed[team];
+    const col=side==='home'?'var(--ks)':'var(--snm)';
+    const pts=side==='home'?D.info.home_score:D.info.away_score;
+    const avgPts=det.a22_total?+(pts/det.a22_total).toFixed(1):0;
+    const GN='var(--gd)',RD='#c0392b';
+    function oRow(label,n,sub,tone){
+      const zero=n===0;
+      const tc=zero?'var(--mu)':tone==='pos'?GN:tone==='neg'?RD:'var(--ink)';
+      const indent=sub?'padding-left:14px;':'';
+      const fs=sub?'10px':'12px';
+      const fw=sub?'500':'700';
+      const nfs=sub?'14px':'20px';
+      const mb=sub?'2px':'5px';
+      const op=zero?';opacity:0.45':'';
+      return`<div style="display:flex;align-items:baseline;justify-content:space-between;${indent}margin-bottom:${mb}${op}">
+        <span style="font-size:${fs};font-weight:${fw};color:${tc}">${label}</span>
+        <span style="font-size:${nfs};font-weight:900;color:${tc};margin-left:6px">${n}</span>
+      </div>`;
+    }
+    let outHtml='';
+    outHtml+=oRow('Try',det.a22_tries,false,'pos');
+    outHtml+=oRow('↳ Inside 22m',det.a22_tries_inside,true,'pos');
+    if(det.a22_tries_outside||det.a22_tries_inside>0)outHtml+=oRow('↳ Outside 22m',det.a22_tries_outside,true,'pos');
+    outHtml+=oRow('Penalty Goal Attempt',det.a22_pg,false,'pos');
+    outHtml+=oRow('Turnover',det.a22_to,false,'neg');
+    (det.a22_to_detail||[]).forEach(([t,n])=>{outHtml+=oRow('↳ '+t,n,true,'neg');});
+    outHtml+=oRow('Penalty Conceded',det.a22_pc,false,'neg');
+    outHtml+=oRow('Kick Turnover',det.a22_kt,false,'neg');
+    if(det.a22_sw)outHtml+=oRow('Scrum Won',det.a22_sw,false,'pos');
+    return`<div class="e22t">
+      <div class="e22h ${side}">${team}</div>
+      <div class="e22c">
+        ${gaugeHtml(det.success_rate,det.a22_total,col)}
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center;padding:6px 4px;border-bottom:1px solid var(--ru);border-top:1px solid var(--ru);background:#f8f6f2">
+          <div><div style="font-size:18px;font-weight:900;color:${col}">${pts}</div><div style="font-size:8px;color:var(--mu);text-transform:uppercase">Points</div></div>
+          <div><div style="font-size:18px;font-weight:900">${avgPts}</div><div style="font-size:8px;color:var(--mu);text-transform:uppercase">Pts/Entry</div></div>
+          <div><div style="font-size:18px;font-weight:900;color:${col}">${det.a22_total}</div><div style="font-size:8px;color:var(--mu);text-transform:uppercase">22m Entry</div></div>
+        </div>
+        <div class="e22st"><span class="l">Started in 22m</span><span style="font-weight:800;color:${col}">${det.started}</span></div>
+        <div class="e22st"><span class="l">Carried into 22m</span><span style="font-weight:800">${det.carried}</span></div>
+        <div style="border-top:2px solid var(--ru);margin:4px 0"></div>
+        <div style="padding:7px 12px 10px">
+          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--mu);margin-bottom:8px">22M Outcome</div>
+          ${outHtml}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const midBars=periods.map((p,i)=>{
+    const hp=Math.round(hB[i]/mx*100),ap=Math.round(aB[i]/mx*100);
+    return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <div style="flex:1;display:flex;justify-content:flex-end;align-items:center;height:50px">
+        ${hB[i]?`<span style="font-size:20px;margin-right:8px;font-weight:700;color:var(--ksd)">${hB[i]}</span><div style="width:${hp}%;height:50px;background:var(--ks);border-radius:4px 0 0 4px"></div>`:`<div></div>`}
+      </div>
+      <div style="width:70px;text-align:center;font-size:16px;color:var(--mu);font-weight:600">${p}'</div>
+      <div style="flex:1;display:flex;align-items:center;height:50px">
+        ${aB[i]?`<div style="width:${ap}%;height:50px;background:var(--snm);border-radius:0 4px 4px 0"></div><span style="font-size:20px;margin-left:8px;font-weight:700;color:var(--snm)">${aB[i]}</span>`:`<div></div>`}
+      </div>
+    </div>`;
+  }).join('');
+
+  return`<div class="page">${hdr('22m Entries')}<div class="e22wrap">
+    ${tc(HOME,'home')}
+    <div class="e22mid">
+      <div style="font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mu);margin-bottom:12px;text-align:center">By 10-min Period</div>
+      <div style="display:flex;gap:4px;margin-bottom:12px;font-size:13px">
+        <span style="color:var(--ks);font-weight:700">■</span><span style="color:var(--mu)">WAR</span>
+        <span style="color:var(--snm);font-weight:700;margin-left:6px">■</span><span style="color:var(--mu)">MOP</span>
+      </div>
+      <div style="width:100%">${midBars}</div>
+    </div>
+    ${tc(AWAY,'away')}
+  </div></div>`;
+}
+
+function pSetPiece(){
+  const h=D.home_stats,a=D.away_stats;
+  function tr2(t){return D.setpiece[t].lo_throwers.map(r=>`<tr><td style="text-align:left">${r.player}</td><td>${r.total}</td><td style="color:var(--gd)">${r.won}</td><td style="color:var(--wn)">${r.lost}</td><td><strong>${r.pct}%</strong></td></tr>`).join('');}
+  function jr2(t){return D.setpiece[t].lo_jumpers.map(r=>`<tr><td style="text-align:left">${r.player}</td><td>${r.total}</td><td style="color:var(--gd)">${r.won}</td><td style="color:var(--wn)">${r.total-r.won}</td><td><strong>${r.pct}%</strong></td></tr>`).join('');}
+
+  function grid4(items){
+    return`<div class="sp2-grid4">${items.map(([l,v,c])=>`<div class="c"><div class="n" style="color:${c||'var(--ink)'}">${v!==null&&v!==undefined&&v!==''?v:'-'}</div><div class="l">${l}</div></div>`).join('')}</div>`;
+  }
+
+  // ── Total tries highlight card (per team) ──
+  function tryCard(val,s,label){
+    return`<div class="sp2-trycard ${s}">
+      <div class="n">${val}</div>
+      <div class="l">Total Tries from<br>${label} Attack</div>
+    </div>`;
+  }
+
+  // ── Lineout detail card (per team) ──
+  function loCard(t,s){
+    const ml=D.setpiece[t].maul;
+    return`<div class="sp2-card lo">
+      <div class="sp2-head ${s}"><span>${t}</span><span>Lineout</span></div>
+      <div class="sp2-body">
+        <div class="sp2-subtitle">Throwers</div>
+        <table class="spmt"><colgroup><col style="width:40%"><col><col><col><col></colgroup><thead><tr><th style="text-align:left">Player</th><th>Tot</th><th>W</th><th>L</th><th>%</th></tr></thead><tbody>${tr2(t)}</tbody></table>
+        <div class="sp2-subtitle">Jumpers</div>
+        <table class="spmt"><colgroup><col style="width:40%"><col><col><col><col></colgroup><thead><tr><th style="text-align:left">Player</th><th>Tot</th><th>W</th><th>L</th><th>%</th></tr></thead><tbody>${jr2(t)}</tbody></table>
+        <div class="sp2-subtitle">Maul</div>
+        ${grid4([['Mauls',ml.total],['Try',ml.tries],['Mtrs',ml.metres],['Avg',ml.avg]])}
+      </div>
+    </div>`;
+  }
+
+  // ── Scrum detail card (per team) ──
+  function scCard(t,s){
+    const sc=D.setpiece[t].scrum;
+    const posTotal=sc.positive+sc.neutral;
+    const negTotal=sc.negative+sc.pen_try+(sc.pen_lost||0);
+    const denom=posTotal+negTotal;
+    const posPct=denom?+(posTotal/denom*100).toFixed(1):0;
+    const negPct=denom?+(100-posPct).toFixed(1):0;
+    return`<div class="sp2-card sc">
+      <div class="sp2-head ${s}"><span>${t}</span><span>Scrum</span></div>
+      <div class="sp2-body">
+        <div class="sp2-subtitle">Scrum Stability</div>
+        <div class="sp2-stab-row">
+          ${donutDuo(posPct,'var(--gd)','var(--wn)')}
+          <div class="sp2-stab-stats">
+            <div class="r"><span class="l">Positive %</span><span class="v" style="color:var(--gd)">${posPct}%</span></div>
+            <div class="r"><span class="l">Negative %</span><span class="v" style="color:var(--wn)">${negPct}%</span></div>
+          </div>
+        </div>
+        ${grid4([['Positive',sc.positive,'var(--gd)'],['Neutral',sc.neutral,''],['Negative',sc.negative,sc.negative?'var(--wn)':''],['Pen Try',sc.pen_try,sc.pen_try?'var(--wn)':'']])}
+      </div>
+    </div>`;
+  }
+
+  // ── Center overview cards ──
+  const loOverview=`<div class="sp2-card">
+    <div class="sp2-head mid">Lineout Overview</div>
+    <div class="sp2-body">
+      <div class="sp2-mid-donuts">
+        <div class="d h">${gaugeHalf(h.lo_pct,'var(--ks)')}<div class="lbl">WAR Won %</div></div>
+        <div class="d a">${gaugeHalf(a.lo_pct,'var(--snm)')}<div class="lbl">MOP Won %</div></div>
+      </div>
+      <table class="spmt"><thead><tr><th style="text-align:left">Team</th><th>Total</th><th>Won</th><th>Lost</th><th>Win %</th><th>Steal</th></tr></thead><tbody>
+        <tr><td class="tn" style="color:var(--ksd)">WAR</td><td>${h.lineouts}</td><td style="color:var(--gd)">${h.lo_won}</td><td style="color:var(--wn)">${h.lineouts-h.lo_won}</td><td><strong>${h.lo_pct}%</strong></td><td>${h.lo_steal}</td></tr>
+        <tr><td class="tn" style="color:var(--snm)">MOP</td><td>${a.lineouts}</td><td style="color:var(--gd)">${a.lo_won}</td><td style="color:var(--wn)">${a.lineouts-a.lo_won}</td><td><strong>${a.lo_pct}%</strong></td><td>${a.lo_steal}</td></tr>
+      </tbody></table>
+    </div>
+  </div>`;
+
+  const hSc=D.setpiece[HOME].scrum, aSc=D.setpiece[AWAY].scrum;
+  const hScDenom=hSc.total-hSc.reset, aScDenom=aSc.total-aSc.reset; const hScWinPct=hScDenom?+(hSc.won/hScDenom*100).toFixed(1):0, aScWinPct=aScDenom?+(aSc.won/aScDenom*100).toFixed(1):0;
+  const scOverview=`<div class="sp2-card">
+    <div class="sp2-head mid">Scrum Overview</div>
+    <div class="sp2-body">
+      <div class="sp2-mid-donuts">
+        <div class="d h">${gaugeHalf(hScWinPct,'var(--ks)')}<div class="lbl">WAR Won %</div></div>
+        <div class="d a">${gaugeHalf(aScWinPct,'var(--snm)')}<div class="lbl">MOP Won %</div></div>
+      </div>
+      <table class="spmt"><thead><tr><th style="text-align:left">Team</th><th>Total</th><th>Won</th><th>Pen Won</th><th>Reset</th><th>Win %</th></tr></thead><tbody>
+        <tr><td class="tn" style="color:var(--ksd)">WAR</td><td>${hSc.total}</td><td style="color:var(--gd)">${hSc.won}</td><td style="color:var(--gd)">${hSc.pen_won}</td><td style="color:var(--wn)">${hSc.reset}</td><td><strong>${hScWinPct}%</strong></td></tr>
+        <tr><td class="tn" style="color:var(--snm)">MOP</td><td>${aSc.total}</td><td style="color:var(--gd)">${aSc.won}</td><td style="color:var(--gd)">${aSc.pen_won}</td><td style="color:var(--wn)">${aSc.reset}</td><td><strong>${aScWinPct}%</strong></td></tr>
+      </tbody></table>
+    </div>
+  </div>`;
+
+  const hMl=D.setpiece[HOME].maul, aMl=D.setpiece[AWAY].maul;
+  return`<div class="page">${hdr('Set Piece')}<div class="sp2-wrap">
+    <div class="sp2-col">${tryCard(hMl.seq_tries,'h','Lineout')}${loCard(HOME,'h')}</div>
+    <div class="sp2-mid">${loOverview}</div>
+    <div class="sp2-col">${tryCard(aMl.seq_tries,'a','Lineout')}${loCard(AWAY,'a')}</div>
+    <div class="sp2-col">${tryCard(hSc.seq_tries,'h','Scrum')}${scCard(HOME,'h')}</div>
+    <div class="sp2-mid">${scOverview}</div>
+    <div class="sp2-col">${tryCard(aSc.seq_tries,'a','Scrum')}${scCard(AWAY,'a')}</div>
+  </div></div>`;
+}
+
+function pPenalties(){
+  function pc(team,side){
+    const pd=PD[team];
+    const total=pd.attack_count+pd.defence_count;
+    const atkPct=Math.round(pd.attack_count/total*100);
+    const defPct=100-atkPct;
+
+    // Type bars
+    const types=Object.entries(pd.by_type).sort((a,b)=>b[1]-a[1]);
+    const mx=types[0]?.[1]||1;
+    const typeBars=types.map(([t,n])=>`<div class="pbr"><span class="pbl">${t}</span><div class="pbt"><div class="pbf ${side}" style="width:${Math.round(n/mx*100)}%"></div></div><span class="pbn">${n}</span></div>`).join('');
+
+    // Quarter bar chart
+    const halves=Object.entries(pd.by_half).sort((a,b)=>a[0].localeCompare(b[0]));
+    const qMax=Math.max(...halves.map(([,n])=>n),1);
+    const qBars=`<div class="pen-bars">${halves.map(([q,n])=>{
+      const bh=Math.round(n/qMax*100);
+      return`<div class="pen-bar-col">
+        <div class="pen-bar-val">${n}</div>
+        <div class="pen-bar-track"><div class="pen-bar ${side}" style="height:${bh}%"></div></div>
+        <div class="pen-bar-lbl">${q}</div>
+      </div>`;
+    }).join('')}</div>`;
+
+    // Pos group bars
+    const posOrder=['Front Row','Lock','Loosie','Inside','Midfield','Back 3'];
+    const posBars=posOrder.filter(g=>pd.by_pos_group[g]).map(g=>{
+      const n=pd.by_pos_group[g];
+      return`<div class="pbr"><span class="pbl">${g}</span><div class="pbt"><div class="pbf ${side}" style="width:${Math.round(n/mx*100)}%"></div></div><span class="pbn">${n}</span></div>`;
+    }).join('');
+
+    // Attack/Defence stacked bar
+    const adBar=`<div style="margin-bottom:3px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:4px">
+        <span style="color:var(--ks)">Attack ${pd.attack_count}</span>
+        <span style="color:var(--snm)">Defence ${pd.defence_count}</span>
+      </div>
+      <div class="adbar">
+        <div class="adbar-atk" style="width:${atkPct}%">${atkPct}%</div>
+        <div class="adbar-def" style="width:${defPct}%">${defPct}%</div>
+      </div>
+      <div style="font-size:10px;color:var(--mu)">Orange = Penalty conceded while attacking · Navy = while defending</div>
+    </div>`;
+
+    return`<div class="pent">
+      <div class="penth ${side}">${team}<span>Total: ${total}</span></div>
+      <div class="penb">
+        <div class="pensc"><div class="penstitle">Attack vs Defence</div>${adBar}</div>
+        <div class="pensc"><div class="penstitle">Penalty Type</div>${typeBars}</div>
+        <div class="pensc"><div class="penstitle">By Quarter</div>${qBars}</div>
+        <div class="pensc"><div class="penstitle">By Position Group</div>${posBars}</div>
+      </div>
+    </div>`;
+  }
+  return`<div class="page">${hdr('Penalties Conceded')}<div class="penwrap">${pc(H,'h')}${pc(A,'a')}</div></div>`;
+}
+
+function atkPage(team,side){
+  const rows=ATK[team];
+  const isHome=side==='h';
+  const g=isHome?'':'ga';
+
+  const tot=rows.reduce((acc,r)=>{
+    acc.carries+=r.carries;acc.metres+=r.metres;acc.pcm+=r.pcm;
+    acc.linebreaks+=r.linebreaks;acc.def_beaten+=r.def_beaten;acc.offloads+=r.offloads;acc.tries+=r.tries;
+    acc.dom_carry+=r.dom_carry;acc.ooa_1_3+=r.ooa_1_3;acc.ooa_4p+=r.ooa_4p;
+    acc.handle_count+=r.handle_count;acc.passes+=r.passes;acc.kicks+=r.kicks;acc.kick_m+=r.kick_m;acc.errors+=r.errors;
+    return acc;
+  },{carries:0,metres:0,pcm:0,linebreaks:0,def_beaten:0,offloads:0,tries:0,dom_carry:0,ooa_1_3:0,ooa_4p:0,handle_count:0,passes:0,kicks:0,kick_m:0,errors:0});
+
+  // Avg PCM per carry
+  function avgPcm(r){return r.carries>0?Math.round(r.pcm/r.carries*10)/10:'-';}
+
+  const PG={'Loosehead Prop':'Front Row','Hooker':'Front Row','Tighthead Prop':'Front Row','Lock (4)':'Lock','Lock (5)':'Lock','Lock':'Lock','Blindside Flanker':'Loosie','Openside Flanker':'Loosie','Flanker':'Loosie','Number 8':'Loosie','Scrum Half':'Inside','Fly Half':'Inside','Inside Centre':'Midfield','Outside Centre':'Midfield','Left Wing':'Back 3','Right Wing':'Back 3','Wing':'Back 3','Full Back':'Back 3'};
+  const _atkAvg=(buf)=>{
+    if(!buf.length) return '';
+    const n=buf.length,s=buf.reduce((a,r)=>{['carries','metres','pcm','linebreaks','def_beaten','offloads','tries','dom_carry','ooa_1_3','ooa_4p','handle_count','passes','kicks','kick_m','errors'].forEach(k=>a[k]=(a[k]||0)+(r[k]||0));a._glo=(a._glo||0)+Math.round((r.gl_pct||0)/100*(r.carries||0));a._pgood=(a._pgood||0)+Math.round((r.pass_acc||0)/100*(r.passes||0));return a;},{_glo:0,_pgood:0});
+    const f1=v=>v.toFixed(1),av=k=>s[k]?f1(s[k]/n):'-';
+    return`<tr class="grp-avg"><td class="shc"></td><td class="nc">Avg ${n}P</td><td>${av('carries')}</td><td>${av('metres')}</td><td>${s.carries?f1(s.metres/s.carries):'-'}</td><td>${s.carries?f1(s.pcm/s.carries):'-'}</td><td>${s.linebreaks?f1(s.linebreaks/n):'-'}</td><td>${s.def_beaten?f1(s.def_beaten/n):'-'}</td><td>${s.offloads?f1(s.offloads/n):'-'}</td><td>${s.tries?f1(s.tries/n):'-'}</td><td>${s.carries?(s._glo/s.carries*100).toFixed(1)+'%':'-'}</td><td>${s.dom_carry?f1(s.dom_carry/n):'-'}</td><td>${s.ooa_1_3?f1(s.ooa_1_3/n):'-'}</td><td>${s.ooa_4p?f1(s.ooa_4p/n):'-'}</td><td>${(s.ooa_1_3+s.ooa_4p)?(s.ooa_1_3/(s.ooa_1_3+s.ooa_4p)*100).toFixed(1)+'%':'-'}</td><td>${av('handle_count')}</td><td>${av('passes')}</td><td>${s.passes?(s._pgood/s.passes*100).toFixed(1)+'%':'-'}</td><td>${s.kicks?f1(s.kicks/n):'-'}</td><td>${s.kick_m?f1(s.kick_m/n):'-'}</td><td>${s.kicks?f1(s.kick_m/s.kicks):'-'}</td><td>${s.errors?f1(s.errors/n):'-'}</td></tr>`;
+  };
+  const bodyRows=rows.reduce((acc,r,i,a)=>{
+    const grp=PG[r.pos]||'Other';
+    if(grp!==acc.g){if(acc.b.length)acc.s+=_atkAvg(acc.b);acc.g=grp;acc.b=[];acc.s+=`<tr class="grp-hdr"><td colspan="22">${grp}</td></tr>`;}
+    acc.b.push(r);
+    const ooa_tot=r.ooa_1_3+r.ooa_4p;
+    const apcm=avgPcm(r);
+    acc.s+=`<tr>
+      <td class="shc">${r.shirt}</td>
+      <td class="nc">${r.player}</td>
+      <td>${r.carries||''}</td>
+      <td>${r.metres||''}</td>
+      <td>${r.avg_carry||''}</td>
+      <td>${apcm}</td>
+      <td class="${r.linebreaks?'cg':'cd'}">${r.linebreaks||'-'}</td>
+      <td class="${r.def_beaten?'cg':'cd'}">${r.def_beaten||'-'}</td>
+      <td>${r.offloads||'-'}</td>
+      <td class="${r.tries?'chi':''}">${r.tries||'-'}</td>
+      <td>${r.gl_pct?r.gl_pct+'%':'-'}</td>
+      <td class="${r.dom_carry?'cg':'cd'}">${r.dom_carry||'-'}</td>
+      <td>${r.ooa_1_3||'-'}</td>
+      <td>${r.ooa_4p||'-'}</td>
+      <td>${r.ooa_eff!==null&&ooa_tot>0?r.ooa_eff+'%':'-'}</td>
+      <td>${r.handle_count||''}</td>
+      <td>${r.passes||''}</td>
+      <td>${r.pass_acc!==null?r.pass_acc+'%':'-'}</td>
+      <td>${r.kicks||'-'}</td>
+      <td>${r.kick_m||'-'}</td>
+      <td>${r.avg_kick||'-'}</td>
+      <td class="${r.errors?'cw':'cd'}">${r.errors||'-'}</td>
+    </tr>`;
+    if(i===a.length-1)acc.s+=_atkAvg(acc.b);
+    return acc;
+  },{g:'',b:[],s:''}).s;
+
+  const totAvgPcm=tot.carries>0?Math.round(tot.pcm/tot.carries*10)/10:'-';
+  const totRow=`<tr class="tr${!isHome?' aw':''}">
+    <td></td><td class="nc">TOTAL</td><td>${tot.carries}</td>
+    <td>${tot.metres}</td>
+    <td>${tot.carries?(tot.metres/tot.carries).toFixed(1):'-'}</td>
+    <td>${totAvgPcm}</td>
+    <td>${tot.linebreaks}</td><td>${tot.def_beaten}</td><td>${tot.offloads}</td><td>${tot.tries}</td><td>-</td>
+    <td>${tot.dom_carry}</td><td>${tot.ooa_1_3}</td><td>${tot.ooa_4p}</td><td>-</td>
+    <td>${tot.handle_count}</td><td>${tot.passes}</td><td>-</td>
+    <td>${tot.kicks}</td><td>${tot.kick_m}</td><td>${tot.kicks?(tot.kick_m/tot.kicks).toFixed(1):'-'}</td>
+    <td>${tot.errors}</td>
+  </tr>`;
+
+  return`<div class="page">${hdr('Individual Attack – '+team)}
+    <div class="itwrap">
+      <table class="it">
+        <thead>
+          <tr class="gr">
+            <th colspan="2" class="gl">PLAYER</th>
+            <th colspan="10" class="${g}">BALL CARRY</th>
+            <th colspan="3" class="${g}">BREAKDOWN</th>
+            <th colspan="3" class="${g}">HANDLING</th>
+            <th colspan="3" class="${g}">KICK</th>
+            <th class="${g}">ERR</th>
+          </tr>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Ball<br>Carries</th>
+            <th>Carry<br>Metres</th>
+            <th>Avg m/<br>Carry</th>
+            <th>Avg PC<br>m/Carry</th>
+            <th>Line<br>Breaks</th>
+            <th>Defenders<br>Beaten</th>
+            <th>Off<br>loads</th>
+            <th>Try<br>Score</th>
+            <th>Gainline<br>Pos %</th>
+            <th>Dominant<br>Carry</th>
+            <th>BD<br>1–3</th>
+            <th>BD<br>4+</th>
+            <th>BD<br>Eff %</th>
+            <th>Handle<br>Count</th>
+            <th>Pass<br>Made</th>
+            <th>Pass<br>Acc %</th>
+            <th>Kick<br>Count</th>
+            <th>Kick<br>Metres</th>
+            <th>Avg<br>Kick m</th>
+            <th>Errors</th>
+          </tr>
+        </thead>
+        <tbody>${bodyRows}${totRow}</tbody>
+      </table>
+      <div class="note">
+        <span>Avg PC m/Carry = Avg Post Contact Metres per Carry</span>
+        <span>BD = Breakdown Attack (1–3 phases / 4+ phases) · Eff% = Effectiveness %</span>
+        <span>Errors = Turnovers Conceded</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function defPage(team,side){
+  const rows=DEFV5[team];
+  const isHome=side==='h';
+  const g=isHome?'':'ga';
+
+  const tot=rows.reduce((a,r)=>({
+    att:a.att+r.att,tkl_assist:a.tkl_assist+r.tkl_assist,made:a.made+r.made,miss:a.miss+r.miss,
+    dom:a.dom+r.dom,try_saver:a.try_saver+r.try_saver,to_t:a.to_t+r.to_t,oa:a.oa+r.oa,pas:a.pas+r.pas,
+    jck:a.jck+r.jck,tow:a.tow+r.tow,infr:a.infr+r.infr
+  }),{att:0,tkl_assist:0,made:0,miss:0,dom:0,try_saver:0,to_t:0,oa:0,pas:0,jck:0,tow:0,infr:0});
+
+  const PG_D={'Loosehead Prop':'Front Row','Hooker':'Front Row','Tighthead Prop':'Front Row','Lock (4)':'Lock','Lock (5)':'Lock','Lock':'Lock','Blindside Flanker':'Loosie','Openside Flanker':'Loosie','Flanker':'Loosie','Number 8':'Loosie','Scrum Half':'Inside','Fly Half':'Inside','Inside Centre':'Midfield','Outside Centre':'Midfield','Left Wing':'Back 3','Right Wing':'Back 3','Wing':'Back 3','Full Back':'Back 3'};
+  const _defAvg=(buf)=>{
+    if(!buf.length) return '';
+    const n=buf.length,s=buf.reduce((a,r)=>{['att','tkl_assist','made','miss','dom','try_saver','to_t','oa','pas','jck','tow','infr','mins'].forEach(k=>a[k]=(a[k]||0)+(r[k]||0));a._hl=(a._hl||0)+(r.hl||0);return a;},{_hl:0});
+    const f1=v=>v.toFixed(1),av=k=>s[k]?f1(s[k]/n):'-';
+    return`<tr class="grp-avg"><td class="shc"></td><td class="nc">Avg ${n}P</td><td>${av('mins')}'</td><td>${av('att')}</td><td>${s.tkl_assist?f1(s.tkl_assist/n):'-'}</td><td>${av('made')}</td><td>${s.miss?f1(s.miss/n):'-'}</td><td>${s.att?(s.made/s.att*100).toFixed(1)+'%':'-'}</td><td>${s._hl?f1(s._hl/n)+'%':'-'}</td><td>${s.dom?f1(s.dom/n):'-'}</td><td>${s.att?(s.dom/s.att*100).toFixed(1)+'%':'-'}</td><td>${s.try_saver?f1(s.try_saver/n):'-'}</td><td>${s.to_t?f1(s.to_t/n):'-'}</td><td>${s.oa?f1(s.oa/n):'-'}</td><td>${s.pas?f1(s.pas/n):'-'}</td><td>${s.jck?f1(s.jck/n):'-'}</td><td>${s.tow?f1(s.tow/n):'-'}</td><td>${s.infr?f1(s.infr/n):'-'}</td></tr>`;
+  };
+  const body=rows.reduce((acc,r,i,a)=>{
+    const grp=PG_D[r.pos]||'Other';
+    if(grp!==acc.g){if(acc.b.length)acc.s+=_defAvg(acc.b);acc.g=grp;acc.b=[];acc.s+=`<tr class="grp-hdr"><td colspan="18">${grp}</td></tr>`;}
+    acc.b.push(r);
+    const pv  = r.pct!==null     ? r.pct+'%'      : '-';
+    const pc2 = r.pct!==null     ? (r.pct>=90?'cg':r.pct<75?'cw':'') : '';
+    const dv  = r.dom_pct!==null ? r.dom_pct+'%'  : '-';
+    const hv  = r.hl!==null      ? r.hl+'%'       : '-';
+    acc.s+=`<tr>
+      <td class="shc">${r.shirt}</td>
+      <td class="nc">${r.player}</td>
+      <td>${r.mins}'</td>
+      <td>${r.att||''}</td>
+      <td class="${r.tkl_assist?'cg':'cd'}">${r.tkl_assist||'-'}</td>
+      <td>${r.made||''}</td>
+      <td class="${r.miss?'cw':'cd'}">${r.miss||'-'}</td>
+      <td class="${pc2}">${pv}</td>
+      <td>${hv}</td>
+      <td class="${r.dom?'cg':'cd'}">${r.dom||'-'}</td>
+      <td>${dv}</td>
+      <td class="${r.try_saver?'cg':'cd'}">${r.try_saver||'-'}</td>
+      <td class="${r.to_t?'cg':'cd'}">${r.to_t||'-'}</td>
+      <td class="${r.oa?'cw':'cd'}">${r.oa||'-'}</td>
+      <td class="${r.pas?'cw':'cd'}">${r.pas||'-'}</td>
+      <td class="${r.jck?'cg':'cd'}">${r.jck||'-'}</td>
+      <td class="${r.tow?'cg':'cd'}">${r.tow||'-'}</td>
+      <td class="${r.infr?'cw':'cd'}">${r.infr||'-'}</td>
+    </tr>`;
+    if(i===a.length-1)acc.s+=_defAvg(acc.b);
+    return acc;
+  },{g:'',b:[],s:''}).s;
+
+  const tPct    = tot.att ? (tot.made/tot.att*100).toFixed(1)+'%' : '-';
+  const tDomPct = tot.att ? (tot.dom/tot.att*100).toFixed(1)+'%'  : '-';
+
+  const totRow=`<tr class="tr${!isHome?' aw':''}">
+    <td></td><td class="nc">TOTAL</td><td></td>
+    <td>${tot.att}</td><td>${tot.tkl_assist}</td><td>${tot.made}</td><td>${tot.miss}</td><td>${tPct}</td>
+    <td>-</td>
+    <td>${tot.dom}</td><td>${tDomPct}</td>
+    <td>${tot.try_saver}</td>
+    <td>${tot.to_t}</td><td>${tot.oa}</td><td>${tot.pas}</td>
+    <td>${tot.jck}</td><td>${tot.tow}</td><td>${tot.infr}</td>
+  </tr>`;
+
+  return`<div class="page">${hdr('Individual Defence – '+team)}
+    <div class="itwrap">
+      <table class="it">
+        <thead>
+          <tr class="gr">
+            <th colspan="3" class="gl">PLAYER</th>
+            <th colspan="6" class="${g}">TACKLE</th>
+            <th colspan="6" class="${g}">TACKLE QUALITY</th>
+            <th colspan="2" class="${g}">TURNOVER</th>
+            <th class="${g}">INFRINGEMENT</th>
+          </tr>
+          <tr>
+            <th>#</th><th>Name</th><th>Mins<br>Played</th>
+            <th>Tackle<br>Attempts</th><th>Tackle<br>Assist</th><th>Tackle<br>Made</th><th>Tackle<br>Miss</th><th>Tackle<br>%</th><th>Height<br>Leg %</th>
+            <th>Dominant<br>Tackle</th><th>Dominant<br>%</th>
+            <th>Try Saver<br>Tackle</th><th>Turnover Won<br>Tackle</th>
+            <th>Offload<br>Allowed</th><th>Passive<br>Tackle</th>
+            <th>Jackal<br>Success</th><th>Turnovers<br>Won</th>
+            <th>Infringement<br>(Pen + FK)</th>
+          </tr>
+        </thead>
+        <tbody>${body}${totRow}</tbody>
+      </table>
+      <div class="note">
+        <span>Tackle Assist = qualifier3Name 'Assist' · Dominant Tackle = qualifier4Name 'Dominant Tackle' · Dom% = Dom / Attempts</span>
+        <span>Height Leg% = leg tackles / total tackles with height data (qualifier6Name)</span>
+        <span>Turnover Won Tackle = Tackle/Turnover Won + Tackle/Forced in Touch · Infringement = Penalties + Free Kicks</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   NAV / INIT
+   ============================================================ */
+const pages=[
+  {id:'ts',label:'Team Sheet'},
+  {id:'summary',label:'Match Summary'},
+  {id:'quarters',label:'Quarters'},
+  {id:'momentum',label:'Momentum'},
+  {id:'e22',label:'22m Entries'},
+  {id:'setpiece',label:'Set Piece'},
+  {id:'penalties',label:'Penalties'},
+  {id:'atk_h',label:'Attack WAR'},
+  {id:'atk_a',label:'Attack MOP'},
+  {id:'def_h',label:'Defence WAR'},
+  {id:'def_a',label:'Defence MOP'}
+];
+const builders={
+  ts:pTeamSheet, summary:pSummary, quarters:pQuarters, momentum:pMomentum,
+  e22:pE22, setpiece:pSetPiece, penalties:pPenalties,
+  atk_h:()=>atkPage(HOME,'h'), atk_a:()=>atkPage(AWAY,'a'),
+  def_h:()=>defPage(HOME,'h'), def_a:()=>defPage(AWAY,'a')
+};
+const nav=document.getElementById('nav'),content=document.getElementById('content');
+pages.forEach((pg,i)=>{
+  const btn=document.createElement('button');
+  btn.textContent=pg.label;
+  btn.onclick=()=>{document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');content.innerHTML=builders[pg.id]();};
+  if(i===0)btn.classList.add('active');
+  nav.appendChild(btn);
+});
+content.innerHTML=builders['ts']();
+</script>
+</body></html>
