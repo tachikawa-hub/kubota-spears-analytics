@@ -1193,21 +1193,18 @@ def cmd_match(args):
 
 
 _SR_DARK_ROOT = (
-    ":root{--ks:#4A7EC0;--ksd:#1B2A4A;--ksl:#1a2535;"
-    "--sn:#9B4050;--snm:#722F37;--snl:#2d1a1d;"
-    "--neu:#1e2938;--ink:#dde3ed;--mu:#7a8699;"
-    "--ru:#2a3a50;--gd:#2d7a4a;--wn:#c87422;}"
+    ":root{--ks:#1B2A4A;--ksd:#0F1A2E;--ksl:#EAF0FA;"
+    "--sn:#5C1A1B;--snm:#722F37;--snl:#F5E8EA;"
+    "--neu:#ffffff;--ink:#1a1a1a;--mu:#6b6b6b;"
+    "--ru:#e0dcd4;--gd:#1a7a3c;--wn:#b85c00;}"
 )
 _SR_DARK_BODY = (
     "body{font-family:'Helvetica Neue',Arial,sans-serif;"
-    "background:#0f1623;color:var(--ink);padding:6px;font-size:12px}"
+    "background:#F5F5F7;color:var(--ink);padding:6px;font-size:12px}"
 )
 _SR_DARK_EXTRA = """<style>
-.sum-card,.qtr-card,.sp2-card,.sp2-trycard,.ts2-block{background:#1e2938!important;border-color:#2a3a50!important}
-.ts2-row{border-color:#2a3a50!important}
-.ts2-row.sub{background:#192232!important}
-.sum-card-title{color:#c0ccd8!important;border-color:#2a3a50!important}
-.nav button{background:#1e2938!important;color:#8899bb!important}
+.sum-card,.qtr-card,.sp2-card,.sp2-trycard{box-shadow:0 1px 5px rgba(0,0,0,.10)}
+.ts2-block{box-shadow:0 1px 4px rgba(0,0,0,.08)}
 </style>"""
 
 
