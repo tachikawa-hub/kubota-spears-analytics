@@ -262,7 +262,7 @@ def team_stats(team, opp):
         elif an=="Tackle" and rs=="Turnover Won": tw+=1
     for r in cur.execute(
         "SELECT action_result_name rs FROM events "
-        "WHERE fxid=? AND action_name='Tackle' AND team_name!=? AND action_result_name='Forced in Touch'",
+        "WHERE fxid=? AND action_name='Tackle' AND team_name=? AND action_result_name='Forced in Touch'",
         (fx, team)
     ).fetchall():
         tw += 1
@@ -1026,8 +1026,8 @@ def cmd_match(args):
     con.row_factory = sqlite3.Row
     cur = con.cursor()
 
-    # match lookup
-    q = "SELECT * FROM matches WHERE 1=1"
+    # match lookup（クボタ出場試合のみ対象）
+    q = "SELECT * FROM matches WHERE opponent_name IS NOT NULL"
     params = []
     if hasattr(args, 'fxid') and args.fxid:
         q += " AND fxid=?"; params.append(args.fxid)
@@ -1763,6 +1763,8 @@ def cmd_kpi(args=None):
     for m in matches:
         fx = m["fxid"]
         opp_t = m["opponent_name"]
+        if not opp_t:
+            continue  # スーパーラグビー等、クボタが出場しない試合をスキップ
         p2 = _num(cur.execute(
             "SELECT MIN(ps_timestamp) v FROM events WHERE fxid=? AND period=2", (fx,)
         ).fetchone()["v"])
@@ -1860,10 +1862,10 @@ def cmd_kpi(args=None):
             elif an=="Lineout Take" and "Steal" in tp: tw+=1
             elif an=="Sequences" and tp=="Scrum Steal": tw+=1
             elif an=="Tackle" and rs=="Turnover Won": tw+=1
-        # Forced in Touch: 相手チームのタックルで押し出した数
+        # Forced in Touch: 自チームのタックルで相手を押し出した数
         for r in cur.execute(
             "SELECT action_result_name rs FROM events "
-            "WHERE fxid=? AND action_name='Tackle' AND team_name!=? AND action_result_name='Forced in Touch'",
+            "WHERE fxid=? AND action_name='Tackle' AND team_name=? AND action_result_name='Forced in Touch'",
             (fx, TEAM)
         ).fetchall():
             tw += 1
@@ -4725,7 +4727,7 @@ def build_html(home, opp, master, detail, max_round, df=None):
         to_j = coll[(coll['ActionTypeName']=='Jackal')&(coll['ActionResultName']=='Success')]
         to_l = lo_take[lo_take['ActionTypeName'].str.contains('Steal',na=False)]
         to_t = tackles[tackles['ActionResultName']=='Turnover Won']
-        to_f = dall[(dall['actionName']=='Tackle')&(dall['oppTeam'].eq(team))&(dall['ActionResultName']=='Forced in Touch')]
+        to_f = tackles[tackles['ActionResultName']=='Forced in Touch']
         to_won = len(to_r)+len(to_j)+len(to_l)+len(to_t)+len(to_f)
 
         # TO Conceded = Turnover action（全種）の自チーム視点（Optaと一致 ~15/G）
