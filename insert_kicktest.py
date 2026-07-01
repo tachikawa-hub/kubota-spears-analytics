@@ -8,7 +8,7 @@ Both panels are fully interactive and independent of each other.
 """
 import csv, glob, json, os, re
 
-CSV_DIR   = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
+CSV_DIR   = "/Users/ktachikawa/Desktop/BI Scouting"
 BIOUT_DIR = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
 KUBOTA    = "Kubota Spears"
 
@@ -501,7 +501,7 @@ def build_kicktest_section(k_matches, k_kicks, max_round,
     """Build complete <div id="kicktest"> section with two independent panels."""
 
     # ── Kubota data (upper panel) ──────────────────────────────
-    valid_k_fxids = {fxid for fxid, info in k_matches.items() if info['rn'] <= max_round}
+    valid_k_fxids = set(k_matches.keys())
     if not valid_k_fxids:
         return '<div id="kicktest" class="section"><p style="padding:20px">No data</p></div>'
 
@@ -526,7 +526,7 @@ def build_kicktest_section(k_matches, k_kicks, max_round,
     )
 
     # ── Scout team data (lower panel) ─────────────────────────
-    valid_s_fxids = {fxid for fxid, info in s_matches.items() if info['rn'] <= max_round}
+    valid_s_fxids = set(s_matches.keys())
     valid_s_matches = sorted(
         [(fxid, s_matches[fxid]) for fxid in valid_s_fxids],
         key=lambda x: x[1]['rn']
