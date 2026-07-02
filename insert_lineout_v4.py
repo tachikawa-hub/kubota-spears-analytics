@@ -6,7 +6,9 @@ Lineout section v4:
   - Area breakdown shows each team's own-ball throws
   - Thrower Ranking replaces Throw Direction
 """
-import csv, glob, os, re, sqlite3, collections
+import csv, html, os, re, sqlite3, collections
+
+from data_paths import CSV_DIR, DB_PATH, OUTPUT_DIR, list_csv_files
 
 # ── KUBOTA SPEARS season data (R1–R22, from DB) ───────────────────────────
 SPEARS = {
@@ -184,9 +186,7 @@ TEAM_DATA = {
 },
 }
 
-BIOUT_DIR = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
-DB_PATH   = os.path.join(BIOUT_DIR, "rugby.db")
-CSV_DIR   = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
+BIOUT_DIR = OUTPUT_DIR
 
 # ── Zone breakdown data (from DB) ─────────────────────────────────────────
 # Lineout Take: ActionTypeName = "Lineout Win Front" → zone "Front" etc.
@@ -521,7 +521,7 @@ def _load_lo_csv_stats():
     ball_data = collections.defaultdict(lambda: [0, 0])
     nums_data = collections.defaultdict(dict)
 
-    csv_files = glob.glob(os.path.join(CSV_DIR, "*.csv"))
+    csv_files = list_csv_files(CSV_DIR)
     for fpath in sorted(csv_files):
         try:
             with open(fpath, encoding="utf-8-sig", newline="") as f:
@@ -574,6 +574,349 @@ def _load_lo_csv_stats():
 _ALL_OPP_LO  = _load_lo_db_stats()
 _SCOUT_OPP_LO = _load_lo_csv_stats()
 
+
+# ── Match-level lineout data for dropdown panels ───────────────────────────
+def _area_key(x_coord):
+    try:
+        x = float(x_coord)
+    except (TypeError, ValueError):
+        return ""
+    if x < 22:
+        return "Own22"
+    if x < 50:
+        return "OwnHalf"
+    if x < 78:
+        return "OppHalf"
+    return "Opp22"
+
+
+def _delivery_key(row):
+    for col in ("qualifier3_name", "qualifier5_name", "action_type_name"):
+        v = row[col] if col in row.keys() else ""
+        if v in DLVR_COLORS:
+            return v
+    return "Other"
+
+
+def _empty_lo_team(name):
+    return {
+        "name": name,
+        "overall": [0, 0],
+        "delivery": [],
+        "nums": {},
+        "areas": {},
+        "area_nums": {},
+        "throwers": [],
+        "takes": [],
+        "steals": [],
+        "take_zones": {},
+        "throw_dirs": {},
+    }
+
+
+def _aggregate_lineout_team(conn, fxid, team_name):
+    team = _empty_lo_team(team_name)
+    delivery = collections.defaultdict(lambda: [0, 0])
+    nums = collections.defaultdict(lambda: [0, 0])
+    areas = collections.defaultdict(lambda: [0, 0])
+    area_nums = collections.defaultdict(lambda: collections.defaultdict(lambda: [0, 0]))
+    throwers = collections.defaultdict(lambda: [0, 0])
+    throw_dirs = collections.defaultdict(collections.Counter)
+    takes_total = collections.Counter()
+    takes_won = collections.Counter()
+    steals = collections.defaultdict(collections.Counter)
+    take_zones = collections.defaultdict(collections.Counter)
+
+    throw_rows = conn.execute("""
+        SELECT player_name, action_type_name, action_result_name,
+               qualifier3_name, qualifier4_name, qualifier5_name, x_coord
+        FROM events
+        WHERE fxid=? AND team_name=? AND action_name='Lineout Throw'
+          AND action_result_name!='Reset'
+    """, (fxid, team_name)).fetchall()
+
+    for r in throw_rows:
+        won = 1 if (r["action_result_name"] or "").startswith("Won") else 0
+        team["overall"][0] += 1
+        team["overall"][1] += won
+
+        dkey = _delivery_key(r)
+        delivery[dkey][0] += 1
+        delivery[dkey][1] += won
+
+        nkey = _NUM_CAT_MAP.get(r["qualifier4_name"] or "", "")
+        if nkey:
+            nums[nkey][0] += 1
+            nums[nkey][1] += won
+
+        akey = _area_key(r["x_coord"])
+        if akey:
+            areas[akey][0] += 1
+            areas[akey][1] += won
+            if nkey:
+                area_nums[akey][nkey][0] += 1
+                area_nums[akey][nkey][1] += won
+
+        pname = r["player_name"] or "Unknown"
+        throwers[pname][0] += 1
+        throwers[pname][1] += won
+        tzone = {
+            "Throw Front": "Front",
+            "Throw Middle": "Middle",
+            "Throw Back": "Back",
+            "Throw 15m+": "15M+",
+            "Throw Quick": "Quick",
+        }.get(r["action_type_name"] or "")
+        if tzone:
+            throw_dirs[pname][tzone] += 1
+
+    take_rows = conn.execute("""
+        SELECT player_name, action_type_name
+        FROM events
+        WHERE fxid=? AND team_name=? AND action_name='Lineout Take'
+    """, (fxid, team_name)).fetchall()
+
+    zone_map = {
+        "Lineout Win Front": "Front",
+        "Lineout Win Middle": "Middle",
+        "Lineout Win Back": "Back",
+        "Lineout Win Quick": "Quick",
+        "Lineout Win 15m+": "15M+",
+        "Lineout Steal Front": "Front",
+        "Lineout Steal Middle": "Middle",
+        "Lineout Steal Back": "Back",
+        "Lineout Steal 15m+": "15M+",
+    }
+    for r in take_rows:
+        pname = r["player_name"] or "Unknown"
+        atn = r["action_type_name"] or ""
+        takes_total[pname] += 1
+        if atn.startswith("Lineout Win"):
+            takes_won[pname] += 1
+            tzone = zone_map.get(atn, atn.replace("Lineout Win ", ""))
+            take_zones[pname][tzone] += 1
+        elif atn.startswith("Lineout Steal"):
+            steals[pname][zone_map.get(atn, atn.replace("Lineout Steal ", ""))] += 1
+
+    team["delivery"] = sorted(
+        [(k, v[0], v[1]) for k, v in delivery.items() if k != "Other"],
+        key=lambda x: -x[1],
+    )
+    if delivery.get("Other"):
+        team["delivery"].append(("Other", delivery["Other"][0], delivery["Other"][1]))
+    team["nums"] = {k: v for k, v in nums.items()}
+    team["areas"] = {k: v for k, v in areas.items()}
+    team["area_nums"] = {ak: dict(v) for ak, v in area_nums.items()}
+    team["throwers"] = sorted(
+        [(p, v[0], v[1]) for p, v in throwers.items()],
+        key=lambda x: -x[1],
+    )
+    team["throw_dirs"] = {p: dict(z) for p, z in throw_dirs.items()}
+    team["takes"] = sorted(
+        [(p, takes_total[p], takes_won.get(p, 0)) for p in takes_total],
+        key=lambda x: -x[1],
+    )
+    team["take_zones"] = {p: dict(z) for p, z in take_zones.items()}
+    team["steals"] = sorted(
+        [(p, dict(z)) for p, z in steals.items()],
+        key=lambda x: -sum(x[1].values()),
+    )
+    return team
+
+
+def _load_lineout_matches_from_db():
+    """
+    Match-level Lineout data for the dropdown.
+    Returns [{fxid, label, opp, kubota, opponent}, ...].
+    Falls back to [] when rugby.db is not available.
+    """
+    if not os.path.exists(DB_PATH):
+        return []
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        matches = conn.execute("""
+            SELECT fxid, round_number, date_played, opponent_name,
+                   home_team_name, away_team_name
+            FROM matches
+            WHERE league='d1' AND season=2026 AND opponent_name IS NOT NULL
+            ORDER BY date_played, fxid
+        """).fetchall()
+        out = []
+        for m in matches:
+            fxid = m["fxid"]
+            opp_name = m["opponent_name"]
+            if not opp_name:
+                continue
+            label = f'R{m["round_number"]} vs {opp_name}'
+            out.append({
+                "fxid": fxid,
+                "label": label,
+                "opp": opp_name,
+                "kubota": _aggregate_lineout_team(conn, fxid, "Kubota Spears"),
+                "opponent": _aggregate_lineout_team(conn, fxid, opp_name),
+            })
+        conn.close()
+        return out
+    except Exception as e:
+        print(f"[WARN] LO match dropdown data load failed: {e}")
+        return []
+
+
+_LO_MATCHES = _load_lineout_matches_from_db()
+
+
+def _aggregate_lineout_team_from_csv_rows(rows, team_name):
+    team = _empty_lo_team(team_name)
+    delivery = collections.defaultdict(lambda: [0, 0])
+    nums = collections.defaultdict(lambda: [0, 0])
+    areas = collections.defaultdict(lambda: [0, 0])
+    area_nums = collections.defaultdict(lambda: collections.defaultdict(lambda: [0, 0]))
+    throwers = collections.defaultdict(lambda: [0, 0])
+    throw_dirs = collections.defaultdict(collections.Counter)
+    takes_total = collections.Counter()
+    takes_won = collections.Counter()
+    steals = collections.defaultdict(collections.Counter)
+    take_zones = collections.defaultdict(collections.Counter)
+
+    for row in rows:
+        if row.get("teamName") != team_name:
+            continue
+        action_name = row.get("actionName") or ""
+        if action_name == "Lineout Throw":
+            result = row.get("ActionResultName") or ""
+            if result == "Reset":
+                continue
+            won = 1 if result.startswith("Won") else 0
+            team["overall"][0] += 1
+            team["overall"][1] += won
+
+            dkey = next(
+                (
+                    row.get(col)
+                    for col in ("qualifier3Name", "qualifier5Name", "ActionTypeName")
+                    if row.get(col) in DLVR_COLORS
+                ),
+                "Other",
+            )
+            delivery[dkey][0] += 1
+            delivery[dkey][1] += won
+
+            nkey = _NUM_CAT_MAP.get(row.get("qualifier4Name") or "", "")
+            if nkey:
+                nums[nkey][0] += 1
+                nums[nkey][1] += won
+
+            akey = _area_key(row.get("x_coord"))
+            if akey:
+                areas[akey][0] += 1
+                areas[akey][1] += won
+                if nkey:
+                    area_nums[akey][nkey][0] += 1
+                    area_nums[akey][nkey][1] += won
+
+            pname = row.get("playerName") or "Unknown"
+            throwers[pname][0] += 1
+            throwers[pname][1] += won
+            tzone = {
+                "Throw Front": "Front",
+                "Throw Middle": "Middle",
+                "Throw Back": "Back",
+                "Throw 15m+": "15M+",
+                "Throw Quick": "Quick",
+            }.get(row.get("ActionTypeName") or "")
+            if tzone:
+                throw_dirs[pname][tzone] += 1
+
+        elif action_name == "Lineout Take":
+            pname = row.get("playerName") or "Unknown"
+            atn = row.get("ActionTypeName") or ""
+            takes_total[pname] += 1
+            if atn.startswith("Lineout Win"):
+                takes_won[pname] += 1
+                tzone = {
+                    "Lineout Win Front": "Front",
+                    "Lineout Win Middle": "Middle",
+                    "Lineout Win Back": "Back",
+                    "Lineout Win Quick": "Quick",
+                    "Lineout Win 15m+": "15M+",
+                }.get(atn, atn.replace("Lineout Win ", ""))
+                take_zones[pname][tzone] += 1
+            elif atn.startswith("Lineout Steal"):
+                szone = {
+                    "Lineout Steal Front": "Front",
+                    "Lineout Steal Middle": "Middle",
+                    "Lineout Steal Back": "Back",
+                    "Lineout Steal 15m+": "15M+",
+                }.get(atn, atn.replace("Lineout Steal ", ""))
+                steals[pname][szone] += 1
+
+    team["delivery"] = sorted(
+        [(k, v[0], v[1]) for k, v in delivery.items() if k != "Other"],
+        key=lambda x: -x[1],
+    )
+    if delivery.get("Other"):
+        team["delivery"].append(("Other", delivery["Other"][0], delivery["Other"][1]))
+    team["nums"] = dict(nums)
+    team["areas"] = dict(areas)
+    team["area_nums"] = {ak: dict(v) for ak, v in area_nums.items()}
+    team["throwers"] = sorted(
+        [(p, v[0], v[1]) for p, v in throwers.items()],
+        key=lambda x: -x[1],
+    )
+    team["throw_dirs"] = {p: dict(z) for p, z in throw_dirs.items()}
+    team["takes"] = sorted(
+        [(p, takes_total[p], takes_won.get(p, 0)) for p in takes_total],
+        key=lambda x: -x[1],
+    )
+    team["take_zones"] = {p: dict(z) for p, z in take_zones.items()}
+    team["steals"] = sorted(
+        [(p, dict(z)) for p, z in steals.items()],
+        key=lambda x: -sum(x[1].values()),
+    )
+    return team
+
+
+def _load_team_lineout_matches_from_csv():
+    team_matches = collections.defaultdict(list)
+    csv_files = list_csv_files(CSV_DIR)
+    for fpath in sorted(csv_files):
+        try:
+            with open(fpath, encoding="utf-8-sig", newline="") as f:
+                rows = list(csv.DictReader(f))
+        except Exception as e:
+            print(f"[WARN] Skipping {os.path.basename(fpath)}: {e}")
+            continue
+        if not rows:
+            continue
+
+        first = rows[0]
+        if "D1" not in (first.get("competitionName") or ""):
+            continue
+
+        home = first.get("homeTeamName") or ""
+        away = first.get("awayTeamName") or ""
+        fxid = first.get("FXID") or os.path.basename(fpath)
+        round_no = first.get("roundNumber") or "?"
+        if not home or not away:
+            continue
+
+        for team_name, opp_name in ((home, away), (away, home)):
+            team_matches[team_name].append({
+                "match_id": str(fxid),
+                "label": f"R{round_no} vs {opp_name}",
+                "opp": opp_name,
+                "team": _aggregate_lineout_team_from_csv_rows(rows, team_name),
+                "opponent": _aggregate_lineout_team_from_csv_rows(rows, opp_name),
+            })
+
+    for team_name in team_matches:
+        team_matches[team_name].sort(key=lambda m: (m["label"], m["match_id"]))
+    return dict(team_matches)
+
+
+_TEAM_MATCHES = _load_team_lineout_matches_from_csv()
+
 # ── Apply DB data to SPEARS (DB has all 21 Spears games) ──────────────────
 _sp = _all_db_takes.get("Kubota Spears", {})
 if _sp.get("takes"):
@@ -599,7 +942,7 @@ def _load_opp_takes_from_csvs():
     total_cnt = collections.defaultdict(collections.Counter)
     zone_cnt  = collections.defaultdict(lambda: collections.defaultdict(collections.Counter))
 
-    csv_files = glob.glob(os.path.join(CSV_DIR, "*.csv"))
+    csv_files = list_csv_files(CSV_DIR)
     if not csv_files:
         print(f"[WARN] No CSVs found in {CSV_DIR}; opponent takes unchanged.")
         return {}
@@ -661,7 +1004,7 @@ def _load_steal_csv_stats():
     }
     steal_cnt = collections.defaultdict(lambda: collections.defaultdict(collections.Counter))
 
-    csv_files = glob.glob(os.path.join(CSV_DIR, "*.csv"))
+    csv_files = list_csv_files(CSV_DIR)
     if not csv_files:
         print(f"[WARN] No CSVs found in {CSV_DIR}")
         return {}
@@ -884,7 +1227,12 @@ def take_ranking_card(team, label):
     rows = ""
     for i, (name, tot, won) in enumerate(takes[:5], 1):
         wp    = pct(won, tot)
-        zones = {k: v for k, v in TAKE_ZONES.get(name, {}).items() if v > 0}
+        zones = {
+            k: v for k, v in (
+                team.get("take_zones", {}).get(name)
+                or TAKE_ZONES.get(name, {})
+            ).items() if v > 0
+        }
         rows += stacked_row(i, name, tot, max_tot, wp, zones)
     return (f'<div style="background:#fff;border:1px solid #DEE2E6;border-radius:6px;overflow:hidden">'
             f'<div style="background:#F8F9FA;padding:4px 10px;border-bottom:1px solid #DEE2E6">'
@@ -928,7 +1276,12 @@ def thrower_ranking_card(team, label):
     rows = ""
     for i, (name, tot, won) in enumerate(throwers[:5], 1):
         wp    = pct(won, tot)
-        zones = {k: v for k, v in THROW_DIRS.get(name, {}).items() if v > 0}
+        zones = {
+            k: v for k, v in (
+                team.get("throw_dirs", {}).get(name)
+                or THROW_DIRS.get(name, {})
+            ).items() if v > 0
+        }
         rows += stacked_row(i, name, tot, max_tot, wp, zones)
     return (f'<div style="background:#fff;border:1px solid #DEE2E6;border-radius:6px;overflow:hidden">'
             f'<div style="background:#F8F9FA;padding:4px 10px;border-bottom:1px solid #DEE2E6">'
@@ -937,8 +1290,8 @@ def thrower_ranking_card(team, label):
             f'<div style="padding:8px 10px">{rows}</div></div>')
 
 
-# ── Spears panel ───────────────────────────────────────────────────────────
-def build_panel(team, label, header_color, own_nums, opp_nums_for_def, opp_ball=None):
+# ── Panel body / shell ─────────────────────────────────────────────────────
+def build_panel_body(team, label, own_nums, opp_nums_for_def, opp_ball=None):
     top = (f'<div style="display:grid;grid-template-columns:0.65fr 0.85fr 1.5fr;gap:10px;margin-bottom:10px">'
            + delivery_col(team)
            + winloss_col(team, opp_ball=opp_ball)
@@ -950,13 +1303,18 @@ def build_panel(team, label, header_color, own_nums, opp_nums_for_def, opp_ball=
               + steal_ranking_card(team, label)
               + thrower_ranking_card(team, label)
               + f'</div>')
+    return top + ag + bottom
+
+
+def build_panel_shell(label, header_color, body_html, selector_html=""):
     return (f'<div style="background:#FAFAFA;border:1px solid #DEE2E6;border-radius:8px;padding:10px 12px;margin-bottom:12px">'
-            f'<div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:{header_color}18;'
-            f'border-radius:5px;border-left:4px solid {header_color};margin-bottom:10px">'
+            f'<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:5px 10px;background:{header_color}18;'
+            f'border-radius:5px;border-left:4px solid {header_color};margin-bottom:10px;flex-wrap:wrap">'
             f'<span style="font-family:Oswald,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;'
             f'text-transform:uppercase;color:{header_color}">&#127944; {label}</span>'
+            f'{selector_html}'
             f'</div>'
-            + top + ag + bottom
+            + body_html
             + f'</div>')
 
 
@@ -1035,16 +1393,127 @@ def build_opp_panel(opp, abbr):
     )
 
 
+def _lineout_selector_html(select_id, js_fn, matches, default_label, note=""):
+    opts = ['<option value="all">All</option>']
+    for m in matches:
+        label = html.escape(m["label"])
+        match_id = html.escape(str(m.get("fxid", m.get("match_id", ""))))
+        opts.append(f'<option value="{match_id}">{label}</option>')
+    disabled_note = ""
+    if not matches and note:
+        disabled_note = (
+            '<span style="font-size:8px;color:#9CA3AF">'
+            + html.escape(note) + '</span>'
+        )
+    return (
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+        f'<label for="{select_id}" style="font-size:9px;font-weight:800;color:#14213D;'
+        'text-transform:uppercase;letter-spacing:.06em">Match</label>'
+        f'<select id="{select_id}" onchange="{js_fn}(this.value)" '
+        'style="font-size:10px;font-weight:700;color:#14213D;background:#fff;'
+        'border:1px solid #CBD5E1;border-radius:6px;padding:5px 8px;min-width:210px;max-width:280px">'
+        + "".join(opts) +
+        '</select>'
+        f'<span id="{select_id}Label" style="font-size:9px;color:#6B7280;font-weight:700">{html.escape(default_label)}</span>'
+        + disabled_note +
+        '</div>'
+    )
+
+
+def _lineout_switch_js(js_fn, panel_attr, label_id, matches, default_label):
+    labels = {"all": default_label}
+    for m in matches:
+        labels[str(m.get("fxid", m.get("match_id", "")))] = m["label"]
+    label_items = ",".join(
+        f'"{html.escape(str(k))}":"{html.escape(str(v))}"' for k, v in labels.items()
+    )
+    return (
+        '<script>(function(){'
+        f'const LO_LABELS={{{label_items}}};'
+        f'window.{js_fn}=function(v){{'
+        f'document.querySelectorAll("[{panel_attr}]").forEach(function(el){{'
+        f'el.style.display=(el.getAttribute("{panel_attr}")===String(v))?"block":"none";'
+        '});'
+        f'const lab=document.getElementById("{label_id}");'
+        'if(lab){lab.textContent=LO_LABELS[String(v)]||"Selected match";}'
+        '};'
+        f'if(document.readyState==="loading"){{document.addEventListener("DOMContentLoaded",function(){{{js_fn}("all");}});}}'
+        f'else{{{js_fn}("all");}}'
+        '})();</script>'
+    )
+
+
+def _single_match_panel(match_id, team, opp_team, label, team_label, header_color, panel_attr):
+    return (
+        f'<div {panel_attr}="{html.escape(str(match_id))}" style="display:none">'
+        + build_panel_body(
+            team             = team,
+            label            = team_label,
+            own_nums         = team.get("nums", {}),
+            opp_nums_for_def = opp_team.get("nums", {}),
+            opp_ball         = opp_team.get("overall", (0, 0)),
+        )
+        + f'</div>'
+    )
+
+
 # ── Full section ─────────────────────────────────────────────────────────────
 def build_section(abbr, opp):
     # Upper section: ALL opponents aggregate across all 21 D1 games (same for every scout report)
-    sp_panel = build_panel(
+    sp_panel = build_panel_body(
         team             = SPEARS,
         label            = "Kubota Spears",
-        header_color     = "#F97316",
         own_nums         = SPEARS["nums"],
         opp_nums_for_def = _ALL_OPP_LO["nums"],
         opp_ball         = _ALL_OPP_LO["ball"],
+    )
+    opp_db_name = _DB_TEAM_NAME.get(abbr, "")
+    opp_matches = _TEAM_MATCHES.get(opp_db_name, [])
+    opp_scout = _SCOUT_OPP_LO.get(opp_db_name, {})
+    opp_all_body = build_panel_body(
+        opp,
+        opp["name"],
+        opp["nums"],
+        opp_scout.get("nums") or SPEARS["nums"],
+        opp_scout.get("ball") or (SPEARS["overall"][0], SPEARS["overall"][1]),
+    )
+    spears_body_html = (
+        '<div data-lo-spears-panel="all">' + sp_panel + '</div>' +
+        "".join(
+            _single_match_panel(
+                m["fxid"], m["kubota"], m["opponent"], m["label"],
+                "Kubota Spears", "#F97316", "data-lo-spears-panel"
+            )
+            for m in _LO_MATCHES
+        )
+    )
+    opp_body_html = (
+        '<div data-lo-opp-panel="all">' + opp_all_body + '</div>' +
+        "".join(
+            _single_match_panel(
+                m["match_id"], m["team"], m["opponent"], m["label"],
+                opp["name"], "#10B981", "data-lo-opp-panel"
+            )
+            for m in opp_matches
+        )
+    )
+    spears_shell = build_panel_shell(
+        "Kubota Spears",
+        "#F97316",
+        spears_body_html,
+        _lineout_selector_html(
+            "loSpearsMatchSelect", "loSwitchSpearsMatch", _LO_MATCHES,
+            "All matches", "Spears match dropdown requires rugby.db data."
+        ),
+    )
+    opp_shell = build_panel_shell(
+        opp["name"],
+        "#10B981",
+        opp_body_html,
+        _lineout_selector_html(
+            "loOppMatchSelect", "loSwitchOppMatch", opp_matches,
+            "All matches", "Opponent match dropdown requires CSV match data."
+        ),
     )
     divider = (
         f'<div style="display:flex;align-items:center;gap:8px;margin:14px 0">'
@@ -1057,10 +1526,12 @@ def build_section(abbr, opp):
     return (
         f'<div id="lo" class="section">\n'
         f'  <div style="padding:0 2px">\n'
-        f'    {sp_panel}\n'
+        f'    {spears_shell}\n'
         f'    {divider}\n'
-        f'    {build_opp_panel(opp, abbr)}\n'
+        f'    {opp_shell}\n'
         f'  </div>\n'
+        f'  {_lineout_switch_js("loSwitchSpearsMatch", "data-lo-spears-panel", "loSpearsMatchSelectLabel", _LO_MATCHES, "All matches")}\n'
+        f'  {_lineout_switch_js("loSwitchOppMatch", "data-lo-opp-panel", "loOppMatchSelectLabel", opp_matches, "All matches")}\n'
         f'</div>\n'
     )
 
@@ -1095,7 +1566,12 @@ def process_file(fpath, abbr):
 
 def main():
     done = 0
-    for d in [BIOUT_DIR]:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    scan_dirs = []
+    for d in [BIOUT_DIR, script_dir]:
+        if d not in scan_dirs:
+            scan_dirs.append(d)
+    for d in scan_dirs:
         if not os.path.isdir(d):
             continue
         for fname in sorted(os.listdir(d)):

@@ -1,6 +1,7 @@
 # --- Derived / generated data (regenerate from sources) ---
 # Built by build_rugby_db.py from the CSV files
 rugby.db
+data/rugby.db
 
 # --- Superseded outputs ---
 # Old single-stack report; replaced by season_kpi_v2.html
@@ -19,3 +20,6 @@ node_modules/
 
 # --- Raw data CSVs (large, regeneratable) ---
 *.csv
+!data/.gitkeep
+!data/BI Scouting/.gitkeep
+!data/competitions/.gitkeep

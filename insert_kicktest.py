@@ -6,10 +6,10 @@ Two independent panels:
   Lower (kt4-*): Scout team vs Opponents      — match selector + type filter
 Both panels are fully interactive and independent of each other.
 """
-import csv, glob, json, os, re
+import csv, json, os, re
+from data_paths import CSV_DIR, OUTPUT_DIR, list_csv_files
 
-CSV_DIR   = "/Users/ktachikawa/Desktop/BI Scouting"
-BIOUT_DIR = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
+BIOUT_DIR = OUTPUT_DIR
 KUBOTA    = "Kubota Spears"
 
 TEAM_SHORT = {
@@ -275,7 +275,7 @@ def _load_kicks_for_team(team_name, tm_label):
     """Load all kick events for matches where team_name appears in all 164 CSVs."""
     matches = {}
     kicks   = []
-    for fpath in sorted(glob.glob(os.path.join(CSV_DIR, "*.csv"))):
+    for fpath in list_csv_files(CSV_DIR):
         try:
             with open(fpath, encoding="utf-8-sig", newline="") as f:
                 reader = csv.DictReader(f)

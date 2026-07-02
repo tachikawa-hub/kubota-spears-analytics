@@ -15,9 +15,10 @@ KPI definitions follow match_stats_final.py exactly:
 """
 import json
 import sqlite3
+from data_paths import DB_PATH
 
 TEAM = "Kubota Spears"
-DB = "rugby.db"
+DB = DB_PATH
 OUT = "season_kpi.html"
 
 

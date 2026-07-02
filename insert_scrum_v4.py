@@ -6,11 +6,10 @@ Changes vs v3:
   - Opponent panel: full-season match data (18 matches from all CSV)
   - Spears panel: 21 matches from DB
 """
-import os, re, math, csv, glob, sqlite3, collections
+import os, re, math, csv, sqlite3, collections
+from data_paths import CSV_DIR, DB_PATH, OUTPUT_DIR, list_csv_files
 
-BIOUT_DIR = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
-DB_PATH   = os.path.join(BIOUT_DIR, "rugby.db")
-CSV_DIR   = "/Users/ktachikawa/Desktop/kubota-spears-analytics"
+BIOUT_DIR = OUTPUT_DIR
 
 # abbr → CSV/DB full team name
 _DB_TEAM_NAME = {
@@ -71,7 +70,7 @@ def _load_spears_opp_scrum():
 def _load_opp_scrum_from_csvs():
     """OPP BALL for each scout team: opponents' scrum results in all their D1 matches, from CSV."""
     data = collections.defaultdict(lambda: {"results": {}, "total": 0})
-    for fpath in sorted(glob.glob(os.path.join(CSV_DIR, "*.csv"))):
+    for fpath in list_csv_files(CSV_DIR):
         try:
             with open(fpath, encoding="utf-8-sig", newline="") as f:
                 for row in csv.DictReader(f):

@@ -10,9 +10,9 @@ Sub-commands:
   all    — Run build + kpi
 
 Usage:
-  python3 rugby_bi.py build --data "./BI Scouting"
+  python3 rugby_bi.py build --data "./data"
   python3 rugby_bi.py match --round 22
-  python3 rugby_bi.py scout --home "Kubota Spears" --opp "Kobelco Kobe Steelers" --round 22 --data "./BI Scouting"
+  python3 rugby_bi.py scout --home "Kubota Spears" --opp "Kobelco Kobe Steelers" --round 22 --data "./data"
   python3 rugby_bi.py kpi
 
 Confirmed KPI definitions (all reports unified):
@@ -30,6 +30,7 @@ Confirmed KPI definitions (all reports unified):
 """
 import argparse, glob, json, os, re, sqlite3, sys
 from statistics import mean
+from data_paths import DATA_ROOT, CSV_DIR as DEFAULT_CSV_DIR, DB_PATH, ensure_data_dirs, list_csv_files
 
 try:
     import pandas as pd
@@ -44,7 +45,7 @@ except ImportError:
 # ═══════════════════════════════════════════════════════════════
 
 TEAM = "Kubota Spears"
-DB   = "rugby.db"
+DB   = DB_PATH
 MATCH_TEMPLATE = "match_report_template.html"
 
 TEAM_ABBR_MAP = {
@@ -1404,7 +1405,7 @@ def cmd_sr_index(args=None):
     """Generate sr_index.html — hierarchical league/team/match index."""
     import json as _json
 
-    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rugby.db")
+    db_path = DB_PATH
     con = sqlite3.connect(db_path)
     con.row_factory = sqlite3.Row
     rows = con.execute(
@@ -1665,7 +1666,7 @@ function onTeam() {{
 
 def cmd_sr_build(args=None):
     """Batch-generate match reports for all Super Rugby matches in rugby.db."""
-    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rugby.db")
+    db_path = DB_PATH
     con = sqlite3.connect(db_path)
     con.row_factory = sqlite3.Row
     rows = con.execute(
@@ -5596,7 +5597,7 @@ def cmd_scout(args):
     out_dir = args.out
 
     print(f'📊 Loading CSV from: {data_dir}')
-    files = glob.glob(os.path.join(data_dir, '*_BI.csv'))
+    files = [f for f in list_csv_files(data_dir) if f.endswith('_BI.csv')]
     if not files:
         print('❌ CSVが見つかりません'); sys.exit(1)
     print(f'   {len(files)} files found')
@@ -5679,9 +5680,10 @@ def cmd_build(args=None):
     """Build rugby.db from CSV data."""
     import csv
 
-    data_dir = args.data if args and hasattr(args, 'data') and args.data else "."
-    HERE = os.path.abspath(data_dir) if data_dir != "." else os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rugby.db")
+    ensure_data_dirs()
+    data_dir = args.data if args and hasattr(args, 'data') and args.data else DEFAULT_CSV_DIR
+    HERE = os.path.abspath(data_dir)
+    db_path = DB_PATH
     TARGET = "Kubota Spears"
 
     def to_iso(d):
@@ -5704,21 +5706,12 @@ def cmd_build(args=None):
 
     # find qualifying CSV files; tuples are (path, first_row, kubota_playing)
     files = []
-    for f in sorted(glob.glob(os.path.join(HERE, "*.csv"))):
+    for f in list_csv_files(HERE):
         with open(f, encoding="utf-8-sig", newline="") as fh:
             r = csv.DictReader(fh)
             first = next(r, None)
             if first and TARGET in (first.get("homeTeamName",""), first.get("awayTeamName","")):
                 files.append((f, first, True))
-
-    if not files:
-        # Try BI Scouting subdirectory
-        for f in sorted(glob.glob(os.path.join(HERE, "BI Scouting", "*.csv"))):
-            with open(f, encoding="utf-8-sig", newline="") as fh:
-                r = csv.DictReader(fh)
-                first = next(r, None)
-                if first and TARGET in (first.get("homeTeamName",""), first.get("awayTeamName","")):
-                    files.append((f, first, True))
 
     if not files:
         sys.exit(f"No Kubota Spears matches found in {HERE}")
@@ -5899,7 +5892,7 @@ def main():
     sub = parser.add_subparsers(dest="command", help="Available commands")
 
     p_build = sub.add_parser("build", help="Build rugby.db from CSV data")
-    p_build.add_argument("--data", default="../BI Scouting", help="CSV data directory")
+    p_build.add_argument("--data", default=DATA_ROOT, help="CSV data directory")
 
     p_match = sub.add_parser("match", help="Generate match report")
     p_match.add_argument("--round", type=int, help="Round number")
@@ -5911,7 +5904,7 @@ def main():
     p_scout.add_argument("--home", default="Kubota Spears", help="Home team")
     p_scout.add_argument("--opp", required=True, help="Opponent team")
     p_scout.add_argument("--round", type=int, required=True, help="Round number")
-    p_scout.add_argument("--data", default="../BI Scouting", help="CSV data directory")
+    p_scout.add_argument("--data", default=DATA_ROOT, help="CSV data directory")
     p_scout.add_argument("--out", default=".", help="Output directory")
 
     p_sr_match = sub.add_parser("sr-match", help="Generate Super Rugby match report")
@@ -5928,7 +5921,7 @@ def main():
     sub.add_parser("kpi-a4", help="Generate season KPI report (A4 portrait layout)")
 
     p_all = sub.add_parser("all", help="Run build + kpi")
-    p_all.add_argument("--data", default="../BI Scouting", help="CSV data directory")
+    p_all.add_argument("--data", default=DATA_ROOT, help="CSV data directory")
 
     args = parser.parse_args()
     if not args.command:

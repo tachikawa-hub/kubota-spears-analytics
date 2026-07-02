@@ -5,11 +5,14 @@ Tables:
   matches : one row per match Kubota Spears played in
   events  : every event row from those matches (both teams)
 """
-import csv, glob, os, sqlite3, sys
+import csv, os, sqlite3, sys
+from data_paths import CSV_DIR, DB_PATH, ensure_data_dirs, list_csv_files
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DB = os.path.join(HERE, "rugby.db")
+DB = DB_PATH
 TARGET = "Kubota Spears"
+
+ensure_data_dirs()
 
 def to_iso(d):
     """'22/02/2026' -> '2026-02-22'; pass through anything unexpected."""
@@ -33,7 +36,7 @@ def num(v):
 
 # --- find qualifying files ---------------------------------------------------
 files = []
-for f in sorted(glob.glob(os.path.join(HERE, "*.csv"))):
+for f in list_csv_files(CSV_DIR):
     with open(f, encoding="utf-8-sig", newline="") as fh:
         r = csv.DictReader(fh)
         first = next(r, None)
@@ -41,7 +44,7 @@ for f in sorted(glob.glob(os.path.join(HERE, "*.csv"))):
             files.append((f, first))
 
 if not files:
-    sys.exit("No Kubota Spears matches found.")
+    sys.exit(f"No Kubota Spears matches found in {CSV_DIR}.")
 
 # --- (re)create database -----------------------------------------------------
 if os.path.exists(DB):
